@@ -1,0 +1,669 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 56;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		/* App Files */
+		001 /* TeacherLinkApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 101; };
+		002 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 102; };
+		003 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 103; };
+
+		/* Models */
+		010 /* User.swift in Sources */ = {isa = PBXBuildFile; fileRef = 110; };
+		011 /* Classroom.swift in Sources */ = {isa = PBXBuildFile; fileRef = 111; };
+		012 /* Student.swift in Sources */ = {isa = PBXBuildFile; fileRef = 112; };
+		013 /* Story.swift in Sources */ = {isa = PBXBuildFile; fileRef = 113; };
+		014 /* Message.swift in Sources */ = {isa = PBXBuildFile; fileRef = 114; };
+		015 /* Points.swift in Sources */ = {isa = PBXBuildFile; fileRef = 115; };
+
+		/* Services */
+		020 /* AuthService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 120; };
+		021 /* ClassroomService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 121; };
+		022 /* StoryService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 122; };
+		023 /* MessageService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 123; };
+		024 /* PointsService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 124; };
+		025 /* MockDataService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 125; };
+
+		/* ViewModels */
+		030 /* AuthViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 130; };
+		031 /* ClassroomViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 131; };
+		032 /* StoryViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 132; };
+		033 /* MessageViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 133; };
+		034 /* PointsViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 134; };
+
+		/* Views */
+		040 /* MainTabView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 140; };
+		041 /* WelcomeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 141; };
+		042 /* SignInView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 142; };
+		043 /* SignUpView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 143; };
+		044 /* StoriesView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 144; };
+		045 /* StoryCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = 145; };
+		046 /* CreateStoryView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 146; };
+		047 /* CommentsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 147; };
+		048 /* MessagesView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 148; };
+		049 /* ChatView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 149; };
+		050 /* NewMessageView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 150; };
+		051 /* StudentsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 151; };
+		052 /* AddStudentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 152; };
+		053 /* StudentDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 153; };
+		054 /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 154; };
+		055 /* CreateClassView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 155; };
+		056 /* JoinClassView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 156; };
+		057 /* PointsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 157; };
+		058 /* AwardPointsSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 158; };
+		059 /* StudentPointsHistoryView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 159; };
+
+		/* Components */
+		060 /* CustomTextField.swift in Sources */ = {isa = PBXBuildFile; fileRef = 160; };
+		061 /* ClassPickerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 161; };
+
+		/* Extensions */
+		070 /* View+Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 170; };
+
+		/* Firebase Package */
+		080 /* FirebaseAuth in Frameworks */ = {isa = PBXBuildFile; productRef = 180; };
+		081 /* FirebaseFirestore in Frameworks */ = {isa = PBXBuildFile; productRef = 181; };
+		082 /* FirebaseStorage in Frameworks */ = {isa = PBXBuildFile; productRef = 182; };
+/* End PBXBuildFile section */
+
+/* Begin PBXFileReference section */
+		100 /* TeacherLink.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = TeacherLink.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		101 /* TeacherLinkApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TeacherLinkApp.swift; sourceTree = "<group>"; };
+		102 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
+		103 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+
+		/* Models */
+		110 /* User.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = User.swift; sourceTree = "<group>"; };
+		111 /* Classroom.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Classroom.swift; sourceTree = "<group>"; };
+		112 /* Student.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Student.swift; sourceTree = "<group>"; };
+		113 /* Story.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Story.swift; sourceTree = "<group>"; };
+		114 /* Message.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Message.swift; sourceTree = "<group>"; };
+		115 /* Points.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Points.swift; sourceTree = "<group>"; };
+
+		/* Services */
+		120 /* AuthService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AuthService.swift; sourceTree = "<group>"; };
+		121 /* ClassroomService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ClassroomService.swift; sourceTree = "<group>"; };
+		122 /* StoryService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StoryService.swift; sourceTree = "<group>"; };
+		123 /* MessageService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MessageService.swift; sourceTree = "<group>"; };
+		124 /* PointsService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PointsService.swift; sourceTree = "<group>"; };
+		125 /* MockDataService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MockDataService.swift; sourceTree = "<group>"; };
+
+		/* ViewModels */
+		130 /* AuthViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AuthViewModel.swift; sourceTree = "<group>"; };
+		131 /* ClassroomViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ClassroomViewModel.swift; sourceTree = "<group>"; };
+		132 /* StoryViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StoryViewModel.swift; sourceTree = "<group>"; };
+		133 /* MessageViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MessageViewModel.swift; sourceTree = "<group>"; };
+		134 /* PointsViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PointsViewModel.swift; sourceTree = "<group>"; };
+
+		/* Views */
+		140 /* MainTabView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MainTabView.swift; sourceTree = "<group>"; };
+		141 /* WelcomeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WelcomeView.swift; sourceTree = "<group>"; };
+		142 /* SignInView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SignInView.swift; sourceTree = "<group>"; };
+		143 /* SignUpView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SignUpView.swift; sourceTree = "<group>"; };
+		144 /* StoriesView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StoriesView.swift; sourceTree = "<group>"; };
+		145 /* StoryCard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StoryCard.swift; sourceTree = "<group>"; };
+		146 /* CreateStoryView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CreateStoryView.swift; sourceTree = "<group>"; };
+		147 /* CommentsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CommentsView.swift; sourceTree = "<group>"; };
+		148 /* MessagesView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MessagesView.swift; sourceTree = "<group>"; };
+		149 /* ChatView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChatView.swift; sourceTree = "<group>"; };
+		150 /* NewMessageView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NewMessageView.swift; sourceTree = "<group>"; };
+		151 /* StudentsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StudentsView.swift; sourceTree = "<group>"; };
+		152 /* AddStudentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddStudentView.swift; sourceTree = "<group>"; };
+		153 /* StudentDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StudentDetailView.swift; sourceTree = "<group>"; };
+		154 /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
+		155 /* CreateClassView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CreateClassView.swift; sourceTree = "<group>"; };
+		156 /* JoinClassView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = JoinClassView.swift; sourceTree = "<group>"; };
+		157 /* PointsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PointsView.swift; sourceTree = "<group>"; };
+		158 /* AwardPointsSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AwardPointsSheet.swift; sourceTree = "<group>"; };
+		159 /* StudentPointsHistoryView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StudentPointsHistoryView.swift; sourceTree = "<group>"; };
+
+		/* Components */
+		160 /* CustomTextField.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CustomTextField.swift; sourceTree = "<group>"; };
+		161 /* ClassPickerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ClassPickerView.swift; sourceTree = "<group>"; };
+
+		/* Extensions */
+		170 /* View+Extensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "View+Extensions.swift"; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		200 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				080 /* FirebaseAuth in Frameworks */,
+				081 /* FirebaseFirestore in Frameworks */,
+				082 /* FirebaseStorage in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		300 = {
+			isa = PBXGroup;
+			children = (
+				301 /* TeacherLink */,
+				100 /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		301 /* TeacherLink */ = {
+			isa = PBXGroup;
+			children = (
+				101 /* TeacherLinkApp.swift */,
+				102 /* ContentView.swift */,
+				302 /* Models */,
+				303 /* Views */,
+				304 /* ViewModels */,
+				305 /* Services */,
+				306 /* Extensions */,
+				307 /* Resources */,
+			);
+			path = TeacherLink;
+			sourceTree = "<group>";
+		};
+		302 /* Models */ = {
+			isa = PBXGroup;
+			children = (
+				110 /* User.swift */,
+				111 /* Classroom.swift */,
+				112 /* Student.swift */,
+				113 /* Story.swift */,
+				114 /* Message.swift */,
+				115 /* Points.swift */,
+			);
+			path = Models;
+			sourceTree = "<group>";
+		};
+		303 /* Views */ = {
+			isa = PBXGroup;
+			children = (
+				140 /* MainTabView.swift */,
+				308 /* Auth */,
+				309 /* Stories */,
+				310 /* Messages */,
+				311 /* Students */,
+				314 /* Points */,
+				312 /* Settings */,
+				313 /* Components */,
+			);
+			path = Views;
+			sourceTree = "<group>";
+		};
+		314 /* Points */ = {
+			isa = PBXGroup;
+			children = (
+				157 /* PointsView.swift */,
+				158 /* AwardPointsSheet.swift */,
+				159 /* StudentPointsHistoryView.swift */,
+			);
+			path = Points;
+			sourceTree = "<group>";
+		};
+		304 /* ViewModels */ = {
+			isa = PBXGroup;
+			children = (
+				130 /* AuthViewModel.swift */,
+				131 /* ClassroomViewModel.swift */,
+				132 /* StoryViewModel.swift */,
+				133 /* MessageViewModel.swift */,
+				134 /* PointsViewModel.swift */,
+			);
+			path = ViewModels;
+			sourceTree = "<group>";
+		};
+		305 /* Services */ = {
+			isa = PBXGroup;
+			children = (
+				120 /* AuthService.swift */,
+				121 /* ClassroomService.swift */,
+				122 /* StoryService.swift */,
+				123 /* MessageService.swift */,
+				124 /* PointsService.swift */,
+				125 /* MockDataService.swift */,
+			);
+			path = Services;
+			sourceTree = "<group>";
+		};
+		306 /* Extensions */ = {
+			isa = PBXGroup;
+			children = (
+				170 /* View+Extensions.swift */,
+			);
+			path = Extensions;
+			sourceTree = "<group>";
+		};
+		307 /* Resources */ = {
+			isa = PBXGroup;
+			children = (
+				103 /* Assets.xcassets */,
+			);
+			path = Resources;
+			sourceTree = "<group>";
+		};
+		308 /* Auth */ = {
+			isa = PBXGroup;
+			children = (
+				141 /* WelcomeView.swift */,
+				142 /* SignInView.swift */,
+				143 /* SignUpView.swift */,
+			);
+			path = Auth;
+			sourceTree = "<group>";
+		};
+		309 /* Stories */ = {
+			isa = PBXGroup;
+			children = (
+				144 /* StoriesView.swift */,
+				145 /* StoryCard.swift */,
+				146 /* CreateStoryView.swift */,
+				147 /* CommentsView.swift */,
+			);
+			path = Stories;
+			sourceTree = "<group>";
+		};
+		310 /* Messages */ = {
+			isa = PBXGroup;
+			children = (
+				148 /* MessagesView.swift */,
+				149 /* ChatView.swift */,
+				150 /* NewMessageView.swift */,
+			);
+			path = Messages;
+			sourceTree = "<group>";
+		};
+		311 /* Students */ = {
+			isa = PBXGroup;
+			children = (
+				151 /* StudentsView.swift */,
+				152 /* AddStudentView.swift */,
+				153 /* StudentDetailView.swift */,
+			);
+			path = Students;
+			sourceTree = "<group>";
+		};
+		312 /* Settings */ = {
+			isa = PBXGroup;
+			children = (
+				154 /* SettingsView.swift */,
+				155 /* CreateClassView.swift */,
+				156 /* JoinClassView.swift */,
+			);
+			path = Settings;
+			sourceTree = "<group>";
+		};
+		313 /* Components */ = {
+			isa = PBXGroup;
+			children = (
+				160 /* CustomTextField.swift */,
+				161 /* ClassPickerView.swift */,
+			);
+			path = Components;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		400 /* TeacherLink */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 500;
+			buildPhases = (
+				401 /* Sources */,
+				200 /* Frameworks */,
+				402 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = TeacherLink;
+			packageProductDependencies = (
+				180 /* FirebaseAuth */,
+				181 /* FirebaseFirestore */,
+				182 /* FirebaseStorage */,
+			);
+			productName = TeacherLink;
+			productReference = 100 /* TeacherLink.app */;
+			productType = "com.apple.product-type.application";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		600 /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				BuildIndependentTargetsInParallel = 1;
+				LastSwiftUpdateCheck = 1500;
+				LastUpgradeCheck = 1500;
+				TargetAttributes = {
+					400 = {
+						CreatedOnToolsVersion = 15.0;
+					};
+				};
+			};
+			buildConfigurationList = 601;
+			compatibilityVersion = "Xcode 14.0";
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				en,
+				Base,
+			);
+			mainGroup = 300;
+			packageReferences = (
+				700 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */,
+			);
+			productRefGroup = 100;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				400 /* TeacherLink */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		402 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				003 /* Assets.xcassets in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		401 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				001 /* TeacherLinkApp.swift in Sources */,
+				002 /* ContentView.swift in Sources */,
+				010 /* User.swift in Sources */,
+				011 /* Classroom.swift in Sources */,
+				012 /* Student.swift in Sources */,
+				013 /* Story.swift in Sources */,
+				014 /* Message.swift in Sources */,
+				015 /* Points.swift in Sources */,
+				020 /* AuthService.swift in Sources */,
+				021 /* ClassroomService.swift in Sources */,
+				022 /* StoryService.swift in Sources */,
+				023 /* MessageService.swift in Sources */,
+				024 /* PointsService.swift in Sources */,
+				025 /* MockDataService.swift in Sources */,
+				030 /* AuthViewModel.swift in Sources */,
+				031 /* ClassroomViewModel.swift in Sources */,
+				032 /* StoryViewModel.swift in Sources */,
+				033 /* MessageViewModel.swift in Sources */,
+				034 /* PointsViewModel.swift in Sources */,
+				040 /* MainTabView.swift in Sources */,
+				041 /* WelcomeView.swift in Sources */,
+				042 /* SignInView.swift in Sources */,
+				043 /* SignUpView.swift in Sources */,
+				044 /* StoriesView.swift in Sources */,
+				045 /* StoryCard.swift in Sources */,
+				046 /* CreateStoryView.swift in Sources */,
+				047 /* CommentsView.swift in Sources */,
+				048 /* MessagesView.swift in Sources */,
+				049 /* ChatView.swift in Sources */,
+				050 /* NewMessageView.swift in Sources */,
+				051 /* StudentsView.swift in Sources */,
+				052 /* AddStudentView.swift in Sources */,
+				053 /* StudentDetailView.swift in Sources */,
+				057 /* PointsView.swift in Sources */,
+				058 /* AwardPointsSheet.swift in Sources */,
+				059 /* StudentPointsHistoryView.swift in Sources */,
+				054 /* SettingsView.swift in Sources */,
+				055 /* CreateClassView.swift in Sources */,
+				056 /* JoinClassView.swift in Sources */,
+				060 /* CustomTextField.swift in Sources */,
+				061 /* ClassPickerView.swift in Sources */,
+				070 /* View+Extensions.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin XCBuildConfiguration section */
+		800 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu17;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+				);
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				MTL_FAST_MATH = YES;
+				ONLY_ACTIVE_ARCH = YES;
+				SDKROOT = iphoneos;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "DEBUG $(inherited)";
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+			};
+			name = Debug;
+		};
+		801 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu17;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				MTL_FAST_MATH = YES;
+				SDKROOT = iphoneos;
+				SWIFT_COMPILATION_MODE = wholemodule;
+				VALIDATE_PRODUCT = YES;
+			};
+			name = Release;
+		};
+		802 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = "";
+				ENABLE_PREVIEWS = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_CFBundleDisplayName = TeacherLink;
+				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.education";
+				INFOPLIST_KEY_NSCameraUsageDescription = "TeacherLink needs camera access to take photos for class stories.";
+				INFOPLIST_KEY_NSPhotoLibraryUsageDescription = "TeacherLink needs photo library access to share photos in class stories.";
+				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
+				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
+				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				MARKETING_VERSION = 1.0.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.teacherlink.app;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		803 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = "";
+				ENABLE_PREVIEWS = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_CFBundleDisplayName = TeacherLink;
+				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.education";
+				INFOPLIST_KEY_NSCameraUsageDescription = "TeacherLink needs camera access to take photos for class stories.";
+				INFOPLIST_KEY_NSPhotoLibraryUsageDescription = "TeacherLink needs photo library access to share photos in class stories.";
+				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
+				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
+				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				MARKETING_VERSION = 1.0.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.teacherlink.app;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		500 /* Build configuration list for PBXNativeTarget "TeacherLink" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				802 /* Debug */,
+				803 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		601 /* Build configuration list for PBXProject "TeacherLink" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				800 /* Debug */,
+				801 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+/* End XCConfigurationList section */
+
+/* Begin XCRemoteSwiftPackageReference section */
+		700 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/firebase/firebase-ios-sdk.git";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 10.0.0;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		180 /* FirebaseAuth */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 700 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
+			productName = FirebaseAuth;
+		};
+		181 /* FirebaseFirestore */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 700 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
+			productName = FirebaseFirestore;
+		};
+		182 /* FirebaseStorage */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 700 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
+			productName = FirebaseStorage;
+		};
+/* End XCSwiftPackageProductDependency section */
+	};
+	rootObject = 600 /* Project object */;
+}
