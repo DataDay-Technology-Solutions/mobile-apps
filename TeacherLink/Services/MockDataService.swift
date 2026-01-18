@@ -12,15 +12,64 @@ class MockDataService {
 
     private init() {}
 
+    // MARK: - Mock User Credentials (for authentication)
+
+    let userCredentials: [MockUserCredentials] = [
+        // Teacher
+        MockUserCredentials(email: "kkoelpin@pasco.k12.fl.us", password: "password", userId: "teacher1", role: .teacher),
+        // Admin
+        MockUserCredentials(email: "admin@pasco.k12.fl.us", password: "admin123", userId: "admin1", role: .teacher),
+        // Parents
+        MockUserCredentials(email: "jessica.martinez@email.com", password: "parent123", userId: "parent1", role: .parent),
+        MockUserCredentials(email: "mike.chen@email.com", password: "parent123", userId: "parent2", role: .parent),
+        MockUserCredentials(email: "sarah.williams@email.com", password: "parent123", userId: "parent3", role: .parent),
+        MockUserCredentials(email: "david.johnson@email.com", password: "parent123", userId: "parent4", role: .parent),
+        MockUserCredentials(email: "emily.thompson@email.com", password: "parent123", userId: "parent5", role: .parent)
+    ]
+
+    func validateCredentials(email: String, password: String) -> MockUserCredentials? {
+        return userCredentials.first { $0.email.lowercased() == email.lowercased() && $0.password == password }
+    }
+
+    func getUserByCredentials(_ credentials: MockUserCredentials) -> User? {
+        if credentials.userId == "teacher1" {
+            return teacherUser
+        } else if credentials.userId == "admin1" {
+            return adminUser
+        } else {
+            return parentUsers.first { $0.id == credentials.userId }
+        }
+    }
+
+    func getUserByEmail(_ email: String) -> User? {
+        let lowercased = email.lowercased()
+        if teacherUser.email.lowercased() == lowercased {
+            return teacherUser
+        }
+        if adminUser.email.lowercased() == lowercased {
+            return adminUser
+        }
+        return parentUsers.first { $0.email.lowercased() == lowercased }
+    }
+
     // MARK: - Mock Users
 
     let teacherUser = User(
         id: "teacher1",
-        email: "mkoelpin@lincolnelementary.edu",
+        email: "kkoelpin@pasco.k12.fl.us",
         displayName: "Mrs. Koelpin",
         role: .teacher,
         classIds: ["class1"],
         createdAt: Date().addingTimeInterval(-86400 * 90)
+    )
+
+    let adminUser = User(
+        id: "admin1",
+        email: "admin@pasco.k12.fl.us",
+        displayName: "Principal Anderson",
+        role: .teacher, // Admins are teachers with elevated privileges
+        classIds: ["class1"],
+        createdAt: Date().addingTimeInterval(-86400 * 180)
     )
 
     let parentUsers: [User] = [
@@ -32,6 +81,91 @@ class MockDataService {
     ]
 
     var parentUser: User { parentUsers[0] }
+
+    // MARK: - Parent Profiles (with hostility tracking)
+
+    lazy var parentProfiles: [ParentProfile] = [
+        // Jessica Martinez - Friendly parent
+        ParentProfile(
+            id: "pp1",
+            userId: "parent1",
+            classId: "class1",
+            studentIds: ["s1"],
+            hostilityScore: 92.0,
+            totalMessages: 15,
+            positiveMessages: 12,
+            negativeMessages: 0,
+            neutralMessages: 3,
+            isFlaggedHostile: false
+        ),
+        // Mike Chen - Neutral parent
+        ParentProfile(
+            id: "pp2",
+            userId: "parent2",
+            classId: "class1",
+            studentIds: ["s2"],
+            hostilityScore: 65.0,
+            totalMessages: 8,
+            positiveMessages: 3,
+            negativeMessages: 1,
+            neutralMessages: 4,
+            isFlaggedHostile: false
+        ),
+        // Sarah Williams - Concerning parent (some negative messages)
+        ParentProfile(
+            id: "pp3",
+            userId: "parent3",
+            classId: "class1",
+            studentIds: ["s3"],
+            hostilityScore: 45.0,
+            totalMessages: 20,
+            positiveMessages: 5,
+            negativeMessages: 8,
+            neutralMessages: 7,
+            isFlaggedHostile: false,
+            adminCCEnabled: true,
+            adminCCEnabledAt: Date().addingTimeInterval(-86400 * 10)
+        ),
+        // David Johnson - Hostile parent (flagged by teacher)
+        ParentProfile(
+            id: "pp4",
+            userId: "parent4",
+            classId: "class1",
+            studentIds: ["s4"],
+            hostilityScore: 28.0,
+            totalMessages: 12,
+            positiveMessages: 1,
+            negativeMessages: 8,
+            neutralMessages: 3,
+            isFlaggedHostile: true,
+            flaggedByTeacherId: "teacher1",
+            flaggedAt: Date().addingTimeInterval(-86400 * 5),
+            flagReason: "Multiple aggressive messages about homework policy",
+            adminCCEnabled: true,
+            adminCCEnabledAt: Date().addingTimeInterval(-86400 * 7)
+        ),
+        // Emily Thompson - Friendly parent
+        ParentProfile(
+            id: "pp5",
+            userId: "parent5",
+            classId: "class1",
+            studentIds: ["s5"],
+            hostilityScore: 88.0,
+            totalMessages: 10,
+            positiveMessages: 8,
+            negativeMessages: 0,
+            neutralMessages: 2,
+            isFlaggedHostile: false
+        )
+    ]
+
+    func getParentProfile(userId: String) -> ParentProfile? {
+        return parentProfiles.first { $0.userId == userId }
+    }
+
+    func getParentProfile(byId id: String) -> ParentProfile? {
+        return parentProfiles.first { $0.id == id }
+    }
 
     // MARK: - Mock Classroom
 

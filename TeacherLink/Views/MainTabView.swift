@@ -49,10 +49,10 @@ struct MainTabView: View {
                     }
                     .tag(3)
 
-                StudentsView()
+                ParentScoreView()
                     .environmentObject(classroomViewModel)
                     .tabItem {
-                        Label("Students", systemImage: "person.3.fill")
+                        Label("Parents", systemImage: "person.2.fill")
                     }
                     .tag(4)
             }
@@ -60,7 +60,7 @@ struct MainTabView: View {
             SettingsView()
                 .environmentObject(classroomViewModel)
                 .tabItem {
-                    Label("Settings", systemImage: "gearshape.fill")
+                    Label("More", systemImage: "ellipsis.circle.fill")
                 }
                 .tag(5)
         }

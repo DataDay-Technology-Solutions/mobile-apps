@@ -14,6 +14,7 @@ struct SignUpView: View {
     @State private var email = ""
     @State private var password = ""
     @State private var confirmPassword = ""
+    @State private var classCode = ""
 
     var body: some View {
         NavigationStack {
@@ -78,6 +79,23 @@ struct SignUpView: View {
                         .keyboardType(.emailAddress)
                         .autocapitalization(.none)
 
+                        // Class code for parents
+                        if selectedRole == .parent {
+                            VStack(alignment: .leading, spacing: 4) {
+                                CustomTextField(
+                                    icon: "number.circle.fill",
+                                    placeholder: "Class Code",
+                                    text: $classCode
+                                )
+                                .autocapitalization(.allCharacters)
+
+                                Text("Enter the code your teacher provided")
+                                    .font(.caption)
+                                    .foregroundColor(.secondary)
+                                    .padding(.leading, 4)
+                            }
+                        }
+
                         CustomSecureField(
                             icon: "lock.fill",
                             placeholder: "Password",
@@ -122,7 +140,8 @@ struct SignUpView: View {
                                 email: email,
                                 password: password,
                                 displayName: displayName,
-                                role: selectedRole
+                                role: selectedRole,
+                                classCode: selectedRole == .parent ? classCode : nil
                             )
                             if authViewModel.isAuthenticated {
                                 dismiss()
@@ -170,11 +189,18 @@ struct SignUpView: View {
     }
 
     private var isFormValid: Bool {
-        !displayName.isEmpty &&
-        !email.isEmpty &&
-        email.contains("@") &&
-        password.count >= 6 &&
-        passwordsMatch
+        let baseValid = !displayName.isEmpty &&
+            !email.isEmpty &&
+            email.contains("@") &&
+            password.count >= 6 &&
+            passwordsMatch
+
+        // Parents must also provide class code
+        if selectedRole == .parent {
+            return baseValid && !classCode.isEmpty
+        }
+
+        return baseValid
     }
 }
 

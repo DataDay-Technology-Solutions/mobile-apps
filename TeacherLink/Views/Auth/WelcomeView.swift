@@ -6,6 +6,7 @@
 import SwiftUI
 
 struct WelcomeView: View {
+    @EnvironmentObject var authViewModel: AuthViewModel
     @State private var showSignIn = false
     @State private var showSignUp = false
     @State private var selectedRole: UserRole = .teacher
@@ -79,15 +80,58 @@ struct WelcomeView: View {
                             .font(.subheadline)
                             .foregroundColor(.blue)
                     }
+
+                    // Demo quick login (for testing)
+                    if USE_MOCK_DATA {
+                        Divider()
+                            .padding(.vertical, 8)
+
+                        Text("Demo Quick Login")
+                            .font(.caption)
+                            .foregroundColor(.secondary)
+
+                        HStack(spacing: 12) {
+                            Button {
+                                authViewModel.demoLoginAsTeacher()
+                            } label: {
+                                VStack {
+                                    Image(systemName: "person.fill.viewfinder")
+                                    Text("Teacher")
+                                        .font(.caption)
+                                }
+                                .frame(maxWidth: .infinity)
+                                .padding()
+                                .background(Color.blue.opacity(0.1))
+                                .cornerRadius(8)
+                            }
+
+                            Button {
+                                authViewModel.demoLoginAsParent()
+                            } label: {
+                                VStack {
+                                    Image(systemName: "figure.2.and.child.holdinghands")
+                                    Text("Parent")
+                                        .font(.caption)
+                                }
+                                .frame(maxWidth: .infinity)
+                                .padding()
+                                .background(Color.green.opacity(0.1))
+                                .cornerRadius(8)
+                            }
+                        }
+                        .foregroundColor(.primary)
+                    }
                 }
                 .padding(.horizontal, 32)
                 .padding(.bottom, 40)
             }
             .sheet(isPresented: $showSignIn) {
                 SignInView()
+                    .environmentObject(authViewModel)
             }
             .sheet(isPresented: $showSignUp) {
                 SignUpView()
+                    .environmentObject(authViewModel)
             }
         }
     }

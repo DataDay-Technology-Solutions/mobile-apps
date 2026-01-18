@@ -14,28 +14,57 @@ class MessageViewModel: ObservableObject {
     @Published var isLoading = false
     @Published var isSending = false
     @Published var errorMessage: String?
+    @Published var adminCCActive = false // Indicates if admin is being CC'd on current conversation
+
+    private var currentUserId: String?
+    private var currentUserRole: UserRole?
 
     init() {
-        if USE_MOCK_DATA {
-            conversations = MockDataService.shared.conversations
-            updateUnreadCount(userId: "teacher1")
-        }
+        // Don't auto-load - wait for user info
     }
 
-    func listenToConversations(userId: String) {
+    func listenToConversations(userId: String, role: UserRole = .teacher) {
+        currentUserId = userId
+        currentUserRole = role
+
         if USE_MOCK_DATA {
-            conversations = MockDataService.shared.conversations
+            // CRITICAL: Filter conversations based on user role
+            // Parents should ONLY see conversations they are a participant in
+            // Teachers see all conversations for their class
+            let allConversations = MockDataService.shared.conversations
+
+            if role == .parent {
+                // Parents only see their own conversations
+                conversations = allConversations.filter { conversation in
+                    conversation.participantIds.contains(userId)
+                }
+            } else {
+                // Teachers see all conversations
+                conversations = allConversations
+            }
+
             updateUnreadCount(userId: userId)
         }
     }
 
-    func loadConversations(userId: String) async {
+    func loadConversations(userId: String, role: UserRole = .teacher) async {
         isLoading = true
         errorMessage = nil
+        currentUserId = userId
+        currentUserRole = role
 
         if USE_MOCK_DATA {
             try? await Task.sleep(nanoseconds: 300_000_000)
-            conversations = MockDataService.shared.conversations
+
+            let allConversations = MockDataService.shared.conversations
+
+            // Privacy: Filter based on role
+            if role == .parent {
+                conversations = allConversations.filter { $0.participantIds.contains(userId) }
+            } else {
+                conversations = allConversations
+            }
+
             updateUnreadCount(userId: userId)
         }
 
@@ -74,7 +103,7 @@ class MessageViewModel: ObservableObject {
         isLoading = false
     }
 
-    func sendMessage(content: String, senderId: String, senderName: String) async {
+    func sendMessage(content: String, senderId: String, senderName: String, senderRole: UserRole = .teacher) async {
         guard let conversationId = selectedConversation?.id else { return }
 
         isSending = true
@@ -99,9 +128,44 @@ class MessageViewModel: ObservableObject {
                 conversations[index].lastMessageDate = Date()
                 conversations[index].lastMessageSenderId = senderId
             }
+
+            // If sender is a parent, analyze sentiment for hostility tracking
+            if senderRole == .parent {
+                await analyzeSentiment(content: content, parentId: senderId)
+            }
         }
 
         isSending = false
+    }
+
+    // Analyze message sentiment and update parent score
+    private func analyzeSentiment(content: String, parentId: String) async {
+        let sentiment = MessageSentiment.analyze(text: content)
+
+        // Update parent profile (in real app, this would update the database)
+        // For now, just log the sentiment analysis
+        print("Message sentiment for parent \(parentId): \(sentiment.rawValue)")
+
+        // Check if admin should be CC'd
+        if let profile = MockDataService.shared.getParentProfile(userId: parentId),
+           profile.shouldCCAdmin {
+            adminCCActive = true
+            // In real app, would add admin to conversation participants
+            // and send notification to admin
+        }
+    }
+
+    // Check if admin should see this conversation
+    func shouldAdminBeCC(parentUserId: String) -> Bool {
+        guard let profile = MockDataService.shared.getParentProfile(userId: parentUserId) else {
+            return false
+        }
+        return profile.shouldCCAdmin
+    }
+
+    // Get admin info for CC display
+    func getAdminForCC() -> User? {
+        return MockDataService.shared.adminUser
     }
 
     func startConversation(

@@ -20,6 +20,8 @@
 		014 /* Message.swift in Sources */ = {isa = PBXBuildFile; fileRef = 114; };
 		015 /* Points.swift in Sources */ = {isa = PBXBuildFile; fileRef = 115; };
 		016 /* PhotoAlbum.swift in Sources */ = {isa = PBXBuildFile; fileRef = 116; };
+		017 /* ParentProfile.swift in Sources */ = {isa = PBXBuildFile; fileRef = 117; };
+		018 /* DailyContent.swift in Sources */ = {isa = PBXBuildFile; fileRef = 118; };
 
 		/* Services */
 		020 /* AuthService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 120; };
@@ -36,6 +38,7 @@
 		033 /* MessageViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 133; };
 		034 /* PointsViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 134; };
 		035 /* PhotoAlbumViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 135; };
+		036 /* ParentScoreViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 136; };
 
 		/* Views */
 		040 /* MainTabView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 140; };
@@ -65,6 +68,10 @@
 		/* Components */
 		060 /* CustomTextField.swift in Sources */ = {isa = PBXBuildFile; fileRef = 160; };
 		061 /* ClassPickerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 161; };
+		065 /* DailyContentCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = 165; };
+
+		/* Parents */
+		066 /* ParentScoreView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 166; };
 
 		/* Extensions */
 		070 /* View+Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 170; };
@@ -89,6 +96,8 @@
 		114 /* Message.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Message.swift; sourceTree = "<group>"; };
 		115 /* Points.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Points.swift; sourceTree = "<group>"; };
 		116 /* PhotoAlbum.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PhotoAlbum.swift; sourceTree = "<group>"; };
+		117 /* ParentProfile.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ParentProfile.swift; sourceTree = "<group>"; };
+		118 /* DailyContent.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DailyContent.swift; sourceTree = "<group>"; };
 
 		/* Services */
 		120 /* AuthService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AuthService.swift; sourceTree = "<group>"; };
@@ -105,6 +114,7 @@
 		133 /* MessageViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MessageViewModel.swift; sourceTree = "<group>"; };
 		134 /* PointsViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PointsViewModel.swift; sourceTree = "<group>"; };
 		135 /* PhotoAlbumViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PhotoAlbumViewModel.swift; sourceTree = "<group>"; };
+		136 /* ParentScoreViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ParentScoreViewModel.swift; sourceTree = "<group>"; };
 
 		/* Views */
 		140 /* MainTabView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MainTabView.swift; sourceTree = "<group>"; };
@@ -131,6 +141,10 @@
 		/* Components */
 		160 /* CustomTextField.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CustomTextField.swift; sourceTree = "<group>"; };
 		161 /* ClassPickerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ClassPickerView.swift; sourceTree = "<group>"; };
+		165 /* DailyContentCard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DailyContentCard.swift; sourceTree = "<group>"; };
+
+		/* Parents */
+		166 /* ParentScoreView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ParentScoreView.swift; sourceTree = "<group>"; };
 
 		/* Albums */
 		162 /* PhotoAlbumsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PhotoAlbumsView.swift; sourceTree = "<group>"; };
@@ -188,6 +202,8 @@
 				114 /* Message.swift */,
 				115 /* Points.swift */,
 				116 /* PhotoAlbum.swift */,
+				117 /* ParentProfile.swift */,
+				118 /* DailyContent.swift */,
 			);
 			path = Models;
 			sourceTree = "<group>";
@@ -202,6 +218,7 @@
 				310 /* Messages */,
 				311 /* Students */,
 				314 /* Points */,
+				316 /* Parents */,
 				312 /* Settings */,
 				313 /* Components */,
 			);
@@ -236,6 +253,7 @@
 				133 /* MessageViewModel.swift */,
 				134 /* PointsViewModel.swift */,
 				135 /* PhotoAlbumViewModel.swift */,
+				136 /* ParentScoreViewModel.swift */,
 			);
 			path = ViewModels;
 			sourceTree = "<group>";
@@ -326,8 +344,17 @@
 			children = (
 				160 /* CustomTextField.swift */,
 				161 /* ClassPickerView.swift */,
+				165 /* DailyContentCard.swift */,
 			);
 			path = Components;
+			sourceTree = "<group>";
+		};
+		316 /* Parents */ = {
+			isa = PBXGroup;
+			children = (
+				166 /* ParentScoreView.swift */,
+			);
+			path = Parents;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -453,6 +480,11 @@
 				064 /* ClassInviteView.swift in Sources */,
 				060 /* CustomTextField.swift in Sources */,
 				061 /* ClassPickerView.swift in Sources */,
+				065 /* DailyContentCard.swift in Sources */,
+				066 /* ParentScoreView.swift in Sources */,
+				017 /* ParentProfile.swift in Sources */,
+				018 /* DailyContent.swift in Sources */,
+				036 /* ParentScoreViewModel.swift in Sources */,
 				070 /* View+Extensions.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
