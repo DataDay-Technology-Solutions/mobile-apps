@@ -73,6 +73,9 @@
 		/* Parents */
 		066 /* ParentScoreView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 166; };
 
+		/* Management */
+		067 /* ClassroomManagementView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 167; };
+
 		/* Extensions */
 		070 /* View+Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 170; };
 
@@ -145,6 +148,9 @@
 
 		/* Parents */
 		166 /* ParentScoreView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ParentScoreView.swift; sourceTree = "<group>"; };
+
+		/* Management */
+		167 /* ClassroomManagementView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ClassroomManagementView.swift; sourceTree = "<group>"; };
 
 		/* Albums */
 		162 /* PhotoAlbumsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PhotoAlbumsView.swift; sourceTree = "<group>"; };
@@ -219,6 +225,7 @@
 				311 /* Students */,
 				314 /* Points */,
 				316 /* Parents */,
+				317 /* Management */,
 				312 /* Settings */,
 				313 /* Components */,
 			);
@@ -357,6 +364,14 @@
 			path = Parents;
 			sourceTree = "<group>";
 		};
+		317 /* Management */ = {
+			isa = PBXGroup;
+			children = (
+				167 /* ClassroomManagementView.swift */,
+			);
+			path = Management;
+			sourceTree = "<group>";
+		};
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
@@ -482,6 +497,7 @@
 				061 /* ClassPickerView.swift in Sources */,
 				065 /* DailyContentCard.swift in Sources */,
 				066 /* ParentScoreView.swift in Sources */,
+				067 /* ClassroomManagementView.swift in Sources */,
 				017 /* ParentProfile.swift in Sources */,
 				018 /* DailyContent.swift in Sources */,
 				036 /* ParentScoreViewModel.swift in Sources */,

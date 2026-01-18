@@ -125,6 +125,30 @@ struct SettingsView: View {
                     }
                 }
 
+                // Teacher Tools Section
+                if authViewModel.isTeacher {
+                    Section {
+                        NavigationLink {
+                            ParentScoreView()
+                                .environmentObject(classroomViewModel)
+                        } label: {
+                            Label {
+                                VStack(alignment: .leading, spacing: 2) {
+                                    Text("Parent Sentiment")
+                                    Text("Monitor parent communication tone")
+                                        .font(.caption)
+                                        .foregroundColor(.secondary)
+                                }
+                            } icon: {
+                                Image(systemName: "face.smiling")
+                                    .foregroundColor(.orange)
+                            }
+                        }
+                    } header: {
+                        Text("Teacher Tools")
+                    }
+                }
+
                 // App Section
                 Section {
                     Link(destination: URL(string: "https://example.com/help")!) {
