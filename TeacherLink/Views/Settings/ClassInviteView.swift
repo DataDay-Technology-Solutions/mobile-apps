@@ -1,8 +1,8 @@
 //
 //  ClassInviteView.swift
-//  TeacherLink
+//  Hall Pass
 //
-//  QR code class invite system (PhotoCircle-style)
+//  QR code class invite system
 //
 
 import SwiftUI
@@ -16,21 +16,21 @@ struct ClassInviteView: View {
     @State private var copiedToClipboard = false
 
     var inviteURL: String {
-        "teacherlink://join/\(classroom.classCode)"
+        "hallpass://join/\(classroom.classCode)"
     }
 
     var body: some View {
         NavigationStack {
             ScrollView {
                 VStack(spacing: 24) {
-                    // Class info
+                    // Class info with new branding
                     VStack(spacing: 8) {
                         Circle()
-                            .fill(Color.blue)
+                            .fill(AppTheme.gradient)
                             .frame(width: 80, height: 80)
                             .overlay(
-                                Text(classroom.name.prefix(1))
-                                    .font(.title.bold())
+                                Image(systemName: "paperplane.fill")
+                                    .font(.title)
                                     .foregroundColor(.white)
                             )
 
@@ -53,7 +53,7 @@ struct ClassInviteView: View {
                             .padding()
                             .background(Color.white)
                             .cornerRadius(16)
-                            .shadow(color: .black.opacity(0.1), radius: 10)
+                            .shadow(color: AppTheme.primary.opacity(0.2), radius: 10)
 
                         Text("Parents can scan this code to join your class")
                             .font(.caption)
@@ -74,7 +74,7 @@ struct ClassInviteView: View {
                                 Text(String(char))
                                     .font(.title.bold().monospaced())
                                     .frame(width: 40, height: 50)
-                                    .background(Color(.systemGray6))
+                                    .background(AppTheme.primary.opacity(0.1))
                                     .cornerRadius(8)
                             }
                         }
@@ -95,7 +95,7 @@ struct ClassInviteView: View {
                                 Text(copiedToClipboard ? "Copied!" : "Copy Code")
                             }
                             .font(.subheadline.bold())
-                            .foregroundColor(copiedToClipboard ? .green : .blue)
+                            .foregroundColor(copiedToClipboard ? AppTheme.secondary : AppTheme.primary)
                         }
                     }
 
@@ -108,15 +108,15 @@ struct ClassInviteView: View {
                             .font(.headline)
 
                         HStack(spacing: 20) {
-                            ShareButton(icon: "message.fill", label: "Message", color: .green) {
+                            ShareButton(icon: "message.fill", label: "Message", color: AppTheme.secondary) {
                                 showShareSheet = true
                             }
 
-                            ShareButton(icon: "envelope.fill", label: "Email", color: .blue) {
+                            ShareButton(icon: "envelope.fill", label: "Email", color: AppTheme.primary) {
                                 showShareSheet = true
                             }
 
-                            ShareButton(icon: "square.and.arrow.up", label: "More", color: .orange) {
+                            ShareButton(icon: "square.and.arrow.up", label: "More", color: AppTheme.accent) {
                                 showShareSheet = true
                             }
                         }
@@ -127,13 +127,13 @@ struct ClassInviteView: View {
                         Text("How to Join")
                             .font(.headline)
 
-                        InstructionRow(number: 1, text: "Download the TeacherLink app")
+                        InstructionRow(number: 1, text: "Download the Hall Pass app")
                         InstructionRow(number: 2, text: "Tap 'Join a Class'")
                         InstructionRow(number: 3, text: "Enter code: \(classroom.classCode)")
                         InstructionRow(number: 4, text: "Start receiving updates!")
                     }
                     .padding()
-                    .background(Color(.systemGray6))
+                    .background(AppTheme.primary.opacity(0.05))
                     .cornerRadius(16)
                     .padding(.horizontal)
 
@@ -152,7 +152,7 @@ struct ClassInviteView: View {
             }
             .sheet(isPresented: $showShareSheet) {
                 ShareSheet(items: [
-                    "Join \(classroom.name) on TeacherLink!\n\nClass Code: \(classroom.classCode)\n\nOr scan the QR code in the app."
+                    "Join \(classroom.name) on Hall Pass!\n\nClass Code: \(classroom.classCode)\n\nOr scan the QR code in the app."
                 ])
             }
         }
@@ -230,7 +230,7 @@ struct InstructionRow: View {
     var body: some View {
         HStack(alignment: .top, spacing: 12) {
             Circle()
-                .fill(Color.blue)
+                .fill(AppTheme.primary)
                 .frame(width: 24, height: 24)
                 .overlay(
                     Text("\(number)")

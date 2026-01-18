@@ -1,6 +1,6 @@
 //
 //  SettingsView.swift
-//  TeacherLink
+//  Hall Pass
 //
 
 import SwiftUI
@@ -21,7 +21,7 @@ struct SettingsView: View {
                 Section {
                     HStack(spacing: 16) {
                         Circle()
-                            .fill(Color.blue)
+                            .fill(AppTheme.gradient)
                             .frame(width: 60, height: 60)
                             .overlay(
                                 Text(authViewModel.currentUser?.initials ?? "?")
@@ -38,7 +38,7 @@ struct SettingsView: View {
                                 .foregroundColor(.white)
                                 .padding(.horizontal, 8)
                                 .padding(.vertical, 2)
-                                .background(authViewModel.isTeacher ? Color.blue : Color.green)
+                                .background(authViewModel.isTeacher ? AppTheme.primary : AppTheme.secondary)
                                 .cornerRadius(4)
 
                             Text(authViewModel.currentUser?.email ?? "")
@@ -98,7 +98,7 @@ struct SettingsView: View {
                                         .foregroundColor(.blue)
                                 }
 
-                                ShareLink(item: "Join my class \"\(classroom.name)\" on TeacherLink!\n\nClass Code: \(classroom.classCode)\n\nDownload the app and enter this code to connect with your child's classroom.") {
+                                ShareLink(item: "Join my class \"\(classroom.name)\" on Hall Pass!\n\nClass Code: \(classroom.classCode)\n\nDownload the app and enter this code to connect with your child's classroom.") {
                                     Image(systemName: "square.and.arrow.up")
                                         .foregroundColor(.blue)
                                 }

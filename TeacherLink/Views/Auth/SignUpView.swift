@@ -1,6 +1,6 @@
 //
 //  SignUpView.swift
-//  TeacherLink
+//  Hall Pass
 //
 
 import SwiftUI
@@ -20,16 +20,22 @@ struct SignUpView: View {
         NavigationStack {
             ScrollView {
                 VStack(spacing: 24) {
-                    // Header
-                    VStack(spacing: 8) {
-                        Image(systemName: "person.badge.plus.fill")
-                            .font(.system(size: 60))
-                            .foregroundColor(.blue)
+                    // Header with paper airplane
+                    VStack(spacing: 12) {
+                        ZStack {
+                            Circle()
+                                .fill(AppTheme.gradient)
+                                .frame(width: 80, height: 80)
+
+                            Image(systemName: "paperplane.fill")
+                                .font(.system(size: 32))
+                                .foregroundColor(.white)
+                        }
 
                         Text("Create Account")
                             .font(.title.bold())
 
-                        Text("Join TeacherLink today")
+                        Text("Join Hall Pass today")
                             .foregroundColor(.secondary)
                     }
                     .padding(.top, 20)
@@ -43,7 +49,7 @@ struct SignUpView: View {
                             RoleButton(
                                 role: .teacher,
                                 title: "Teacher",
-                                icon: "person.fill.viewfinder",
+                                icon: "person.badge.key.fill",
                                 isSelected: selectedRole == .teacher
                             ) {
                                 selectedRole = .teacher
@@ -52,7 +58,7 @@ struct SignUpView: View {
                             RoleButton(
                                 role: .parent,
                                 title: "Parent",
-                                icon: "figure.2.and.child.holdinghands",
+                                icon: "figure.and.child.holdinghands",
                                 isSelected: selectedRole == .parent
                             ) {
                                 selectedRole = .parent
@@ -119,7 +125,7 @@ struct SignUpView: View {
                         if password.count > 0 && password.count < 6 {
                             Text("Password must be at least 6 characters")
                                 .font(.caption)
-                                .foregroundColor(.orange)
+                                .foregroundColor(AppTheme.accent)
                         }
                     }
                     .padding(.horizontal, 24)
@@ -152,14 +158,17 @@ struct SignUpView: View {
                             ProgressView()
                                 .tint(.white)
                         } else {
-                            Text("Create Account")
+                            HStack {
+                                Text("Create Account")
+                                Image(systemName: "arrow.right")
+                            }
                         }
                     }
                     .font(.headline)
                     .foregroundColor(.white)
                     .frame(maxWidth: .infinity)
                     .padding()
-                    .background(isFormValid ? Color.blue : Color.gray)
+                    .background(isFormValid ? AppTheme.gradient : LinearGradient(colors: [.gray], startPoint: .leading, endPoint: .trailing))
                     .cornerRadius(12)
                     .padding(.horizontal, 24)
                     .disabled(!isFormValid || authViewModel.isLoading)
@@ -179,6 +188,7 @@ struct SignUpView: View {
                     Button("Cancel") {
                         dismiss()
                     }
+                    .foregroundColor(AppTheme.primary)
                 }
             }
         }
@@ -221,12 +231,12 @@ struct RoleButton: View {
             }
             .frame(maxWidth: .infinity)
             .padding(.vertical, 20)
-            .background(isSelected ? Color.blue.opacity(0.1) : Color(.systemGray6))
-            .foregroundColor(isSelected ? .blue : .primary)
+            .background(isSelected ? AppTheme.primary.opacity(0.1) : Color(.systemGray6))
+            .foregroundColor(isSelected ? AppTheme.primary : .primary)
             .cornerRadius(12)
             .overlay(
                 RoundedRectangle(cornerRadius: 12)
-                    .stroke(isSelected ? Color.blue : Color.clear, lineWidth: 2)
+                    .stroke(isSelected ? AppTheme.primary : Color.clear, lineWidth: 2)
             )
         }
     }
