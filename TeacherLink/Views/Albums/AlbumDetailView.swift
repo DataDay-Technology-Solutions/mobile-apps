@@ -130,24 +130,37 @@ struct AlbumDetailView: View {
 struct PhotoGridItem: View {
     let photo: AlbumPhoto
 
+    private var hueValue: Double {
+        guard let id = photo.id else { return 0.5 }
+        let hash = id.hashValue
+        return Double(abs(hash) % 100) / 100.0
+    }
+
     var body: some View {
         ZStack {
-            // Placeholder gradient for mock photos
-            Rectangle()
-                .fill(LinearGradient(
-                    colors: [
-                        Color(hue: Double.random(in: 0...1), saturation: 0.3, brightness: 0.9),
-                        Color(hue: Double.random(in: 0...1), saturation: 0.4, brightness: 0.8)
-                    ],
-                    startPoint: .topLeading,
-                    endPoint: .bottomTrailing
-                ))
-                .aspectRatio(1, contentMode: .fill)
-
-            // Photo icon
-            Image(systemName: "photo")
-                .font(.title)
-                .foregroundColor(.white.opacity(0.5))
+            if !photo.imageURL.isEmpty, let url = URL(string: photo.imageURL) {
+                AsyncImage(url: url) { phase in
+                    switch phase {
+                    case .empty:
+                        Rectangle()
+                            .fill(Color.gray.opacity(0.2))
+                            .aspectRatio(1, contentMode: .fill)
+                            .overlay(ProgressView())
+                    case .success(let image):
+                        image
+                            .resizable()
+                            .aspectRatio(contentMode: .fill)
+                            .frame(minWidth: 0, maxWidth: .infinity, minHeight: 0, maxHeight: .infinity)
+                            .clipped()
+                    case .failure:
+                        placeholderView
+                    @unknown default:
+                        placeholderView
+                    }
+                }
+            } else {
+                placeholderView
+            }
 
             // Like indicator
             if photo.likeCount > 0 {
@@ -169,6 +182,25 @@ struct PhotoGridItem: View {
                     }
                 }
             }
+        }
+        .aspectRatio(1, contentMode: .fill)
+    }
+
+    private var placeholderView: some View {
+        ZStack {
+            Rectangle()
+                .fill(LinearGradient(
+                    colors: [
+                        Color(hue: hueValue, saturation: 0.3, brightness: 0.9),
+                        Color(hue: (hueValue + 0.1).truncatingRemainder(dividingBy: 1.0), saturation: 0.4, brightness: 0.8)
+                    ],
+                    startPoint: .topLeading,
+                    endPoint: .bottomTrailing
+                ))
+
+            Image(systemName: "photo")
+                .font(.title)
+                .foregroundColor(.white.opacity(0.5))
         }
     }
 }
@@ -210,23 +242,49 @@ struct PhotoDetailView: View {
         return photo.likedByIds.contains(userId)
     }
 
+    private var placeholderImage: some View {
+        ZStack {
+            Rectangle()
+                .fill(LinearGradient(
+                    colors: [.blue.opacity(0.3), .purple.opacity(0.3)],
+                    startPoint: .topLeading,
+                    endPoint: .bottomTrailing
+                ))
+                .aspectRatio(4/3, contentMode: .fit)
+
+            Image(systemName: "photo")
+                .font(.system(size: 60))
+                .foregroundColor(.white.opacity(0.5))
+        }
+    }
+
     var body: some View {
         NavigationStack {
             ScrollView {
                 VStack(alignment: .leading, spacing: 16) {
                     // Photo
-                    ZStack {
-                        Rectangle()
-                            .fill(LinearGradient(
-                                colors: [.blue.opacity(0.3), .purple.opacity(0.3)],
-                                startPoint: .topLeading,
-                                endPoint: .bottomTrailing
-                            ))
-                            .aspectRatio(4/3, contentMode: .fit)
-
-                        Image(systemName: "photo")
-                            .font(.system(size: 60))
-                            .foregroundColor(.white.opacity(0.5))
+                    Group {
+                        if !photo.imageURL.isEmpty, let url = URL(string: photo.imageURL) {
+                            AsyncImage(url: url) { phase in
+                                switch phase {
+                                case .empty:
+                                    Rectangle()
+                                        .fill(Color.gray.opacity(0.2))
+                                        .aspectRatio(4/3, contentMode: .fit)
+                                        .overlay(ProgressView())
+                                case .success(let image):
+                                    image
+                                        .resizable()
+                                        .aspectRatio(contentMode: .fit)
+                                case .failure:
+                                    placeholderImage
+                                @unknown default:
+                                    placeholderImage
+                                }
+                            }
+                        } else {
+                            placeholderImage
+                        }
                     }
                     .cornerRadius(12)
                     .padding(.horizontal)
