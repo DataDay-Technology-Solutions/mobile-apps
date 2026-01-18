@@ -10,6 +10,7 @@ struct MainTabView: View {
     @StateObject private var classroomViewModel = ClassroomViewModel()
     @StateObject private var storyViewModel = StoryViewModel()
     @StateObject private var messageViewModel = MessageViewModel()
+    @StateObject private var albumViewModel = PhotoAlbumViewModel()
 
     @State private var selectedTab = 0
 
@@ -19,9 +20,17 @@ struct MainTabView: View {
                 .environmentObject(classroomViewModel)
                 .environmentObject(storyViewModel)
                 .tabItem {
-                    Label("Stories", systemImage: "photo.stack.fill")
+                    Label("Feed", systemImage: "house.fill")
                 }
                 .tag(0)
+
+            PhotoAlbumsView()
+                .environmentObject(classroomViewModel)
+                .environmentObject(albumViewModel)
+                .tabItem {
+                    Label("Albums", systemImage: "photo.on.rectangle.angled")
+                }
+                .tag(1)
 
             MessagesView()
                 .environmentObject(classroomViewModel)
@@ -30,7 +39,7 @@ struct MainTabView: View {
                     Label("Messages", systemImage: "message.fill")
                 }
                 .badge(messageViewModel.totalUnreadCount > 0 ? messageViewModel.totalUnreadCount : 0)
-                .tag(1)
+                .tag(2)
 
             if authViewModel.isTeacher {
                 PointsView()
@@ -38,14 +47,14 @@ struct MainTabView: View {
                     .tabItem {
                         Label("Points", systemImage: "star.fill")
                     }
-                    .tag(2)
+                    .tag(3)
 
                 StudentsView()
                     .environmentObject(classroomViewModel)
                     .tabItem {
                         Label("Students", systemImage: "person.3.fill")
                     }
-                    .tag(3)
+                    .tag(4)
             }
 
             SettingsView()
@@ -53,7 +62,7 @@ struct MainTabView: View {
                 .tabItem {
                     Label("Settings", systemImage: "gearshape.fill")
                 }
-                .tag(4)
+                .tag(5)
         }
         .onAppear {
             loadData()
@@ -72,6 +81,7 @@ struct MainTabView: View {
 
             if let classId = classroomViewModel.selectedClassroom?.id {
                 storyViewModel.listenToStories(classId: classId)
+                await albumViewModel.loadAlbums(classId: classId)
             }
         }
     }

@@ -12,6 +12,7 @@ struct SettingsView: View {
     @State private var showCreateClass = false
     @State private var showJoinClass = false
     @State private var showSignOutConfirm = false
+    @State private var showQRInvite = false
 
     var body: some View {
         NavigationStack {
@@ -105,6 +106,12 @@ struct SettingsView: View {
                         }
 
                         Button {
+                            showQRInvite = true
+                        } label: {
+                            Label("Show QR Code Invite", systemImage: "qrcode")
+                        }
+
+                        Button {
                             Task {
                                 await classroomViewModel.regenerateClassCode()
                             }
@@ -159,6 +166,11 @@ struct SettingsView: View {
             .sheet(isPresented: $showJoinClass) {
                 JoinClassView()
                     .environmentObject(classroomViewModel)
+            }
+            .sheet(isPresented: $showQRInvite) {
+                if let classroom = classroomViewModel.selectedClassroom {
+                    ClassInviteView(classroom: classroom)
+                }
             }
             .confirmationDialog("Sign Out", isPresented: $showSignOutConfirm) {
                 Button("Sign Out", role: .destructive) {

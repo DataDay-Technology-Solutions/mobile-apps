@@ -19,6 +19,7 @@
 		013 /* Story.swift in Sources */ = {isa = PBXBuildFile; fileRef = 113; };
 		014 /* Message.swift in Sources */ = {isa = PBXBuildFile; fileRef = 114; };
 		015 /* Points.swift in Sources */ = {isa = PBXBuildFile; fileRef = 115; };
+		016 /* PhotoAlbum.swift in Sources */ = {isa = PBXBuildFile; fileRef = 116; };
 
 		/* Services */
 		020 /* AuthService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 120; };
@@ -34,6 +35,7 @@
 		032 /* StoryViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 132; };
 		033 /* MessageViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 133; };
 		034 /* PointsViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 134; };
+		035 /* PhotoAlbumViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 135; };
 
 		/* Views */
 		040 /* MainTabView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 140; };
@@ -56,6 +58,9 @@
 		057 /* PointsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 157; };
 		058 /* AwardPointsSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 158; };
 		059 /* StudentPointsHistoryView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 159; };
+		062 /* PhotoAlbumsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 162; };
+		063 /* AlbumDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 163; };
+		064 /* ClassInviteView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 164; };
 
 		/* Components */
 		060 /* CustomTextField.swift in Sources */ = {isa = PBXBuildFile; fileRef = 160; };
@@ -83,6 +88,7 @@
 		113 /* Story.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Story.swift; sourceTree = "<group>"; };
 		114 /* Message.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Message.swift; sourceTree = "<group>"; };
 		115 /* Points.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Points.swift; sourceTree = "<group>"; };
+		116 /* PhotoAlbum.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PhotoAlbum.swift; sourceTree = "<group>"; };
 
 		/* Services */
 		120 /* AuthService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AuthService.swift; sourceTree = "<group>"; };
@@ -98,6 +104,7 @@
 		132 /* StoryViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StoryViewModel.swift; sourceTree = "<group>"; };
 		133 /* MessageViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MessageViewModel.swift; sourceTree = "<group>"; };
 		134 /* PointsViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PointsViewModel.swift; sourceTree = "<group>"; };
+		135 /* PhotoAlbumViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PhotoAlbumViewModel.swift; sourceTree = "<group>"; };
 
 		/* Views */
 		140 /* MainTabView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MainTabView.swift; sourceTree = "<group>"; };
@@ -124,6 +131,11 @@
 		/* Components */
 		160 /* CustomTextField.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CustomTextField.swift; sourceTree = "<group>"; };
 		161 /* ClassPickerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ClassPickerView.swift; sourceTree = "<group>"; };
+
+		/* Albums */
+		162 /* PhotoAlbumsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PhotoAlbumsView.swift; sourceTree = "<group>"; };
+		163 /* AlbumDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AlbumDetailView.swift; sourceTree = "<group>"; };
+		164 /* ClassInviteView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ClassInviteView.swift; sourceTree = "<group>"; };
 
 		/* Extensions */
 		170 /* View+Extensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "View+Extensions.swift"; sourceTree = "<group>"; };
@@ -175,6 +187,7 @@
 				113 /* Story.swift */,
 				114 /* Message.swift */,
 				115 /* Points.swift */,
+				116 /* PhotoAlbum.swift */,
 			);
 			path = Models;
 			sourceTree = "<group>";
@@ -185,6 +198,7 @@
 				140 /* MainTabView.swift */,
 				308 /* Auth */,
 				309 /* Stories */,
+				315 /* Albums */,
 				310 /* Messages */,
 				311 /* Students */,
 				314 /* Points */,
@@ -192,6 +206,15 @@
 				313 /* Components */,
 			);
 			path = Views;
+			sourceTree = "<group>";
+		};
+		315 /* Albums */ = {
+			isa = PBXGroup;
+			children = (
+				162 /* PhotoAlbumsView.swift */,
+				163 /* AlbumDetailView.swift */,
+			);
+			path = Albums;
 			sourceTree = "<group>";
 		};
 		314 /* Points */ = {
@@ -212,6 +235,7 @@
 				132 /* StoryViewModel.swift */,
 				133 /* MessageViewModel.swift */,
 				134 /* PointsViewModel.swift */,
+				135 /* PhotoAlbumViewModel.swift */,
 			);
 			path = ViewModels;
 			sourceTree = "<group>";
@@ -292,6 +316,7 @@
 				154 /* SettingsView.swift */,
 				155 /* CreateClassView.swift */,
 				156 /* JoinClassView.swift */,
+				164 /* ClassInviteView.swift */,
 			);
 			path = Settings;
 			sourceTree = "<group>";
@@ -390,6 +415,7 @@
 				013 /* Story.swift in Sources */,
 				014 /* Message.swift in Sources */,
 				015 /* Points.swift in Sources */,
+				016 /* PhotoAlbum.swift in Sources */,
 				020 /* AuthService.swift in Sources */,
 				021 /* ClassroomService.swift in Sources */,
 				022 /* StoryService.swift in Sources */,
@@ -401,6 +427,7 @@
 				032 /* StoryViewModel.swift in Sources */,
 				033 /* MessageViewModel.swift in Sources */,
 				034 /* PointsViewModel.swift in Sources */,
+				035 /* PhotoAlbumViewModel.swift in Sources */,
 				040 /* MainTabView.swift in Sources */,
 				041 /* WelcomeView.swift in Sources */,
 				042 /* SignInView.swift in Sources */,
@@ -421,6 +448,9 @@
 				054 /* SettingsView.swift in Sources */,
 				055 /* CreateClassView.swift in Sources */,
 				056 /* JoinClassView.swift in Sources */,
+				062 /* PhotoAlbumsView.swift in Sources */,
+				063 /* AlbumDetailView.swift in Sources */,
+				064 /* ClassInviteView.swift in Sources */,
 				060 /* CustomTextField.swift in Sources */,
 				061 /* ClassPickerView.swift in Sources */,
 				070 /* View+Extensions.swift in Sources */,

@@ -172,4 +172,67 @@ class MockDataService {
         PointRecord(id: "p2", studentId: "s1", classId: "class1", behaviorId: "teamwork", behaviorName: "Teamwork", points: 1, awardedBy: "teacher1", awardedByName: "Mrs. Johnson", createdAt: Date().addingTimeInterval(-7200)),
         PointRecord(id: "p3", studentId: "s1", classId: "class1", behaviorId: "talking", behaviorName: "Talking Out", points: -1, awardedBy: "teacher1", awardedByName: "Mrs. Johnson", createdAt: Date().addingTimeInterval(-86400))
     ]
+
+    // MARK: - Mock Photo Albums (PhotoCircle-style)
+
+    lazy var photoAlbums: [PhotoAlbum] = [
+        PhotoAlbum(
+            id: "album1",
+            classId: "class1",
+            name: "Fall Field Trip",
+            description: "Our trip to the apple orchard! We had so much fun picking apples and learning about how they grow.",
+            photoCount: 12,
+            createdBy: "teacher1",
+            createdByName: "Mrs. Johnson",
+            isSharedWithParents: true,
+            allowParentContributions: true,
+            createdAt: Date().addingTimeInterval(-86400 * 7)
+        ),
+        PhotoAlbum(
+            id: "album2",
+            classId: "class1",
+            name: "Science Week",
+            description: "Photos from our exciting science experiments this week!",
+            photoCount: 8,
+            createdBy: "teacher1",
+            createdByName: "Mrs. Johnson",
+            isSharedWithParents: true,
+            allowParentContributions: false,
+            createdAt: Date().addingTimeInterval(-86400 * 14)
+        ),
+        PhotoAlbum(
+            id: "album3",
+            classId: "class1",
+            name: "Art Projects",
+            description: "Beautiful artwork created by our talented students",
+            photoCount: 15,
+            createdBy: "teacher1",
+            createdByName: "Mrs. Johnson",
+            isSharedWithParents: true,
+            allowParentContributions: true,
+            createdAt: Date().addingTimeInterval(-86400 * 21)
+        ),
+        PhotoAlbum(
+            id: "album4",
+            classId: "class1",
+            name: "Classroom Fun",
+            description: "Everyday moments in our classroom",
+            photoCount: 24,
+            createdBy: "teacher1",
+            createdByName: "Mrs. Johnson",
+            isSharedWithParents: true,
+            allowParentContributions: true,
+            createdAt: Date().addingTimeInterval(-86400 * 30)
+        )
+    ]
+
+    lazy var albumPhotos: [AlbumPhoto] = [
+        AlbumPhoto(id: "photo1", albumId: "album1", imageURL: "mock://photo1", caption: "Picking apples together!", uploadedBy: "teacher1", uploadedByName: "Mrs. Johnson", likeCount: 8, likedByIds: ["parent1", "parent2"], commentCount: 3, createdAt: Date().addingTimeInterval(-86400 * 7)),
+        AlbumPhoto(id: "photo2", albumId: "album1", imageURL: "mock://photo2", caption: "Emma found the biggest apple!", uploadedBy: "teacher1", uploadedByName: "Mrs. Johnson", likeCount: 12, likedByIds: ["parent1"], commentCount: 5, createdAt: Date().addingTimeInterval(-86400 * 7 + 3600)),
+        AlbumPhoto(id: "photo3", albumId: "album1", imageURL: "mock://photo3", caption: "Group photo at the orchard", uploadedBy: "teacher1", uploadedByName: "Mrs. Johnson", likeCount: 15, commentCount: 2, createdAt: Date().addingTimeInterval(-86400 * 7 + 7200)),
+        AlbumPhoto(id: "photo4", albumId: "album2", imageURL: "mock://photo4", caption: "Volcano experiment!", uploadedBy: "teacher1", uploadedByName: "Mrs. Johnson", likeCount: 10, commentCount: 4, createdAt: Date().addingTimeInterval(-86400 * 14)),
+        AlbumPhoto(id: "photo5", albumId: "album2", imageURL: "mock://photo5", caption: "Making slime - so much fun!", uploadedBy: "teacher1", uploadedByName: "Mrs. Johnson", likeCount: 14, commentCount: 6, createdAt: Date().addingTimeInterval(-86400 * 14 + 3600)),
+        AlbumPhoto(id: "photo6", albumId: "album3", imageURL: "mock://photo6", caption: "Liam's masterpiece", uploadedBy: "teacher1", uploadedByName: "Mrs. Johnson", likeCount: 7, commentCount: 2, createdAt: Date().addingTimeInterval(-86400 * 21)),
+        AlbumPhoto(id: "photo7", albumId: "album4", imageURL: "mock://photo7", caption: "Reading time!", uploadedBy: "teacher1", uploadedByName: "Mrs. Johnson", likeCount: 5, commentCount: 1, createdAt: Date().addingTimeInterval(-86400 * 30))
+    ]
 }
