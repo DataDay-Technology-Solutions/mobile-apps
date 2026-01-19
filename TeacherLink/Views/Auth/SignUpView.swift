@@ -5,7 +5,7 @@
 
 import SwiftUI
 
-struct SignUpView: View {
+struct MockSignUpView: View {
     @EnvironmentObject var authViewModel: AuthViewModel
     @Environment(\.dismiss) private var dismiss
 
@@ -243,6 +243,6 @@ struct RoleButton: View {
 }
 
 #Preview {
-    SignUpView()
+    MockSignUpView()
         .environmentObject(AuthViewModel())
 }

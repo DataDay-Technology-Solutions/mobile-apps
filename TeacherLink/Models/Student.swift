@@ -5,7 +5,7 @@
 
 import Foundation
 
-struct Student: Identifiable, Codable {
+struct Student: Identifiable, Codable, Hashable {
     var id: String?
     var firstName: String
     var lastName: String
@@ -20,6 +20,21 @@ struct Student: Identifiable, Codable {
 
     var initials: String {
         String(firstName.prefix(1) + lastName.prefix(1)).uppercased()
+    }
+
+    /// Compatibility property for FirestoreService - returns first parent ID
+    var parentId: String? {
+        parentIds.first
+    }
+
+    /// Compatibility alias for fullName
+    var name: String {
+        fullName
+    }
+
+    /// Compatibility alias for classId
+    var classroomId: String {
+        classId
     }
 
     init(
@@ -41,7 +56,7 @@ struct Student: Identifiable, Codable {
     }
 }
 
-struct AvatarStyle: Codable {
+struct AvatarStyle: Codable, Hashable {
     var backgroundColor: String
     var characterType: String
     var accessory: String?

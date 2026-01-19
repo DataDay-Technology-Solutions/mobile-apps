@@ -6,18 +6,28 @@
 //
 
 import SwiftUI
+import FirebaseCore
 
 // Set to true to use mock data (no Firebase required)
-let USE_MOCK_DATA = true
+let USE_MOCK_DATA = false
+
+class AppDelegate: NSObject, UIApplicationDelegate {
+    func application(_ application: UIApplication,
+                     didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey : Any]? = nil) -> Bool {
+        FirebaseApp.configure()
+        return true
+    }
+}
 
 @main
 struct TeacherLinkApp: App {
-    @StateObject private var authViewModel = AuthViewModel()
+    @UIApplicationDelegateAdaptor(AppDelegate.self) var delegate
+    @StateObject private var authService = AuthenticationService()
 
     var body: some Scene {
         WindowGroup {
             ContentView()
-                .environmentObject(authViewModel)
+                .environmentObject(authService)
         }
     }
 }

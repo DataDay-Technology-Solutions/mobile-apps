@@ -5,10 +5,7 @@
 
 import Foundation
 
-enum UserRole: String, Codable {
-    case teacher
-    case parent
-}
+// UserRole is defined in AuthenticationService.swift
 
 struct User: Identifiable, Codable {
     var id: String?
