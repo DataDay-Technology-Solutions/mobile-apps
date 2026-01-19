@@ -42,10 +42,10 @@ struct MainTabView: View {
                 .tag(2)
 
             if authViewModel.isTeacher {
-                PointsView()
+                FeaturesHubView()
                     .environmentObject(classroomViewModel)
                     .tabItem {
-                        Label("Points", systemImage: "star.fill")
+                        Label("Features", systemImage: "sparkles")
                     }
                     .tag(3)
 

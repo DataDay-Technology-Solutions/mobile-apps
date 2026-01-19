@@ -61,6 +61,16 @@
 		066 /* ParentScoreView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 166 /* ParentScoreView.swift */; };
 		067 /* ClassroomManagementView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 167 /* ClassroomManagementView.swift */; };
 		070 /* View+Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 170 /* View+Extensions.swift */; };
+		071 /* NewFeatures.swift in Sources */ = {isa = PBXBuildFile; fileRef = 171 /* NewFeatures.swift */; };
+		072 /* FeaturesHubView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 172 /* FeaturesHubView.swift */; };
+		073 /* EventSignUpView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 173 /* EventSignUpView.swift */; };
+		074 /* WeeklyCalendarView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 174 /* WeeklyCalendarView.swift */; };
+		075 /* SupplyWishlistView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 175 /* SupplyWishlistView.swift */; };
+		076 /* MoodCheckInView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 176 /* MoodCheckInView.swift */; };
+		077 /* AchievementBadgesView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 177 /* AchievementBadgesView.swift */; };
+		078 /* ClassPetView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 178 /* ClassPetView.swift */; };
+		079 /* RandomPickerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 179 /* RandomPickerView.swift */; };
+		07A /* PermissionSlipView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 17A /* PermissionSlipView.swift */; };
 		080 /* FirebaseAuth in Frameworks */ = {isa = PBXBuildFile; productRef = 180 /* FirebaseAuth */; };
 		081 /* FirebaseFirestore in Frameworks */ = {isa = PBXBuildFile; productRef = 181 /* FirebaseFirestore */; };
 		082 /* FirebaseStorage in Frameworks */ = {isa = PBXBuildFile; productRef = 182 /* FirebaseStorage */; };
@@ -129,6 +139,16 @@
 		166 /* ParentScoreView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ParentScoreView.swift; sourceTree = "<group>"; };
 		167 /* ClassroomManagementView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ClassroomManagementView.swift; sourceTree = "<group>"; };
 		170 /* View+Extensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "View+Extensions.swift"; sourceTree = "<group>"; };
+		171 /* NewFeatures.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NewFeatures.swift; sourceTree = "<group>"; };
+		172 /* FeaturesHubView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FeaturesHubView.swift; sourceTree = "<group>"; };
+		173 /* EventSignUpView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EventSignUpView.swift; sourceTree = "<group>"; };
+		174 /* WeeklyCalendarView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WeeklyCalendarView.swift; sourceTree = "<group>"; };
+		175 /* SupplyWishlistView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SupplyWishlistView.swift; sourceTree = "<group>"; };
+		176 /* MoodCheckInView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MoodCheckInView.swift; sourceTree = "<group>"; };
+		177 /* AchievementBadgesView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AchievementBadgesView.swift; sourceTree = "<group>"; };
+		178 /* ClassPetView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ClassPetView.swift; sourceTree = "<group>"; };
+		179 /* RandomPickerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RandomPickerView.swift; sourceTree = "<group>"; };
+		17A /* PermissionSlipView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PermissionSlipView.swift; sourceTree = "<group>"; };
 		AAED601D2F1DAE5500A3963E /* GoogleService-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "GoogleService-Info.plist"; sourceTree = "<group>"; };
 		AAED60212F1DD9D400A3963E /* AuthenticationService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AuthenticationService.swift; sourceTree = "<group>"; };
 		AAED60232F1DD9E000A3963E /* FirestoreService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FirestoreService.swift; sourceTree = "<group>"; };
@@ -189,6 +209,7 @@
 				116 /* PhotoAlbum.swift */,
 				117 /* ParentProfile.swift */,
 				118 /* DailyContent.swift */,
+				171 /* NewFeatures.swift */,
 			);
 			path = Models;
 			sourceTree = "<group>";
@@ -205,6 +226,7 @@
 				314 /* Points */,
 				316 /* Parents */,
 				317 /* Management */,
+				318 /* Features */,
 				312 /* Settings */,
 				313 /* Components */,
 			);
@@ -349,6 +371,22 @@
 				167 /* ClassroomManagementView.swift */,
 			);
 			path = Management;
+			sourceTree = "<group>";
+		};
+		318 /* Features */ = {
+			isa = PBXGroup;
+			children = (
+				172 /* FeaturesHubView.swift */,
+				173 /* EventSignUpView.swift */,
+				174 /* WeeklyCalendarView.swift */,
+				175 /* SupplyWishlistView.swift */,
+				176 /* MoodCheckInView.swift */,
+				177 /* AchievementBadgesView.swift */,
+				178 /* ClassPetView.swift */,
+				179 /* RandomPickerView.swift */,
+				17A /* PermissionSlipView.swift */,
+			);
+			path = Features;
 			sourceTree = "<group>";
 		};
 		AAED601F2F1DD99100A3963E /* Services */ = {
@@ -509,6 +547,16 @@
 				018 /* DailyContent.swift in Sources */,
 				036 /* ParentScoreViewModel.swift in Sources */,
 				070 /* View+Extensions.swift in Sources */,
+				071 /* NewFeatures.swift in Sources */,
+				072 /* FeaturesHubView.swift in Sources */,
+				073 /* EventSignUpView.swift in Sources */,
+				074 /* WeeklyCalendarView.swift in Sources */,
+				075 /* SupplyWishlistView.swift in Sources */,
+				076 /* MoodCheckInView.swift in Sources */,
+				077 /* AchievementBadgesView.swift in Sources */,
+				078 /* ClassPetView.swift in Sources */,
+				079 /* RandomPickerView.swift in Sources */,
+				07A /* PermissionSlipView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
