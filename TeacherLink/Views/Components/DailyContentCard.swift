@@ -10,6 +10,7 @@ import SwiftUI
 struct DailyJokeCard: View {
     let joke: DailyJoke
     @State private var showPunchline = false
+    var onRefresh: (() -> Void)?
 
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
@@ -24,6 +25,19 @@ struct DailyJokeCard: View {
                     .foregroundColor(.primary)
 
                 Spacer()
+
+                if let refresh = onRefresh {
+                    Button {
+                        withAnimation(.spring(response: 0.3, dampingFraction: 0.7)) {
+                            showPunchline = false
+                            refresh()
+                        }
+                    } label: {
+                        Image(systemName: "arrow.clockwise.circle.fill")
+                            .font(.title3)
+                            .foregroundColor(.blue.opacity(0.7))
+                    }
+                }
 
                 Text(categoryEmoji)
                     .font(.title2)
@@ -82,12 +96,16 @@ struct DailyJokeCard: View {
         case .school: return "📚"
         case .nature: return "🌳"
         case .silly: return "🤪"
+        case .science: return "🔬"
+        case .sports: return "⚽"
+        case .music: return "🎵"
         }
     }
 }
 
 struct FunFactCard: View {
     let fact: FunFact
+    var onRefresh: (() -> Void)?
 
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
@@ -101,6 +119,18 @@ struct FunFactCard: View {
                     .foregroundColor(.primary)
 
                 Spacer()
+
+                if let refresh = onRefresh {
+                    Button {
+                        withAnimation(.spring(response: 0.3, dampingFraction: 0.7)) {
+                            refresh()
+                        }
+                    } label: {
+                        Image(systemName: "arrow.clockwise.circle.fill")
+                            .font(.title3)
+                            .foregroundColor(.blue.opacity(0.7))
+                    }
+                }
 
                 Image(systemName: "lightbulb.fill")
                     .font(.title2)
@@ -143,6 +173,10 @@ struct FunFactCard: View {
         case .nature: return "Nature"
         case .science: return "Science"
         case .history: return "History"
+        case .ocean: return "Ocean"
+        case .body: return "Human Body"
+        case .weather: return "Weather"
+        case .geography: return "Geography"
         }
     }
 
@@ -153,15 +187,54 @@ struct FunFactCard: View {
         case .nature: return .teal
         case .science: return .orange
         case .history: return .brown
+        case .ocean: return .blue
+        case .body: return .pink
+        case .weather: return .cyan
+        case .geography: return .indigo
         }
     }
 }
 
 struct DailyContentSection: View {
+    @State private var currentJoke: DailyJoke = DailyContentService.shared.randomJoke()
+    @State private var currentFact: FunFact = DailyContentService.shared.randomFunFact()
+    @State private var jokeId = UUID()
+    @State private var factId = UUID()
+
     var body: some View {
         VStack(spacing: 16) {
-            DailyJokeCard(joke: DailyContentService.shared.jokeOfTheDay())
-            FunFactCard(fact: DailyContentService.shared.funFactOfTheDay())
+            DailyJokeCard(joke: currentJoke, onRefresh: refreshJoke)
+                .id(jokeId)
+                .transition(.asymmetric(
+                    insertion: .scale(scale: 0.9).combined(with: .opacity),
+                    removal: .scale(scale: 1.1).combined(with: .opacity)
+                ))
+
+            FunFactCard(fact: currentFact, onRefresh: refreshFact)
+                .id(factId)
+                .transition(.asymmetric(
+                    insertion: .scale(scale: 0.9).combined(with: .opacity),
+                    removal: .scale(scale: 1.1).combined(with: .opacity)
+                ))
+        }
+        .onAppear {
+            // Randomize on each appear
+            refreshJoke()
+            refreshFact()
+        }
+    }
+
+    private func refreshJoke() {
+        withAnimation(.spring(response: 0.4, dampingFraction: 0.7)) {
+            currentJoke = DailyContentService.shared.randomJoke()
+            jokeId = UUID()
+        }
+    }
+
+    private func refreshFact() {
+        withAnimation(.spring(response: 0.4, dampingFraction: 0.7)) {
+            currentFact = DailyContentService.shared.randomFunFact()
+            factId = UUID()
         }
     }
 }
@@ -169,8 +242,7 @@ struct DailyContentSection: View {
 #Preview {
     ScrollView {
         VStack(spacing: 16) {
-            DailyJokeCard(joke: DailyContentService.shared.jokeOfTheDay())
-            FunFactCard(fact: DailyContentService.shared.funFactOfTheDay())
+            DailyContentSection()
         }
         .padding()
     }
