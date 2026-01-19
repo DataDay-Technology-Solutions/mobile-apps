@@ -9,7 +9,7 @@ import SwiftUI
 import FirebaseCore
 
 // Set to true to use mock data (no Firebase required)
-let USE_MOCK_DATA = false
+let USE_MOCK_DATA = true
 
 class AppDelegate: NSObject, UIApplicationDelegate {
     func application(_ application: UIApplication,
@@ -22,12 +22,24 @@ class AppDelegate: NSObject, UIApplicationDelegate {
 @main
 struct TeacherLinkApp: App {
     @UIApplicationDelegateAdaptor(AppDelegate.self) var delegate
-    @StateObject private var authService = AuthenticationService()
+    @StateObject private var authViewModel = AuthViewModel()
 
     var body: some Scene {
         WindowGroup {
-            ContentView()
-                .environmentObject(authService)
+            if USE_MOCK_DATA {
+                // Use original Hall Pass app with mock data
+                if authViewModel.isAuthenticated {
+                    MainTabView()
+                        .environmentObject(authViewModel)
+                } else {
+                    WelcomeView()
+                        .environmentObject(authViewModel)
+                }
+            } else {
+                // Use Firebase-based flow
+                ContentView()
+                    .environmentObject(AuthenticationService())
+            }
         }
     }
 }
