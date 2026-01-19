@@ -82,80 +82,48 @@ class MockDataService {
 
     var parentUser: User { parentUsers[0] }
 
-    // MARK: - Parent Profiles (with hostility tracking)
+    // MARK: - Parent Profiles (with manual flagging)
 
     lazy var parentProfiles: [ParentProfile] = [
-        // Jessica Martinez - Friendly parent
+        // Jessica Martinez
         ParentProfile(
             id: "pp1",
             userId: "parent1",
             classId: "class1",
-            studentIds: ["s1"],
-            hostilityScore: 92.0,
-            totalMessages: 15,
-            positiveMessages: 12,
-            negativeMessages: 0,
-            neutralMessages: 3,
-            isFlaggedHostile: false
+            studentIds: ["s1"]
         ),
-        // Mike Chen - Neutral parent
+        // Mike Chen
         ParentProfile(
             id: "pp2",
             userId: "parent2",
             classId: "class1",
-            studentIds: ["s2"],
-            hostilityScore: 65.0,
-            totalMessages: 8,
-            positiveMessages: 3,
-            negativeMessages: 1,
-            neutralMessages: 4,
-            isFlaggedHostile: false
+            studentIds: ["s2"]
         ),
-        // Sarah Williams - Concerning parent (some negative messages)
+        // Sarah Williams
         ParentProfile(
             id: "pp3",
             userId: "parent3",
             classId: "class1",
-            studentIds: ["s3"],
-            hostilityScore: 45.0,
-            totalMessages: 20,
-            positiveMessages: 5,
-            negativeMessages: 8,
-            neutralMessages: 7,
-            isFlaggedHostile: false,
-            adminCCEnabled: true,
-            adminCCEnabledAt: Date().addingTimeInterval(-86400 * 10)
+            studentIds: ["s3"]
         ),
-        // David Johnson - Hostile parent (flagged by teacher)
+        // David Johnson - Flagged by teacher for admin support
         ParentProfile(
             id: "pp4",
             userId: "parent4",
             classId: "class1",
             studentIds: ["s4"],
-            hostilityScore: 28.0,
-            totalMessages: 12,
-            positiveMessages: 1,
-            negativeMessages: 8,
-            neutralMessages: 3,
-            isFlaggedHostile: true,
+            isFlagged: true,
             flaggedByTeacherId: "teacher1",
             flaggedAt: Date().addingTimeInterval(-86400 * 5),
-            flagReason: "Multiple aggressive messages about homework policy",
-            adminCCEnabled: true,
-            adminCCEnabledAt: Date().addingTimeInterval(-86400 * 7)
+            flagReason: "Requested admin visibility on communications",
+            adminCCEnabled: true
         ),
-        // Emily Thompson - Friendly parent
+        // Emily Thompson
         ParentProfile(
             id: "pp5",
             userId: "parent5",
             classId: "class1",
-            studentIds: ["s5"],
-            hostilityScore: 88.0,
-            totalMessages: 10,
-            positiveMessages: 8,
-            negativeMessages: 0,
-            neutralMessages: 2,
-            isFlaggedHostile: false
+            studentIds: ["s5"]
         )
     ]
 

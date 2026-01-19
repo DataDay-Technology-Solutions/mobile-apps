@@ -16,13 +16,25 @@ struct MainTabView: View {
 
     var body: some View {
         TabView(selection: $selectedTab) {
-            StoriesView()
-                .environmentObject(classroomViewModel)
-                .environmentObject(storyViewModel)
-                .tabItem {
-                    Label("Feed", systemImage: "house.fill")
-                }
-                .tag(0)
+            // Teachers get dashboard home, parents get stories feed
+            if authViewModel.isTeacher {
+                TeacherHomeView()
+                    .environmentObject(authViewModel)
+                    .environmentObject(classroomViewModel)
+                    .environmentObject(storyViewModel)
+                    .tabItem {
+                        Label("Home", systemImage: "house.fill")
+                    }
+                    .tag(0)
+            } else {
+                StoriesView()
+                    .environmentObject(classroomViewModel)
+                    .environmentObject(storyViewModel)
+                    .tabItem {
+                        Label("Feed", systemImage: "house.fill")
+                    }
+                    .tag(0)
+            }
 
             PhotoAlbumsView()
                 .environmentObject(classroomViewModel)
@@ -42,19 +54,12 @@ struct MainTabView: View {
                 .tag(2)
 
             if authViewModel.isTeacher {
-                FeaturesHubView()
-                    .environmentObject(classroomViewModel)
-                    .tabItem {
-                        Label("Features", systemImage: "sparkles")
-                    }
-                    .tag(3)
-
                 ClassroomManagementView()
                     .environmentObject(classroomViewModel)
                     .tabItem {
-                        Label("Manage", systemImage: "person.crop.rectangle.stack.fill")
+                        Label("Class", systemImage: "person.3.fill")
                     }
-                    .tag(4)
+                    .tag(3)
             }
 
             SettingsView()
@@ -62,7 +67,7 @@ struct MainTabView: View {
                 .tabItem {
                     Label("More", systemImage: "ellipsis.circle.fill")
                 }
-                .tag(5)
+                .tag(4)
         }
         .onAppear {
             loadData()

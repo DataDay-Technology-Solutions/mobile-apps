@@ -129,29 +129,20 @@ class MessageViewModel: ObservableObject {
                 conversations[index].lastMessageSenderId = senderId
             }
 
-            // If sender is a parent, analyze sentiment for hostility tracking
+            // If sender is a parent, check if admin should be CC'd
             if senderRole == .parent {
-                await analyzeSentiment(content: content, parentId: senderId)
+                checkAdminCC(parentId: senderId)
             }
         }
 
         isSending = false
     }
 
-    // Analyze message sentiment and update parent score
-    private func analyzeSentiment(content: String, parentId: String) async {
-        let sentiment = MessageSentiment.analyze(text: content)
-
-        // Update parent profile (in real app, this would update the database)
-        // For now, just log the sentiment analysis
-        print("Message sentiment for parent \(parentId): \(sentiment.rawValue)")
-
-        // Check if admin should be CC'd
+    // Check if admin should be CC'd on this conversation
+    private func checkAdminCC(parentId: String) {
         if let profile = MockDataService.shared.getParentProfile(userId: parentId),
-           profile.shouldCCAdmin {
+           profile.adminCCEnabled {
             adminCCActive = true
-            // In real app, would add admin to conversation participants
-            // and send notification to admin
         }
     }
 
@@ -160,7 +151,7 @@ class MessageViewModel: ObservableObject {
         guard let profile = MockDataService.shared.getParentProfile(userId: parentUserId) else {
             return false
         }
-        return profile.shouldCCAdmin
+        return profile.adminCCEnabled
     }
 
     // Get admin info for CC display

@@ -14,6 +14,9 @@ struct SettingsView: View {
     @State private var showSignOutConfirm = false
     @State private var showQRInvite = false
 
+    // Admin email for CC on flagged parent communications
+    @AppStorage("adminEmail") private var adminEmail: String = ""
+
     var body: some View {
         NavigationStack {
             List {
@@ -134,18 +137,44 @@ struct SettingsView: View {
                         } label: {
                             Label {
                                 VStack(alignment: .leading, spacing: 2) {
-                                    Text("Parent Sentiment")
-                                    Text("Monitor parent communication tone")
+                                    Text("Admin Support")
+                                    Text("Flag parents for admin visibility")
                                         .font(.caption)
                                         .foregroundColor(.secondary)
                                 }
                             } icon: {
-                                Image(systemName: "face.smiling")
+                                Image(systemName: "bell.badge.fill")
                                     .foregroundColor(.orange)
                             }
                         }
                     } header: {
                         Text("Teacher Tools")
+                    }
+
+                    // Admin Email Configuration
+                    Section {
+                        VStack(alignment: .leading, spacing: 8) {
+                            TextField("admin@school.edu", text: $adminEmail)
+                                .keyboardType(.emailAddress)
+                                .textContentType(.emailAddress)
+                                .autocapitalization(.none)
+                                .disableAutocorrection(true)
+
+                            if !adminEmail.isEmpty {
+                                HStack(spacing: 4) {
+                                    Image(systemName: "checkmark.circle.fill")
+                                        .foregroundColor(.green)
+                                        .font(.caption)
+                                    Text("Admin will be CC'd on flagged parent messages")
+                                        .font(.caption)
+                                        .foregroundColor(.secondary)
+                                }
+                            }
+                        }
+                    } header: {
+                        Text("Admin Email for CC")
+                    } footer: {
+                        Text("When you mark a parent for admin attention, this email will be CC'd on all communications with that parent.")
                     }
                 }
 

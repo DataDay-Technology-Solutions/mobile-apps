@@ -34,17 +34,6 @@ struct FeaturesHubView: View {
                             color: .blue
                         )
                     }
-
-                    NavigationLink {
-                        MoodCheckInView()
-                    } label: {
-                        FeatureRow(
-                            icon: "face.smiling",
-                            title: "Mood Check-In",
-                            description: "Daily student check-ins",
-                            color: .yellow
-                        )
-                    }
                 }
 
                 // Recognition Section
@@ -93,17 +82,6 @@ struct FeaturesHubView: View {
                             title: "Supply Wishlist",
                             description: "Request class supplies",
                             color: .pink
-                        )
-                    }
-
-                    NavigationLink {
-                        PermissionSlipView()
-                    } label: {
-                        FeatureRow(
-                            icon: "signature",
-                            title: "Permission Slips",
-                            description: "Digital signatures",
-                            color: .cyan
                         )
                     }
                 }

@@ -71,6 +71,7 @@
 		078 /* ClassPetView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 178 /* ClassPetView.swift */; };
 		079 /* RandomPickerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 179 /* RandomPickerView.swift */; };
 		07A /* PermissionSlipView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 17A /* PermissionSlipView.swift */; };
+		07B /* TeacherHomeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 17B /* TeacherHomeView.swift */; };
 		080 /* FirebaseAuth in Frameworks */ = {isa = PBXBuildFile; productRef = 180 /* FirebaseAuth */; };
 		081 /* FirebaseFirestore in Frameworks */ = {isa = PBXBuildFile; productRef = 181 /* FirebaseFirestore */; };
 		082 /* FirebaseStorage in Frameworks */ = {isa = PBXBuildFile; productRef = 182 /* FirebaseStorage */; };
@@ -149,6 +150,7 @@
 		178 /* ClassPetView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ClassPetView.swift; sourceTree = "<group>"; };
 		179 /* RandomPickerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RandomPickerView.swift; sourceTree = "<group>"; };
 		17A /* PermissionSlipView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PermissionSlipView.swift; sourceTree = "<group>"; };
+		17B /* TeacherHomeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TeacherHomeView.swift; sourceTree = "<group>"; };
 		AAED601D2F1DAE5500A3963E /* GoogleService-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "GoogleService-Info.plist"; sourceTree = "<group>"; };
 		AAED60212F1DD9D400A3963E /* AuthenticationService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AuthenticationService.swift; sourceTree = "<group>"; };
 		AAED60232F1DD9E000A3963E /* FirestoreService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FirestoreService.swift; sourceTree = "<group>"; };
@@ -218,6 +220,7 @@
 			isa = PBXGroup;
 			children = (
 				140 /* MainTabView.swift */,
+				17B /* TeacherHomeView.swift */,
 				308 /* Auth */,
 				309 /* Stories */,
 				315 /* Albums */,
@@ -557,6 +560,7 @@
 				078 /* ClassPetView.swift in Sources */,
 				079 /* RandomPickerView.swift in Sources */,
 				07A /* PermissionSlipView.swift in Sources */,
+				07B /* TeacherHomeView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

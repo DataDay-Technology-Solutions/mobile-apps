@@ -2,7 +2,7 @@
 //  ParentScoreView.swift
 //  TeacherLink
 //
-//  Teacher view to monitor and manage parent hostility scores
+//  Teacher view to mark parents for admin attention
 //
 
 import SwiftUI
@@ -10,18 +10,19 @@ import SwiftUI
 struct ParentScoreView: View {
     @EnvironmentObject var authViewModel: AuthViewModel
     @EnvironmentObject var classroomViewModel: ClassroomViewModel
-    @StateObject private var parentScoreViewModel = ParentScoreViewModel()
+    @StateObject private var viewModel = ParentScoreViewModel()
 
     @State private var selectedFilter: ParentFilter = .all
     @State private var selectedProfile: ParentProfile?
-    @State private var showFlagSheet = false
-    @State private var showUnflagConfirm = false
 
     var body: some View {
         NavigationStack {
             VStack(spacing: 0) {
                 // Summary Header
-                ParentScoreSummaryHeader(viewModel: parentScoreViewModel)
+                AdminAttentionHeader(
+                    markedCount: viewModel.flaggedProfiles.count,
+                    totalCount: viewModel.parentProfiles.count
+                )
 
                 // Filter Picker
                 Picker("Filter", selection: $selectedFilter) {
@@ -33,18 +34,18 @@ struct ParentScoreView: View {
                 .padding()
 
                 // Parent List
-                if parentScoreViewModel.isLoading {
+                if viewModel.isLoading {
                     ProgressView()
                         .frame(maxHeight: .infinity)
                 } else if filteredProfiles.isEmpty {
-                    EmptyParentScoreView(filter: selectedFilter)
+                    EmptyParentListView(filter: selectedFilter)
                 } else {
                     List {
                         ForEach(filteredProfiles) { profile in
-                            ParentScoreRow(
+                            ParentListRow(
                                 profile: profile,
-                                parentUser: parentScoreViewModel.getParentUser(for: profile),
-                                studentNames: parentScoreViewModel.getStudentNames(for: profile)
+                                parentUser: viewModel.getParentUser(for: profile),
+                                studentNames: viewModel.getStudentNames(for: profile)
                             )
                             .contentShape(Rectangle())
                             .onTapGesture {
@@ -55,15 +56,15 @@ struct ParentScoreView: View {
                     .listStyle(.plain)
                 }
             }
-            .navigationTitle("Parent Scores")
+            .navigationTitle("Admin Attention")
             .sheet(item: $selectedProfile) { profile in
-                ParentScoreDetailView(
+                ParentDetailSheet(
                     profile: profile,
-                    parentUser: parentScoreViewModel.getParentUser(for: profile),
-                    studentNames: parentScoreViewModel.getStudentNames(for: profile),
-                    onFlag: { reason in
+                    parentUser: viewModel.getParentUser(for: profile),
+                    studentNames: viewModel.getStudentNames(for: profile),
+                    onMark: { reason in
                         Task {
-                            await parentScoreViewModel.flagParent(
+                            await viewModel.flagParent(
                                 profileId: profile.id ?? "",
                                 teacherId: authViewModel.currentUser?.id ?? "",
                                 reason: reason
@@ -71,9 +72,9 @@ struct ParentScoreView: View {
                         }
                         selectedProfile = nil
                     },
-                    onUnflag: {
+                    onRemove: {
                         Task {
-                            await parentScoreViewModel.unflagParent(profileId: profile.id ?? "")
+                            await viewModel.unflagParent(profileId: profile.id ?? "")
                         }
                         selectedProfile = nil
                     }
@@ -82,7 +83,7 @@ struct ParentScoreView: View {
             .onAppear {
                 if let classId = classroomViewModel.selectedClassroom?.id {
                     Task {
-                        await parentScoreViewModel.loadProfiles(classId: classId)
+                        await viewModel.loadProfiles(classId: classId)
                     }
                 }
             }
@@ -92,105 +93,90 @@ struct ParentScoreView: View {
     private var filteredProfiles: [ParentProfile] {
         switch selectedFilter {
         case .all:
-            return parentScoreViewModel.profilesSortedByHostility
-        case .hostile:
-            return parentScoreViewModel.hostileProfiles
-        case .concerning:
-            return parentScoreViewModel.concerningProfiles
-        case .friendly:
-            return parentScoreViewModel.friendlyProfiles
+            return viewModel.parentProfiles
+        case .marked:
+            return viewModel.flaggedProfiles
+        case .unmarked:
+            return viewModel.unflaggedProfiles
         }
     }
 }
 
 enum ParentFilter: String, CaseIterable {
     case all = "All"
-    case hostile = "Hostile"
-    case concerning = "Concerning"
-    case friendly = "Friendly"
+    case marked = "Marked"
+    case unmarked = "Unmarked"
 }
 
-struct ParentScoreSummaryHeader: View {
-    @ObservedObject var viewModel: ParentScoreViewModel
+struct AdminAttentionHeader: View {
+    let markedCount: Int
+    let totalCount: Int
 
     var body: some View {
-        HStack(spacing: 16) {
-            SummaryCard(
-                count: viewModel.hostileProfiles.count,
-                label: "Hostile",
-                color: .red,
-                icon: "exclamationmark.shield.fill"
-            )
+        HStack(spacing: 24) {
+            VStack(spacing: 4) {
+                Image(systemName: "bell.badge.fill")
+                    .font(.title2)
+                    .foregroundColor(markedCount > 0 ? .orange : .gray)
 
-            SummaryCard(
-                count: viewModel.concerningProfiles.count,
-                label: "Concerning",
-                color: .orange,
-                icon: "exclamationmark.triangle.fill"
-            )
+                Text("\(markedCount)")
+                    .font(.title2.bold())
 
-            SummaryCard(
-                count: viewModel.friendlyProfiles.count,
-                label: "Friendly",
-                color: .green,
-                icon: "face.smiling.fill"
-            )
+                Text("Admin Attention")
+                    .font(.caption)
+                    .foregroundColor(.secondary)
+            }
+            .frame(maxWidth: .infinity)
+            .padding(.vertical, 12)
+            .background(Color(.systemBackground))
+            .cornerRadius(12)
+
+            VStack(spacing: 4) {
+                Image(systemName: "person.3.fill")
+                    .font(.title2)
+                    .foregroundColor(.blue)
+
+                Text("\(totalCount)")
+                    .font(.title2.bold())
+
+                Text("Total Parents")
+                    .font(.caption)
+                    .foregroundColor(.secondary)
+            }
+            .frame(maxWidth: .infinity)
+            .padding(.vertical, 12)
+            .background(Color(.systemBackground))
+            .cornerRadius(12)
         }
         .padding()
         .background(Color(.systemGray6))
     }
 }
 
-struct SummaryCard: View {
-    let count: Int
-    let label: String
-    let color: Color
-    let icon: String
-
-    var body: some View {
-        VStack(spacing: 4) {
-            Image(systemName: icon)
-                .font(.title2)
-                .foregroundColor(color)
-
-            Text("\(count)")
-                .font(.title2.bold())
-
-            Text(label)
-                .font(.caption)
-                .foregroundColor(.secondary)
-        }
-        .frame(maxWidth: .infinity)
-        .padding(.vertical, 12)
-        .background(Color(.systemBackground))
-        .cornerRadius(12)
-    }
-}
-
-struct ParentScoreRow: View {
+struct ParentListRow: View {
     let profile: ParentProfile
     let parentUser: User?
     let studentNames: [String]
 
     var body: some View {
         HStack(spacing: 12) {
-            // Avatar with score indicator
+            // Avatar with indicator
             ZStack(alignment: .bottomTrailing) {
                 Circle()
-                    .fill(hostilityColor.opacity(0.2))
+                    .fill(profile.isFlagged ? Color.orange.opacity(0.2) : Color.blue.opacity(0.2))
                     .frame(width: 50, height: 50)
                     .overlay(
                         Text(parentUser?.initials ?? "?")
                             .font(.headline)
-                            .foregroundColor(hostilityColor)
+                            .foregroundColor(profile.isFlagged ? .orange : .blue)
                     )
 
-                if profile.isFlaggedHostile {
-                    Image(systemName: "flag.fill")
+                if profile.isFlagged {
+                    Image(systemName: "bell.badge.fill")
                         .font(.caption)
                         .foregroundColor(.white)
                         .padding(4)
-                        .background(Color.red)
+                        .background(Color.orange)
                         .clipShape(Circle())
                         .offset(x: 4, y: 4)
                 }
@@ -202,7 +188,7 @@ struct ParentScoreRow: View {
                         .font(.headline)
 
                     if profile.adminCCEnabled {
-                        Image(systemName: "person.2.badge.gearshape.fill")
+                        Image(systemName: "envelope.badge.fill")
                             .font(.caption)
                             .foregroundColor(.orange)
                     }
@@ -212,81 +198,41 @@ struct ParentScoreRow: View {
                     .font(.caption)
                     .foregroundColor(.secondary)
 
-                HStack(spacing: 8) {
-                    HostilityBadge(level: profile.hostilityLevel)
-
-                    Text("\(profile.totalMessages) messages")
-                        .font(.caption)
-                        .foregroundColor(.secondary)
+                if profile.isFlagged {
+                    HStack(spacing: 4) {
+                        Image(systemName: "bell.badge.fill")
+                            .font(.caption2)
+                        Text("Admin Attention")
+                            .font(.caption2)
+                    }
+                    .foregroundColor(.orange)
                 }
             }
 
             Spacer()
 
-            // Score
-            VStack(alignment: .trailing) {
-                Text(profile.formattedScore)
-                    .font(.title3.bold())
-                    .foregroundColor(hostilityColor)
-
-                Text("score")
-                    .font(.caption2)
-                    .foregroundColor(.secondary)
-            }
+            Image(systemName: "chevron.right")
+                .font(.caption)
+                .foregroundColor(.secondary)
         }
         .padding(.vertical, 8)
     }
-
-    private var hostilityColor: Color {
-        switch profile.hostilityLevel {
-        case .friendly: return .green
-        case .neutral: return .blue
-        case .concerning: return .orange
-        case .hostile: return .red
-        }
-    }
 }
 
-struct HostilityBadge: View {
-    let level: HostilityLevel
-
-    var body: some View {
-        HStack(spacing: 4) {
-            Image(systemName: level.icon)
-            Text(level.rawValue)
-        }
-        .font(.caption2.bold())
-        .foregroundColor(.white)
-        .padding(.horizontal, 8)
-        .padding(.vertical, 4)
-        .background(badgeColor)
-        .cornerRadius(8)
-    }
-
-    private var badgeColor: Color {
-        switch level {
-        case .friendly: return .green
-        case .neutral: return .blue
-        case .concerning: return .orange
-        case .hostile: return .red
-        }
-    }
-}
-
-struct EmptyParentScoreView: View {
+struct EmptyParentListView: View {
     let filter: ParentFilter
 
     var body: some View {
         VStack(spacing: 16) {
-            Image(systemName: filter == .hostile ? "checkmark.shield.fill" : "person.3.fill")
+            Image(systemName: filter == .marked ? "checkmark.circle.fill" : "person.3.fill")
                 .font(.system(size: 50))
                 .foregroundColor(.gray)
 
-            Text(filter == .hostile ? "No Hostile Parents" : "No Parents in This Category")
+            Text(filter == .marked ? "No Parents Marked" : "No Parents Found")
                 .font(.headline)
 
-            Text(filter == .hostile
-                 ? "Great news! No parents have been flagged as hostile."
+            Text(filter == .marked
+                 ? "No parents are currently marked for admin attention."
                  : "No parents match the selected filter.")
                 .font(.subheadline)
                 .foregroundColor(.secondary)
@@ -297,16 +243,17 @@ struct EmptyParentScoreView: View {
     }
 }
 
-struct ParentScoreDetailView: View {
+struct ParentDetailSheet: View {
     let profile: ParentProfile
     let parentUser: User?
     let studentNames: [String]
-    let onFlag: (String) -> Void
-    let onUnflag: () -> Void
+    let onMark: (String) -> Void
+    let onRemove: () -> Void
 
     @Environment(\.dismiss) var dismiss
-    @State private var flagReason = ""
-    @State private var showFlagInput = false
+    @AppStorage("adminEmail") private var adminEmail: String = ""
+    @State private var noteText = ""
+    @State private var showNoteInput = false
 
     var body: some View {
         NavigationStack {
@@ -315,12 +262,12 @@ struct ParentScoreDetailView: View {
                     // Header
                     VStack(spacing: 12) {
                         Circle()
-                            .fill(hostilityColor.opacity(0.2))
+                            .fill(profile.isFlagged ? Color.orange.opacity(0.2) : Color.blue.opacity(0.2))
                             .frame(width: 80, height: 80)
                             .overlay(
                                 Text(parentUser?.initials ?? "?")
                                     .font(.title)
-                                    .foregroundColor(hostilityColor)
+                                    .foregroundColor(profile.isFlagged ? .orange : .blue)
                             )
 
                         Text(parentUser?.displayName ?? "Unknown Parent")
@@ -329,52 +276,8 @@ struct ParentScoreDetailView: View {
                         Text(parentUser?.email ?? "")
                             .font(.subheadline)
                             .foregroundColor(.secondary)
-
-                        HostilityBadge(level: profile.hostilityLevel)
                     }
                     .padding(.top)
-
-                    // Score Card
-                    VStack(spacing: 12) {
-                        Text("Parent Score")
-                            .font(.headline)
-
-                        Text(profile.formattedScore)
-                            .font(.system(size: 48, weight: .bold))
-                            .foregroundColor(hostilityColor)
-
-                        if profile.adminCCEnabled {
-                            Label("Admin CC Enabled", systemImage: "person.2.badge.gearshape.fill")
-                                .font(.caption)
-                                .foregroundColor(.orange)
-                        }
-                    }
-                    .padding()
-                    .frame(maxWidth: .infinity)
-                    .background(Color(.systemGray6))
-                    .cornerRadius(16)
-                    .padding(.horizontal)
-
-                    // Message Stats
-                    VStack(alignment: .leading, spacing: 12) {
-                        Text("Message Analysis")
-                            .font(.headline)
-
-                        HStack(spacing: 16) {
-                            StatBox(value: profile.positiveMessages, label: "Positive", color: .green)
-                            StatBox(value: profile.neutralMessages, label: "Neutral", color: .blue)
-                            StatBox(value: profile.negativeMessages, label: "Negative", color: .red)
-                        }
-
-                        Text("Total: \(profile.totalMessages) messages analyzed")
-                            .font(.caption)
-                            .foregroundColor(.secondary)
-                    }
-                    .padding()
-                    .frame(maxWidth: .infinity, alignment: .leading)
-                    .background(Color(.systemGray6))
-                    .cornerRadius(16)
-                    .padding(.horizontal)
 
                     // Children
                     VStack(alignment: .leading, spacing: 8) {
@@ -396,28 +299,80 @@ struct ParentScoreDetailView: View {
                     .cornerRadius(16)
                     .padding(.horizontal)
 
-                    // Flag Status
-                    if profile.isFlaggedHostile {
+                    // Info about admin attention
+                    VStack(alignment: .leading, spacing: 8) {
+                        Label("About Admin Attention", systemImage: "info.circle")
+                            .font(.headline)
+
+                        Text("When you mark a parent for admin attention, your configured admin email will be CC'd on all future messages with this parent.")
+                            .font(.subheadline)
+                            .foregroundColor(.secondary)
+
+                        if !adminEmail.isEmpty {
+                            HStack(spacing: 4) {
+                                Image(systemName: "envelope.fill")
+                                    .foregroundColor(.blue)
+                                Text("CC: \(adminEmail)")
+                                    .font(.caption)
+                            }
+                            .padding(.top, 4)
+                        } else {
+                            HStack(spacing: 4) {
+                                Image(systemName: "exclamationmark.triangle.fill")
+                                    .foregroundColor(.orange)
+                                Text("No admin email configured. Set one in Settings.")
+                                    .font(.caption)
+                                    .foregroundColor(.orange)
+                            }
+                            .padding(.top, 4)
+                        }
+                    }
+                    .padding()
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .background(Color.blue.opacity(0.1))
+                    .cornerRadius(16)
+                    .padding(.horizontal)
+
+                    // Status
+                    if profile.isFlagged {
                         VStack(alignment: .leading, spacing: 8) {
-                            Label("Flagged as Hostile", systemImage: "flag.fill")
+                            Label("Marked for Admin Attention", systemImage: "bell.badge.fill")
                                 .font(.headline)
-                                .foregroundColor(.red)
+                                .foregroundColor(.orange)
 
                             if let reason = profile.flagReason {
-                                Text("Reason: \(reason)")
-                                    .font(.subheadline)
+                                VStack(alignment: .leading, spacing: 2) {
+                                    Text("Note:")
+                                        .font(.caption)
+                                        .foregroundColor(.secondary)
+                                    Text(reason)
+                                        .font(.subheadline)
+                                }
                             }
 
                             if let flaggedAt = profile.flaggedAt {
-                                Text("Flagged on \(flaggedAt.formatted(date: .abbreviated, time: .shortened))")
+                                Text("Marked on \(flaggedAt.formatted(date: .abbreviated, time: .shortened))")
                                     .font(.caption)
                                     .foregroundColor(.secondary)
                             }
 
+                            HStack(spacing: 4) {
+                                Image(systemName: "envelope.badge.fill")
+                                    .font(.caption)
+                                if !adminEmail.isEmpty {
+                                    Text("CC: \(adminEmail)")
+                                        .font(.caption)
+                                } else {
+                                    Text("Admin CC enabled (configure email in Settings)")
+                                        .font(.caption)
+                                }
+                            }
+                            .foregroundColor(.orange)
+
                             Button {
-                                onUnflag()
+                                onRemove()
                             } label: {
-                                Label("Remove Flag", systemImage: "flag.slash")
+                                Label("Remove from Admin Attention", systemImage: "bell.slash")
                                     .font(.headline)
                                     .foregroundColor(.white)
                                     .frame(maxWidth: .infinity)
@@ -429,14 +384,14 @@ struct ParentScoreDetailView: View {
                         }
                         .padding()
                         .frame(maxWidth: .infinity, alignment: .leading)
-                        .background(Color.red.opacity(0.1))
+                        .background(Color.orange.opacity(0.1))
                         .cornerRadius(16)
                         .padding(.horizontal)
                     } else {
-                        // Flag Button
+                        // Mark Button
                         VStack(spacing: 12) {
-                            if showFlagInput {
-                                TextField("Reason for flagging...", text: $flagReason, axis: .vertical)
+                            if showNoteInput {
+                                TextField("Add a note (optional)...", text: $noteText, axis: .vertical)
                                     .lineLimit(2...4)
                                     .padding()
                                     .background(Color(.systemGray6))
@@ -444,32 +399,41 @@ struct ParentScoreDetailView: View {
 
                                 HStack {
                                     Button("Cancel") {
-                                        showFlagInput = false
-                                        flagReason = ""
+                                        showNoteInput = false
+                                        noteText = ""
                                     }
                                     .foregroundColor(.secondary)
 
                                     Spacer()
 
                                     Button {
-                                        onFlag(flagReason)
+                                        onMark(noteText.isEmpty ? "Marked for admin attention" : noteText)
                                     } label: {
-                                        Text("Confirm Flag")
+                                        Text("Confirm")
                                             .bold()
                                     }
-                                    .disabled(flagReason.isEmpty)
                                 }
                             } else {
                                 Button {
-                                    showFlagInput = true
+                                    showNoteInput = true
                                 } label: {
-                                    Label("Flag as Hostile", systemImage: "flag.fill")
+                                    Label("Mark for Admin Attention", systemImage: "bell.badge.fill")
                                         .font(.headline)
                                         .foregroundColor(.white)
                                         .frame(maxWidth: .infinity)
                                         .padding()
-                                        .background(Color.red)
+                                        .background(Color.orange)
                                         .cornerRadius(12)
+                                }
+
+                                if !adminEmail.isEmpty {
+                                    Text("\(adminEmail) will be CC'd on all communications")
+                                        .font(.caption)
+                                        .foregroundColor(.secondary)
+                                } else {
+                                    Text("Configure admin email in Settings to enable CC")
+                                        .font(.caption)
+                                        .foregroundColor(.orange)
                                 }
                             }
                         }
@@ -489,36 +453,6 @@ struct ParentScoreDetailView: View {
                 }
             }
         }
-    }
-
-    private var hostilityColor: Color {
-        switch profile.hostilityLevel {
-        case .friendly: return .green
-        case .neutral: return .blue
-        case .concerning: return .orange
-        case .hostile: return .red
-        }
-    }
-}
-
-struct StatBox: View {
-    let value: Int
-    let label: String
-    let color: Color
-
-    var body: some View {
-        VStack {
-            Text("\(value)")
-                .font(.title2.bold())
-                .foregroundColor(color)
-            Text(label)
-                .font(.caption)
-                .foregroundColor(.secondary)
-        }
-        .frame(maxWidth: .infinity)
-        .padding(.vertical, 12)
-        .background(color.opacity(0.1))
-        .cornerRadius(8)
     }
 }
 
