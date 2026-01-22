@@ -118,8 +118,9 @@ class AdminViewModel: ObservableObject {
             let userId = authUser.id
 
             // Create user profile
+            // IMPORTANT: Use lowercased UUID to match PostgreSQL format
             let newUser = AppUser(
-                id: userId.uuidString,
+                id: userId.uuidString.lowercased(),
                 email: email,
                 name: name,
                 role: role

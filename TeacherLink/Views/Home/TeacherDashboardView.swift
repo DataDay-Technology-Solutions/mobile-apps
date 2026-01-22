@@ -10,6 +10,13 @@ import SwiftUI
 struct TeacherDashboardView: View {
     @EnvironmentObject var authService: AuthenticationService
 
+    // Create view models for child views
+    @StateObject private var authViewModel = AuthViewModel()
+    @StateObject private var classroomViewModel = ClassroomViewModel()
+    @StateObject private var storyViewModel = StoryViewModel()
+    @StateObject private var messageViewModel = MessageViewModel()
+    @StateObject private var pointsViewModel = PointsViewModel()
+
     var body: some View {
         TabView {
             // Stories/Feed Tab
@@ -41,6 +48,29 @@ struct TeacherDashboardView: View {
                 .tabItem {
                     Label("Settings", systemImage: "gear")
                 }
+        }
+        .environmentObject(authViewModel)
+        .environmentObject(classroomViewModel)
+        .environmentObject(storyViewModel)
+        .environmentObject(messageViewModel)
+        .environmentObject(pointsViewModel)
+        .onAppear {
+            // Sync auth state from AuthenticationService to AuthViewModel
+            if let appUser = authService.appUser {
+                let user = User(
+                    id: appUser.id,
+                    email: appUser.email,
+                    displayName: appUser.name,
+                    role: appUser.role
+                )
+                authViewModel.currentUser = user
+                authViewModel.isAuthenticated = true
+
+                // Load classrooms for this teacher
+                Task {
+                    await classroomViewModel.loadClassrooms(for: user)
+                }
+            }
         }
     }
 }

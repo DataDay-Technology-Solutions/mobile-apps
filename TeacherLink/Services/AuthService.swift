@@ -36,7 +36,7 @@ class AuthService {
         let userId: UUID = authUser.id
 
         let user = AppUser(
-            id: userId.uuidString,
+            id: userId.uuidString.lowercased(),
             email: email,
             name: name,
             role: role,
@@ -74,7 +74,7 @@ class AuthService {
         let dbUser: DatabaseUser = try await supabase
             .from("users")
             .select()
-            .eq("id", value: userId.uuidString)
+            .eq("id", value: userId.uuidString.lowercased())
             .single()
             .execute()
             .value
@@ -101,7 +101,7 @@ class AuthService {
         try await supabase
             .from("users")
             .update(["fcm_token": AnyJSON.string(token)])
-            .eq("id", value: userId.uuidString)
+            .eq("id", value: userId.uuidString.lowercased())
             .execute()
     }
 }

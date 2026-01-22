@@ -125,7 +125,7 @@ struct EmailConfirmationView: View {
                 let dbUser: DatabaseUser = try await SupabaseConfig.client
                     .from("users")
                     .select()
-                    .eq("id", value: user.id.uuidString)
+                    .eq("id", value: user.id.uuidString.lowercased())
                     .single()
                     .execute()
                     .value
