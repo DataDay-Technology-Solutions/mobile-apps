@@ -78,7 +78,8 @@ struct TeacherDashboardView: View {
 // MARK: - Teacher Settings View
 struct TeacherSettingsView: View {
     @EnvironmentObject var authService: AuthenticationService
-    @StateObject private var classroomViewModel = ClassroomViewModel()
+    @EnvironmentObject var authViewModel: AuthViewModel
+    @EnvironmentObject var classroomViewModel: ClassroomViewModel
     @State private var showCreateClass = false
 
     var body: some View {
@@ -129,7 +130,7 @@ struct TeacherSettingsView: View {
             .navigationTitle("Settings")
             .sheet(isPresented: $showCreateClass) {
                 CreateClassView()
-                    .environmentObject(AuthViewModel())
+                    .environmentObject(authViewModel)
                     .environmentObject(classroomViewModel)
             }
         }
