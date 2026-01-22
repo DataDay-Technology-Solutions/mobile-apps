@@ -15,8 +15,6 @@ struct Classroom: Identifiable, Codable {
     var studentIds: [String]
     var parentIds: [String]
     var createdAt: Date
-    var schoolYear: String
-    var avatarColor: String
 
     var studentCount: Int {
         studentIds.count
@@ -24,6 +22,19 @@ struct Classroom: Identifiable, Codable {
 
     var parentCount: Int {
         parentIds.count
+    }
+
+    // CodingKeys for proper Supabase snake_case mapping
+    enum CodingKeys: String, CodingKey {
+        case id
+        case name
+        case gradeLevel = "grade_level"
+        case teacherId = "teacher_id"
+        case teacherName = "teacher_name"
+        case classCode = "class_code"
+        case studentIds = "student_ids"
+        case parentIds = "parent_ids"
+        case createdAt = "created_at"
     }
 
     init(
@@ -35,9 +46,7 @@ struct Classroom: Identifiable, Codable {
         classCode: String = "",
         studentIds: [String] = [],
         parentIds: [String] = [],
-        createdAt: Date = Date(),
-        schoolYear: String = "",
-        avatarColor: String = "blue"
+        createdAt: Date = Date()
     ) {
         self.id = id
         self.name = name
@@ -48,8 +57,6 @@ struct Classroom: Identifiable, Codable {
         self.studentIds = studentIds
         self.parentIds = parentIds
         self.createdAt = createdAt
-        self.schoolYear = schoolYear.isEmpty ? Classroom.currentSchoolYear() : schoolYear
-        self.avatarColor = avatarColor
     }
 
     static func generateClassCode() -> String {

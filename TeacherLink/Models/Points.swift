@@ -60,6 +60,20 @@ struct PointRecord: Identifiable, Codable {
         return formatter.localizedString(for: createdAt, relativeTo: Date())
     }
 
+    // CodingKeys for proper Supabase snake_case mapping
+    enum CodingKeys: String, CodingKey {
+        case id
+        case studentId = "student_id"
+        case classId = "class_id"
+        case behaviorId = "behavior_id"
+        case behaviorName = "behavior_name"
+        case points
+        case note
+        case awardedBy = "awarded_by"
+        case awardedByName = "awarded_by_name"
+        case createdAt = "created_at"
+    }
+
     init(
         id: String? = nil,
         studentId: String,
@@ -87,7 +101,7 @@ struct PointRecord: Identifiable, Codable {
 
 // Student's aggregated points summary
 struct StudentPointsSummary: Identifiable, Codable {
-    var id: String  // Same as studentId
+    var id: String?  // Database generates this
     var studentId: String
     var classId: String
     var totalPoints: Int
@@ -95,7 +109,19 @@ struct StudentPointsSummary: Identifiable, Codable {
     var negativeCount: Int
     var lastUpdated: Date
 
+    // CodingKeys for proper Supabase snake_case mapping
+    enum CodingKeys: String, CodingKey {
+        case id
+        case studentId = "student_id"
+        case classId = "class_id"
+        case totalPoints = "total_points"
+        case positiveCount = "positive_count"
+        case negativeCount = "negative_count"
+        case lastUpdated = "last_updated"
+    }
+
     init(
+        id: String? = nil,
         studentId: String,
         classId: String,
         totalPoints: Int = 0,
@@ -103,7 +129,7 @@ struct StudentPointsSummary: Identifiable, Codable {
         negativeCount: Int = 0,
         lastUpdated: Date = Date()
     ) {
-        self.id = studentId
+        self.id = id
         self.studentId = studentId
         self.classId = classId
         self.totalPoints = totalPoints

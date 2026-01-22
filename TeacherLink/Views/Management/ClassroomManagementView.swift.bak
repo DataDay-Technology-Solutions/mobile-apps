@@ -148,7 +148,7 @@ struct StudentManagementRow: View {
                         .font(.caption)
                         .foregroundColor(.orange)
                 } else {
-                    Text(parents.map { $0.displayName ?? $0.name }.joined(separator: ", "))
+                    Text(parents.map { $0.displayName }.joined(separator: ", "))
                         .font(.caption)
                         .foregroundColor(.secondary)
                         .lineLimit(1)
@@ -261,7 +261,7 @@ struct ParentManagementTab: View {
             }
         } message: {
             if let parent = parentToDelete {
-                Text("Are you sure you want to remove \(parent.displayName ?? parent.name)? They will no longer have access to the class.")
+                Text("Are you sure you want to remove \(parent.displayName)? They will no longer have access to the class.")
             }
         }
     }
@@ -293,7 +293,7 @@ struct ParentManagementRow: View {
 
             // Info
             VStack(alignment: .leading, spacing: 2) {
-                Text(parent.displayName ?? parent.name)
+                Text(parent.displayName)
                     .font(.headline)
 
                 Text(parent.email)
@@ -362,7 +362,7 @@ struct AddStudentSheet: View {
                     Picker("Parent", selection: $selectedParentId) {
                         Text("None").tag(nil as String?)
                         ForEach(classroomViewModel.parents) { parent in
-                            Text(parent.displayName ?? parent.name).tag(parent.id as String?)
+                            Text(parent.displayName).tag(parent.id as String?)
                         }
                     }
                 }
@@ -432,7 +432,7 @@ struct EditStudentSheet: View {
                     } else {
                         ForEach(classroomViewModel.parents) { parent in
                             HStack {
-                                Text(parent.displayName ?? parent.name)
+                                Text(parent.displayName)
 
                                 Spacer()
 
@@ -594,7 +594,7 @@ struct EditParentSheet: View {
                     HStack {
                         Text("Name")
                         Spacer()
-                        Text(parent.displayName ?? parent.name)
+                        Text(parent.displayName)
                             .foregroundColor(.secondary)
                     }
 
@@ -760,9 +760,17 @@ struct ManagementStudentAvatar: View {
     }
 
     private var avatarColor: Color {
-        let hash = abs(student.initials.hashValue)
-        let colors: [Color] = [.blue, .green, .purple, .orange, .pink, .teal, .yellow, .red]
-        return colors[hash % colors.count]
+        switch student.avatarStyle.backgroundColor {
+        case "avatarBlue": return .blue
+        case "avatarGreen": return .green
+        case "avatarPurple": return .purple
+        case "avatarOrange": return .orange
+        case "avatarPink": return .pink
+        case "avatarTeal": return .teal
+        case "avatarYellow": return .yellow
+        case "avatarRed": return .red
+        default: return .blue
+        }
     }
 }
 

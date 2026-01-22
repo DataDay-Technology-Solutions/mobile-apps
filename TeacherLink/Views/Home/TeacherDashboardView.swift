@@ -60,6 +60,7 @@ struct TeacherDashboardView: View {
                 let user = User(
                     id: appUser.id,
                     email: appUser.email,
+                    name: appUser.name,
                     displayName: appUser.name,
                     role: appUser.role
                 )

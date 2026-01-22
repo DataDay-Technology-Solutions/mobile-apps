@@ -25,9 +25,7 @@ struct QuickFeature: Identifiable, Equatable {
 
     static let allFeatures: [QuickFeature] = [
         QuickFeature(id: "picker", title: "Random Picker", icon: "dice.fill", color: .purple),
-        QuickFeature(id: "slips", title: "Permission Slips", icon: "signature", color: .cyan, badge: 2),
         QuickFeature(id: "calendar", title: "Calendar", icon: "calendar", color: .blue),
-        QuickFeature(id: "mood", title: "Mood Check-In", icon: "face.smiling", color: .yellow),
         QuickFeature(id: "badges", title: "Badges", icon: "star.circle.fill", color: .orange),
         QuickFeature(id: "events", title: "Event Sign-Ups", icon: "person.3.fill", color: .green),
         QuickFeature(id: "wishlist", title: "Supply Wishlist", icon: "gift.fill", color: .pink),
@@ -42,7 +40,7 @@ struct TeacherHomeView: View {
     @EnvironmentObject var storyViewModel: StoryViewModel
 
     @AppStorage("favoriteFeatures") private var favoriteFeaturesData: Data = Data()
-    @State private var favoriteIds: Set<String> = ["picker", "slips", "calendar", "mood"]
+    @State private var favoriteIds: Set<String> = ["picker", "calendar", "badges", "events"]
     @State private var showAllFeatures = false
     @State private var selectedFeature: QuickFeature?
     @State private var showCreateStory = false
@@ -229,21 +227,21 @@ struct TeacherHomeView: View {
 
             VStack(spacing: 8) {
                 PendingItemRow(
-                    icon: "signature",
-                    iconColor: .cyan,
-                    title: "2 permission slips pending",
-                    subtitle: "Zoo Field Trip - 3 days left"
+                    icon: "person.3.fill",
+                    iconColor: .green,
+                    title: "3 volunteer spots open",
+                    subtitle: "Field Trip - Sign up by Friday"
                 ) {
-                    selectedFeature = QuickFeature.allFeatures.first { $0.id == "slips" }
+                    selectedFeature = QuickFeature.allFeatures.first { $0.id == "events" }
                 }
 
                 PendingItemRow(
-                    icon: "face.smiling",
-                    iconColor: .yellow,
-                    title: "Morning check-in",
-                    subtitle: "Start today's mood check"
+                    icon: "gift.fill",
+                    iconColor: .pink,
+                    title: "Supply wishlist updated",
+                    subtitle: "5 items needed for art project"
                 ) {
-                    selectedFeature = QuickFeature.allFeatures.first { $0.id == "mood" }
+                    selectedFeature = QuickFeature.allFeatures.first { $0.id == "wishlist" }
                 }
             }
         }
@@ -327,12 +325,8 @@ struct TeacherHomeView: View {
                 switch feature.id {
                 case "picker":
                     RandomPickerView()
-                case "slips":
-                    PermissionSlipView()
                 case "calendar":
                     WeeklyCalendarView()
-                case "mood":
-                    MoodCheckInView()
                 case "badges":
                     AchievementBadgesView()
                 case "events":
@@ -510,7 +504,7 @@ struct MiniStoryCard: View {
 
     var body: some View {
         HStack(spacing: 12) {
-            if let imageURL = story.mediaUrls.first {
+            if let imageURL = story.mediaURLs.first {
                 AsyncImage(url: URL(string: imageURL)) { image in
                     image
                         .resizable()
@@ -571,38 +565,30 @@ struct AllFeaturesSheet: View {
                         selectedFeature = QuickFeature.allFeatures[0]
                         dismiss()
                     }
-                    FeatureListRow(feature: QuickFeature.allFeatures[2], favoriteIds: $favoriteIds) {
-                        selectedFeature = QuickFeature.allFeatures[2]
-                        dismiss()
-                    }
-                    FeatureListRow(feature: QuickFeature.allFeatures[3], favoriteIds: $favoriteIds) {
-                        selectedFeature = QuickFeature.allFeatures[3]
+                    FeatureListRow(feature: QuickFeature.allFeatures[1], favoriteIds: $favoriteIds) {
+                        selectedFeature = QuickFeature.allFeatures[1]
                         dismiss()
                     }
                 }
 
                 Section("Recognition") {
-                    FeatureListRow(feature: QuickFeature.allFeatures[4], favoriteIds: $favoriteIds) {
-                        selectedFeature = QuickFeature.allFeatures[4]
+                    FeatureListRow(feature: QuickFeature.allFeatures[2], favoriteIds: $favoriteIds) {
+                        selectedFeature = QuickFeature.allFeatures[2]
                         dismiss()
                     }
-                    FeatureListRow(feature: QuickFeature.allFeatures[7], favoriteIds: $favoriteIds) {
-                        selectedFeature = QuickFeature.allFeatures[7]
+                    FeatureListRow(feature: QuickFeature.allFeatures[5], favoriteIds: $favoriteIds) {
+                        selectedFeature = QuickFeature.allFeatures[5]
                         dismiss()
                     }
                 }
 
                 Section("Parent Engagement") {
-                    FeatureListRow(feature: QuickFeature.allFeatures[5], favoriteIds: $favoriteIds) {
-                        selectedFeature = QuickFeature.allFeatures[5]
+                    FeatureListRow(feature: QuickFeature.allFeatures[3], favoriteIds: $favoriteIds) {
+                        selectedFeature = QuickFeature.allFeatures[3]
                         dismiss()
                     }
-                    FeatureListRow(feature: QuickFeature.allFeatures[6], favoriteIds: $favoriteIds) {
-                        selectedFeature = QuickFeature.allFeatures[6]
-                        dismiss()
-                    }
-                    FeatureListRow(feature: QuickFeature.allFeatures[1], favoriteIds: $favoriteIds) {
-                        selectedFeature = QuickFeature.allFeatures[1]
+                    FeatureListRow(feature: QuickFeature.allFeatures[4], favoriteIds: $favoriteIds) {
+                        selectedFeature = QuickFeature.allFeatures[4]
                         dismiss()
                     }
                 }

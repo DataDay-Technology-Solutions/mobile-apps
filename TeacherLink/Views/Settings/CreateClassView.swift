@@ -14,6 +14,8 @@ struct CreateClassView: View {
     @State private var gradeLevel = "1st Grade"
     @State private var selectedColor = "blue"
     @State private var isCreating = false
+    @State private var showErrorAlert = false
+    @State private var errorAlertMessage = ""
 
     let gradeLevels = [
         "Pre-K", "Kindergarten",
@@ -70,6 +72,20 @@ struct CreateClassView: View {
                         .font(.caption)
                         .foregroundColor(.secondary)
                 }
+
+                if isCreating {
+                    Section {
+                        HStack {
+                            Spacer()
+                            ProgressView()
+                                .progressViewStyle(CircularProgressViewStyle())
+                            Text("Creating class...")
+                                .foregroundColor(.secondary)
+                                .padding(.leading, 8)
+                            Spacer()
+                        }
+                    }
+                }
             }
             .navigationTitle("Create Class")
             .navigationBarTitleDisplayMode(.inline)
@@ -78,6 +94,7 @@ struct CreateClassView: View {
                     Button("Cancel") {
                         dismiss()
                     }
+                    .disabled(isCreating)
                 }
 
                 ToolbarItem(placement: .navigationBarTrailing) {
@@ -86,6 +103,11 @@ struct CreateClassView: View {
                     }
                     .disabled(className.isEmpty || isCreating)
                 }
+            }
+            .alert("Error Creating Class", isPresented: $showErrorAlert) {
+                Button("OK", role: .cancel) { }
+            } message: {
+                Text(errorAlertMessage)
             }
         }
     }
@@ -102,7 +124,15 @@ struct CreateClassView: View {
 
     private func createClass() {
         guard let userId = authViewModel.currentUser?.id,
-              let userName = authViewModel.currentUser?.displayName else { return }
+              let userName = authViewModel.currentUser?.displayName ?? authViewModel.currentUser?.name else {
+            errorAlertMessage = "User information not found. Please log in again."
+            showErrorAlert = true
+            return
+        }
+
+        print("🟦 [CreateClassView] Starting class creation...")
+        print("🟦 [CreateClassView] User ID: \(userId)")
+        print("🟦 [CreateClassView] User Name: \(userName)")
 
         isCreating = true
 
@@ -113,7 +143,22 @@ struct CreateClassView: View {
                 teacherId: userId,
                 teacherName: userName
             )
-            dismiss()
+
+            isCreating = false
+
+            // Check if there was an error
+            if let error = classroomViewModel.errorMessage {
+                print("🔴 [CreateClassView] Error: \(error)")
+                errorAlertMessage = error
+                showErrorAlert = true
+            } else if classroomViewModel.successMessage != nil {
+                print("🟩 [CreateClassView] Success! Dismissing view")
+                dismiss()
+            } else {
+                print("⚠️ [CreateClassView] Unknown state - no error and no success")
+                errorAlertMessage = "Unknown error occurred. Please try again."
+                showErrorAlert = true
+            }
         }
     }
 }

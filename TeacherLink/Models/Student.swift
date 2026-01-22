@@ -11,7 +11,6 @@ struct Student: Identifiable, Codable, Hashable {
     var lastName: String
     var classId: String
     var parentIds: [String]
-    var avatarStyle: AvatarStyle
     var createdAt: Date
 
     var fullName: String {
@@ -37,13 +36,22 @@ struct Student: Identifiable, Codable, Hashable {
         classId
     }
 
+    // CodingKeys for proper Supabase snake_case mapping
+    enum CodingKeys: String, CodingKey {
+        case id
+        case firstName = "first_name"
+        case lastName = "last_name"
+        case classId = "class_id"
+        case parentIds = "parent_ids"
+        case createdAt = "created_at"
+    }
+
     init(
         id: String? = nil,
         firstName: String,
         lastName: String,
         classId: String,
         parentIds: [String] = [],
-        avatarStyle: AvatarStyle = AvatarStyle.random(),
         createdAt: Date = Date()
     ) {
         self.id = id
@@ -51,35 +59,6 @@ struct Student: Identifiable, Codable, Hashable {
         self.lastName = lastName
         self.classId = classId
         self.parentIds = parentIds
-        self.avatarStyle = avatarStyle
         self.createdAt = createdAt
-    }
-}
-
-struct AvatarStyle: Codable, Hashable {
-    var backgroundColor: String
-    var characterType: String
-    var accessory: String?
-
-    static let backgroundColors = [
-        "avatarBlue", "avatarGreen", "avatarPurple", "avatarOrange",
-        "avatarPink", "avatarTeal", "avatarYellow", "avatarRed"
-    ]
-
-    static let characterTypes = [
-        "monster1", "monster2", "monster3", "monster4",
-        "monster5", "monster6", "monster7", "monster8"
-    ]
-
-    static let accessories = [
-        nil, "glasses", "hat", "bowtie", "crown", "headband"
-    ]
-
-    static func random() -> AvatarStyle {
-        AvatarStyle(
-            backgroundColor: backgroundColors.randomElement()!,
-            characterType: characterTypes.randomElement()!,
-            accessory: accessories.randomElement() ?? nil
-        )
     }
 }

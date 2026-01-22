@@ -12,9 +12,9 @@ struct Conversation: Identifiable, Codable {
     var classId: String
     var studentId: String?
     var studentName: String?
-    var lastMessage: String
+    var lastMessage: String?
     var lastMessageDate: Date
-    var lastMessageSenderId: String
+    var lastMessageSenderId: String?
     var unreadCounts: [String: Int]
     var createdAt: Date
 
@@ -37,6 +37,21 @@ struct Conversation: Identifiable, Codable {
         return formatter.localizedString(for: lastMessageDate, relativeTo: Date())
     }
 
+    // CodingKeys for proper Supabase snake_case mapping
+    enum CodingKeys: String, CodingKey {
+        case id
+        case participantIds = "participant_ids"
+        case participantNames = "participant_names"
+        case classId = "class_id"
+        case studentId = "student_id"
+        case studentName = "student_name"
+        case lastMessage = "last_message"
+        case lastMessageDate = "last_message_date"
+        case lastMessageSenderId = "last_message_sender_id"
+        case unreadCounts = "unread_counts"
+        case createdAt = "created_at"
+    }
+
     init(
         id: String? = nil,
         participantIds: [String],
@@ -44,9 +59,9 @@ struct Conversation: Identifiable, Codable {
         classId: String,
         studentId: String? = nil,
         studentName: String? = nil,
-        lastMessage: String = "",
+        lastMessage: String? = nil,
         lastMessageDate: Date = Date(),
-        lastMessageSenderId: String = "",
+        lastMessageSenderId: String? = nil,
         unreadCounts: [String: Int] = [:],
         createdAt: Date = Date()
     ) {
@@ -70,7 +85,6 @@ struct Message: Identifiable, Codable {
     var senderId: String
     var senderName: String
     var content: String
-    var imageURL: String?
     var isRead: Bool
     var readAt: Date?
     var createdAt: Date
@@ -94,13 +108,24 @@ struct Message: Identifiable, Codable {
         return formatter.string(from: createdAt)
     }
 
+    // CodingKeys for proper Supabase snake_case mapping
+    enum CodingKeys: String, CodingKey {
+        case id
+        case conversationId = "conversation_id"
+        case senderId = "sender_id"
+        case senderName = "sender_name"
+        case content
+        case isRead = "is_read"
+        case readAt = "read_at"
+        case createdAt = "created_at"
+    }
+
     init(
         id: String? = nil,
         conversationId: String,
         senderId: String,
         senderName: String,
         content: String,
-        imageURL: String? = nil,
         isRead: Bool = false,
         readAt: Date? = nil,
         createdAt: Date = Date()
@@ -110,7 +135,6 @@ struct Message: Identifiable, Codable {
         self.senderId = senderId
         self.senderName = senderName
         self.content = content
-        self.imageURL = imageURL
         self.isRead = isRead
         self.readAt = readAt
         self.createdAt = createdAt

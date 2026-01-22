@@ -68,9 +68,9 @@ class StoryViewModel: ObservableObject {
                 classId: classId,
                 authorId: authorId,
                 authorName: authorName,
-                type: isAnnouncement ? .announcement : .text,
                 content: content,
-                isAnnouncement: isAnnouncement,
+                mediaUrls: [],
+                mediaType: "text",
                 createdAt: Date()
             )
             stories.insert(story, at: 0)
@@ -81,9 +81,9 @@ class StoryViewModel: ObservableObject {
                     classId: classId,
                     authorId: authorId,
                     authorName: authorName,
-                    type: isAnnouncement ? .announcement : .text,
                     content: content,
-                    isAnnouncement: isAnnouncement,
+                    mediaUrls: [],
+                    mediaType: "text",
                     createdAt: Date()
                 )
                 let created = try await StoryService.shared.createStory(story)
@@ -119,9 +119,9 @@ class StoryViewModel: ObservableObject {
                 classId: classId,
                 authorId: authorId,
                 authorName: authorName,
-                type: .photo,
                 content: content,
-                mediaURLs: ["mock://photo"],
+                mediaUrls: ["mock://photo"],
+                mediaType: "image",
                 createdAt: Date()
             )
             stories.insert(story, at: 0)
@@ -137,9 +137,9 @@ class StoryViewModel: ObservableObject {
                     classId: classId,
                     authorId: authorId,
                     authorName: authorName,
-                    type: .photo,
                     content: content,
-                    mediaURLs: [imageUrl],
+                    mediaUrls: [imageUrl],
+                    mediaType: "image",
                     createdAt: Date()
                 )
                 let created = try await StoryService.shared.createStory(story)
@@ -175,9 +175,9 @@ class StoryViewModel: ObservableObject {
                 classId: classId,
                 authorId: authorId,
                 authorName: authorName,
-                type: .video,
                 content: content,
-                mediaURLs: ["mock://video"],
+                mediaUrls: ["mock://video"],
+                mediaType: "video",
                 createdAt: Date()
             )
             stories.insert(story, at: 0)
@@ -193,9 +193,9 @@ class StoryViewModel: ObservableObject {
                     classId: classId,
                     authorId: authorId,
                     authorName: authorName,
-                    type: .video,
                     content: content,
-                    mediaURLs: [videoUrlString],
+                    mediaUrls: [videoUrlString],
+                    mediaType: "video",
                     createdAt: Date()
                 )
                 let created = try await StoryService.shared.createStory(story)

@@ -68,7 +68,7 @@ class StoryService {
     func deleteStory(id: String) async throws {
         // Delete associated media files
         let story = try await getStory(id: id)
-        for url in story.mediaUrls {
+        for url in story.mediaURLs {
             try? await deleteMedia(url: url)
         }
 
@@ -208,13 +208,13 @@ class StoryService {
         storiesChannel = supabase.realtimeV2.channel("stories_\(classId)")
 
         Task {
-            try? await storiesChannel?.subscribeWithError()
+            await storiesChannel?.subscribe()
 
             let changes = storiesChannel?.postgresChange(
                 AnyAction.self,
                 schema: "public",
                 table: "stories",
-                filter: .eq("class_id", value: "\(classId)")
+                filter: "class_id=eq.\(classId)"
             )
 
             if let changes = changes {
@@ -241,13 +241,13 @@ class StoryService {
         commentsChannel = supabase.realtimeV2.channel("comments_\(storyId)")
 
         Task {
-            try? await commentsChannel?.subscribeWithError()
+            await commentsChannel?.subscribe()
 
             let changes = commentsChannel?.postgresChange(
                 AnyAction.self,
                 schema: "public",
                 table: "story_comments",
-                filter: .eq("story_id", value: "\(storyId)")
+                filter: "story_id=eq.\(storyId)"
             )
 
             if let changes = changes {

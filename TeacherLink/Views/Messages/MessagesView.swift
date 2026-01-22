@@ -98,7 +98,7 @@ struct ConversationRow: View {
                 }
 
                 HStack {
-                    Text(conversation.lastMessage)
+                    Text(conversation.lastMessage ?? "")
                         .font(.subheadline)
                         .foregroundColor(.secondary)
                         .lineLimit(1)

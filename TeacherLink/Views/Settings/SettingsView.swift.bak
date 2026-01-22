@@ -274,7 +274,13 @@ struct ClassroomRow: View {
     }
 
     private var classColor: Color {
-        return .blue
+        switch classroom.avatarColor {
+        case "blue": return .blue
+        case "green": return .green
+        case "purple": return .purple
+        case "orange": return .orange
+        default: return .blue
+        }
     }
 }
 

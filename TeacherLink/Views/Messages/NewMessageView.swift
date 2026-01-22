@@ -320,7 +320,7 @@ struct StudentParentMessagingView: View {
                     return AppUser(
                         id: userId,
                         email: user.email,
-                        name: user.displayName,
+                        name: user.displayName ?? user.name,
                         role: .parent
                     )
                 }
@@ -351,7 +351,7 @@ struct StudentParentMessagingView: View {
             // Create or get existing conversation
             let conversation = await messageViewModel.getOrCreateConversation(
                 participantIds: [currentUserId, parent.id],
-                participantNames: [currentUserId: currentUser.displayName, parent.id: parent.name],
+                participantNames: [currentUserId: currentUser.displayName ?? currentUser.name, parent.id: parent.name],
                 classId: classId,
                 studentId: student.id,
                 studentName: student.fullName

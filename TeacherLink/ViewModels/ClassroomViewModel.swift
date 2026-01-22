@@ -250,12 +250,13 @@ class ClassroomViewModel: ObservableObject {
             let parent = User(
                 id: UUID().uuidString,
                 email: email,
+                name: displayName,
                 displayName: displayName,
                 role: .parent,
                 classIds: [classId]
             )
             parents.append(parent)
-            parents.sort { $0.displayName < $1.displayName }
+            parents.sort { ($0.displayName ?? $0.name) < ($1.displayName ?? $1.name) }
 
             // Link to student if provided
             if let studentId = studentId, let parentId = parent.id {

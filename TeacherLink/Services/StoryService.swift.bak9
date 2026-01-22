@@ -68,7 +68,7 @@ class StoryService {
     func deleteStory(id: String) async throws {
         // Delete associated media files
         let story = try await getStory(id: id)
-        for url in story.mediaUrls {
+        for url in story.mediaURLs {
             try? await deleteMedia(url: url)
         }
 
@@ -214,7 +214,7 @@ class StoryService {
                 AnyAction.self,
                 schema: "public",
                 table: "stories",
-                filter: .eq("class_id", value: "\(classId)")
+                filter: .eq(column: "class_id", value: "\(classId)")
             )
 
             if let changes = changes {
@@ -247,7 +247,7 @@ class StoryService {
                 AnyAction.self,
                 schema: "public",
                 table: "story_comments",
-                filter: .eq("story_id", value: "\(storyId)")
+                filter: .eq(column: "story_id", value: "\(storyId)")
             )
 
             if let changes = changes {

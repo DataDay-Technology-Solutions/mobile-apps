@@ -239,8 +239,8 @@ class MessageViewModel: ObservableObject {
                 id: UUID().uuidString,
                 participantIds: [currentUserId, otherUserId].sorted(),
                 participantNames: [
-                    currentUserId: currentUser.displayName,
-                    otherUserId: user.displayName
+                    currentUserId: currentUser.displayName ?? currentUser.name,
+                    otherUserId: user.displayName ?? user.name
                 ],
                 classId: classId,
                 studentId: studentId,
@@ -256,8 +256,8 @@ class MessageViewModel: ObservableObject {
                 conversation = try await MessageService.shared.getOrCreateConversation(
                     participantIds: [currentUserId, otherUserId],
                     participantNames: [
-                        currentUserId: currentUser.displayName,
-                        otherUserId: user.displayName
+                        currentUserId: currentUser.displayName ?? currentUser.name,
+                        otherUserId: user.displayName ?? user.name
                     ],
                     classId: classId,
                     studentId: studentId,

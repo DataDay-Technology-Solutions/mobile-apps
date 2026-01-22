@@ -57,6 +57,9 @@ class ClassroomService {
         } catch {
             print("🔴 [ClassroomService] ERROR creating classroom: \(error)")
             print("🔴 [ClassroomService] Error details: \(error.localizedDescription)")
+            if let supabaseError = error as? SupabaseError {
+                print("🔴 [ClassroomService] Supabase error: \(supabaseError)")
+            }
             throw error
         }
     }
@@ -288,13 +291,13 @@ class ClassroomService {
         classroomChannel = supabase.realtimeV2.channel("classroom_\(id)")
 
         Task {
-            try? await classroomChannel?.subscribeWithError()
+            await classroomChannel?.subscribe()
 
             let changes = classroomChannel?.postgresChange(
                 AnyAction.self,
                 schema: "public",
                 table: "classrooms",
-                filter: .eq("id", value: "\(id)")
+                filter: "id=eq.\(id)"
             )
 
             if let changes = changes {
@@ -321,13 +324,13 @@ class ClassroomService {
         studentsChannel = supabase.realtimeV2.channel("students_\(classId)")
 
         Task {
-            try? await studentsChannel?.subscribeWithError()
+            await studentsChannel?.subscribe()
 
             let changes = studentsChannel?.postgresChange(
                 AnyAction.self,
                 schema: "public",
                 table: "students",
-                filter: .eq("class_id", value: "\(classId)")
+                filter: "class_id=eq.\(classId)"
             )
 
             if let changes = changes {

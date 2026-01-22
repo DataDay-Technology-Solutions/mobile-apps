@@ -13,42 +13,67 @@ enum UserRole: String, Codable, CaseIterable {
     case student = "student"
 }
 
-// MARK: - User (for Mock Data)
+// MARK: - User Model
 struct User: Identifiable, Codable {
     var id: String?
     var email: String
-    var displayName: String
+    var name: String
+    var displayName: String?
     var role: UserRole
-    var avatarURL: String?
+    var classroomId: String?
     var classIds: [String]
-    var createdAt: Date
+    var studentIds: [String]
+    var parentId: String?
     var fcmToken: String?
+    var createdAt: Date
 
     var initials: String {
-        let names = displayName.split(separator: " ")
+        let nameToUse = displayName ?? name
+        let names = nameToUse.split(separator: " ")
         if names.count >= 2 {
             return String(names[0].prefix(1) + names[1].prefix(1)).uppercased()
         }
-        return String(displayName.prefix(2)).uppercased()
+        return String(nameToUse.prefix(2)).uppercased()
+    }
+
+    // CodingKeys for proper Supabase snake_case mapping
+    enum CodingKeys: String, CodingKey {
+        case id
+        case email
+        case name
+        case displayName = "display_name"
+        case role
+        case classroomId = "classroom_id"
+        case classIds = "class_ids"
+        case studentIds = "student_ids"
+        case parentId = "parent_id"
+        case fcmToken = "fcm_token"
+        case createdAt = "created_at"
     }
 
     init(
         id: String? = nil,
         email: String,
-        displayName: String,
+        name: String,
+        displayName: String? = nil,
         role: UserRole,
-        avatarURL: String? = nil,
+        classroomId: String? = nil,
         classIds: [String] = [],
-        createdAt: Date = Date(),
-        fcmToken: String? = nil
+        studentIds: [String] = [],
+        parentId: String? = nil,
+        fcmToken: String? = nil,
+        createdAt: Date = Date()
     ) {
         self.id = id
         self.email = email
+        self.name = name
         self.displayName = displayName
         self.role = role
-        self.avatarURL = avatarURL
+        self.classroomId = classroomId
         self.classIds = classIds
-        self.createdAt = createdAt
+        self.studentIds = studentIds
+        self.parentId = parentId
         self.fcmToken = fcmToken
+        self.createdAt = createdAt
     }
 }

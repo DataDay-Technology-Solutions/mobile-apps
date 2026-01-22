@@ -24,7 +24,7 @@ class PointsService {
         awardedBy: String,
         awardedByName: String
     ) async throws -> PointRecord {
-        let record = PointRecord(
+        var record = PointRecord(
             studentId: studentId,
             classId: classId,
             behaviorId: behavior.id,
@@ -73,7 +73,7 @@ class PointsService {
             let record: [String: AnyJSON] = [
                 "student_id": .string(studentId),
                 "class_id": .string(classId),
-                "behavior_id": .string(behavior.id),
+                "behavior_id": .string(behavior.id ?? ""),
                 "behavior_name": .string(behavior.name),
                 "points": .integer(behavior.points),
                 "awarded_by": .string(awardedBy),
@@ -287,7 +287,7 @@ class PointsService {
         summaryChannel = supabase.realtimeV2.channel("student_summary_\(studentId)_\(classId)")
 
         Task {
-            try? await summaryChannel?.subscribeWithError()
+            await summaryChannel?.subscribe()
 
             let changes = summaryChannel?.postgresChange(
                 AnyAction.self,
@@ -319,13 +319,13 @@ class PointsService {
         summaryChannel = supabase.realtimeV2.channel("class_summaries_\(classId)")
 
         Task {
-            try? await summaryChannel?.subscribeWithError()
+            await summaryChannel?.subscribe()
 
             let changes = summaryChannel?.postgresChange(
                 AnyAction.self,
                 schema: "public",
                 table: "student_points_summaries",
-                filter: .eq("class_id", value: "\(classId)")
+                filter: "class_id=eq.\(classId)"
             )
 
             if let changes = changes {
@@ -352,13 +352,13 @@ class PointsService {
         recordsChannel = supabase.realtimeV2.channel("recent_points_\(classId)")
 
         Task {
-            try? await recordsChannel?.subscribeWithError()
+            await recordsChannel?.subscribe()
 
             let changes = recordsChannel?.postgresChange(
                 AnyAction.self,
                 schema: "public",
                 table: "point_records",
-                filter: .eq("class_id", value: "\(classId)")
+                filter: "class_id=eq.\(classId)"
             )
 
             if let changes = changes {

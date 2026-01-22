@@ -130,33 +130,33 @@ struct MessageBubble: View {
 
             VStack(alignment: isCurrentUser ? .trailing : .leading, spacing: 4) {
                 // Image attachment
-                //                 if let imageURL = message.imageURL, let url = URL(string: imageURL) {
-                //                     AsyncImage(url: url) { phase in
-                //                         switch phase {
-                //                         case .empty:
-                //                             RoundedRectangle(cornerRadius: 12)
-                //                                 .fill(Color(.systemGray5))
-                //                                 .frame(width: 200, height: 150)
-                //                                 .overlay(ProgressView())
-                //                         case .success(let image):
-                //                             image
-                //                                 .resizable()
-                //                                 .aspectRatio(contentMode: .fill)
-                //                                 .frame(maxWidth: 200, maxHeight: 200)
-                //                                 .clipShape(RoundedRectangle(cornerRadius: 12))
-                //                         case .failure:
-                //                             RoundedRectangle(cornerRadius: 12)
-                //                                 .fill(Color(.systemGray5))
-                //                                 .frame(width: 200, height: 150)
-                //                                 .overlay(
-                //                                     Image(systemName: "photo")
-                //                                         .foregroundColor(.secondary)
-                //                                 )
-                //                         @unknown default:
-                //                             EmptyView()
-                //                         }
-                //                     }
-                //                 }
+                if let imageURL = message.imageURL, let url = URL(string: imageURL) {
+                    AsyncImage(url: url) { phase in
+                        switch phase {
+                        case .empty:
+                            RoundedRectangle(cornerRadius: 12)
+                                .fill(Color(.systemGray5))
+                                .frame(width: 200, height: 150)
+                                .overlay(ProgressView())
+                        case .success(let image):
+                            image
+                                .resizable()
+                                .aspectRatio(contentMode: .fill)
+                                .frame(maxWidth: 200, maxHeight: 200)
+                                .clipShape(RoundedRectangle(cornerRadius: 12))
+                        case .failure:
+                            RoundedRectangle(cornerRadius: 12)
+                                .fill(Color(.systemGray5))
+                                .frame(width: 200, height: 150)
+                                .overlay(
+                                    Image(systemName: "photo")
+                                        .foregroundColor(.secondary)
+                                )
+                        @unknown default:
+                            EmptyView()
+                        }
+                    }
+                }
 
                 // Text content
                 if !message.content.isEmpty {

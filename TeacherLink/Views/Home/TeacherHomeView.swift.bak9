@@ -510,7 +510,7 @@ struct MiniStoryCard: View {
 
     var body: some View {
         HStack(spacing: 12) {
-            if let imageURL = story.mediaUrls.first {
+            if let imageURL = story.mediaURLs.first {
                 AsyncImage(url: URL(string: imageURL)) { image in
                     image
                         .resizable()

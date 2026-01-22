@@ -504,7 +504,7 @@ struct MiniStoryCard: View {
 
     var body: some View {
         HStack(spacing: 12) {
-            if let imageURL = story.mediaURLs.first {
+            if let imageURL = story.mediaUrls.first {
                 AsyncImage(url: URL(string: imageURL)) { image in
                     image
                         .resizable()
@@ -518,7 +518,7 @@ struct MiniStoryCard: View {
             }
 
             VStack(alignment: .leading, spacing: 4) {
-                Text(story.content)
+                Text(story.content ?? "")
                     .font(.subheadline)
                     .lineLimit(2)
                     .foregroundColor(.primary)

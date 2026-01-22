@@ -57,7 +57,6 @@ class MockDataService {
     let teacherUser = User(
         id: "teacher1",
         email: "kkoelpin@pasco.k12.fl.us",
-        name: "Mrs. Koelpin",
         displayName: "Mrs. Koelpin",
         role: .teacher,
         classIds: ["class1"],
@@ -67,7 +66,6 @@ class MockDataService {
     let adminUser = User(
         id: "admin1",
         email: "admin@pasco.k12.fl.us",
-        name: "Principal Anderson",
         displayName: "Principal Anderson",
         role: .teacher, // Admins are teachers with elevated privileges
         classIds: ["class1"],
@@ -75,11 +73,11 @@ class MockDataService {
     )
 
     let parentUsers: [User] = [
-        User(id: "parent1", email: "jessica.martinez@email.com", name: "Jessica Martinez", displayName: "Jessica Martinez", role: .parent, classIds: ["class1"], createdAt: Date().addingTimeInterval(-86400 * 60)),
-        User(id: "parent2", email: "mike.chen@email.com", name: "Mike Chen", displayName: "Mike Chen", role: .parent, classIds: ["class1"], createdAt: Date().addingTimeInterval(-86400 * 55)),
-        User(id: "parent3", email: "sarah.williams@email.com", name: "Sarah Williams", displayName: "Sarah Williams", role: .parent, classIds: ["class1"], createdAt: Date().addingTimeInterval(-86400 * 50)),
-        User(id: "parent4", email: "david.johnson@email.com", name: "David Johnson", displayName: "David Johnson", role: .parent, classIds: ["class1"], createdAt: Date().addingTimeInterval(-86400 * 45)),
-        User(id: "parent5", email: "emily.thompson@email.com", name: "Emily Thompson", displayName: "Emily Thompson", role: .parent, classIds: ["class1"], createdAt: Date().addingTimeInterval(-86400 * 40))
+        User(id: "parent1", email: "jessica.martinez@email.com", displayName: "Jessica Martinez", role: .parent, classIds: ["class1"], createdAt: Date().addingTimeInterval(-86400 * 60)),
+        User(id: "parent2", email: "mike.chen@email.com", displayName: "Mike Chen", role: .parent, classIds: ["class1"], createdAt: Date().addingTimeInterval(-86400 * 55)),
+        User(id: "parent3", email: "sarah.williams@email.com", displayName: "Sarah Williams", role: .parent, classIds: ["class1"], createdAt: Date().addingTimeInterval(-86400 * 50)),
+        User(id: "parent4", email: "david.johnson@email.com", displayName: "David Johnson", role: .parent, classIds: ["class1"], createdAt: Date().addingTimeInterval(-86400 * 45)),
+        User(id: "parent5", email: "emily.thompson@email.com", displayName: "Emily Thompson", role: .parent, classIds: ["class1"], createdAt: Date().addingTimeInterval(-86400 * 40))
     ]
 
     var parentUser: User { parentUsers[0] }
@@ -149,6 +147,8 @@ class MockDataService {
         studentIds: students.compactMap { $0.id },
         parentIds: parentUsers.compactMap { $0.id },
         createdAt: Date().addingTimeInterval(-86400 * 90),
+        schoolYear: "2025-2026",
+        avatarColor: "purple"
     )
 
     // MARK: - Mock Students (Realistic 1st Grade Class)
@@ -177,10 +177,10 @@ class MockDataService {
             classId: "class1",
             authorId: "teacher1",
             authorName: "Mrs. Koelpin",
-            
+            type: .announcement,
             content: "Important: Parent-Teacher Conferences are next week! Please sign up for a time slot using the link I sent home. I can't wait to share all the amazing progress your children have made this semester!",
-            
-            
+            isAnnouncement: true,
+            isPinned: true,
             createdAt: Date().addingTimeInterval(-1800)
         ),
         // Photo story - Art project
@@ -189,14 +189,13 @@ class MockDataService {
             classId: "class1",
             authorId: "teacher1",
             authorName: "Mrs. Koelpin",
-            
+            type: .photo,
             content: "Our Winter Wonderland art project turned out absolutely beautiful! Each student created their own snowy scene using cotton balls, glitter, and watercolors. These will be displayed in the hallway for everyone to see!",
-            mediaUrls: [
+            mediaURLs: [
                 "https://picsum.photos/seed/art1/800/600",
                 "https://picsum.photos/seed/art2/800/600",
                 "https://picsum.photos/seed/art3/800/600"
             ],
-            mediaType: "image",
             likeCount: 24,
             likedByIds: ["parent1", "parent2", "parent3", "parent4", "parent5"],
             commentCount: 8,
@@ -208,7 +207,7 @@ class MockDataService {
             classId: "class1",
             authorId: "teacher1",
             authorName: "Mrs. Koelpin",
-            
+            type: .text,
             content: "Reading Workshop was so special today! We finished 'Charlotte's Web' and talked about friendship and being kind to others. Several students shared their favorite parts - Sofia said she loved when Charlotte saved Wilbur, and Jackson thought the ending was 'the best ever!' Ask your child what they thought!",
             likeCount: 18,
             likedByIds: ["parent1", "parent2", "parent3"],
@@ -221,13 +220,12 @@ class MockDataService {
             classId: "class1",
             authorId: "teacher1",
             authorName: "Mrs. Koelpin",
-            
+            type: .photo,
             content: "STEM Friday was a blast! We made volcanoes using baking soda and vinegar. The kids were SO excited when they erupted! We learned about chemical reactions and everyone got to make predictions about what would happen. Future scientists in the making!",
-            mediaUrls: [
+            mediaURLs: [
                 "https://picsum.photos/seed/science1/800/600",
                 "https://picsum.photos/seed/science2/800/600"
             ],
-            mediaType: "image",
             likeCount: 31,
             likedByIds: ["parent1", "parent2", "parent4", "parent5"],
             commentCount: 12,
@@ -239,7 +237,7 @@ class MockDataService {
             classId: "class1",
             authorId: "teacher1",
             authorName: "Mrs. Koelpin",
-            
+            type: .text,
             content: "Math fact fluency is improving so much! We celebrated our first 'Math Masters' today - Ethan, Emma, and Mia all passed their addition facts through 10! They each got a special sticker and their names are now on our Math Masters wall. Keep practicing at home - it really makes a difference!",
             likeCount: 15,
             likedByIds: ["parent2", "parent5"],
@@ -252,15 +250,14 @@ class MockDataService {
             classId: "class1",
             authorId: "teacher1",
             authorName: "Mrs. Koelpin",
-            
+            type: .photo,
             content: "What an amazing day at the Children's Museum! The kids learned about dinosaurs, played in the water table, and built structures in the construction zone. Everyone was so well-behaved and curious. Thank you to our parent volunteers who made this trip possible!",
-            mediaUrls: [
+            mediaURLs: [
                 "https://picsum.photos/seed/museum1/800/600",
                 "https://picsum.photos/seed/museum2/800/600",
                 "https://picsum.photos/seed/museum3/800/600",
                 "https://picsum.photos/seed/museum4/800/600"
             ],
-            mediaType: "image",
             likeCount: 42,
             likedByIds: ["parent1", "parent2", "parent3", "parent4", "parent5"],
             commentCount: 15,
@@ -272,7 +269,7 @@ class MockDataService {
             classId: "class1",
             authorId: "teacher1",
             authorName: "Mrs. Koelpin",
-            
+            type: .text,
             content: "I have to share a special moment from today. When Noah dropped his lunch tray, instead of laughing, EVERY student in the class helped pick things up. Ava even shared her apple with him. These kids have the biggest hearts! So proud to be their teacher.",
             likeCount: 28,
             likedByIds: ["parent1", "parent3", "parent4"],
@@ -285,12 +282,11 @@ class MockDataService {
             classId: "class1",
             authorId: "teacher1",
             authorName: "Mrs. Koelpin",
-            
+            type: .photo,
             content: "Our cozy reading corner got an upgrade! Thank you to the Martinez family for donating the new bean bags and to the Thompson family for the bookshelf. The kids LOVE it - we had to set up a sign-up sheet because everyone wants to read there!",
-            mediaUrls: [
+            mediaURLs: [
                 "https://picsum.photos/seed/reading1/800/600"
             ],
-            mediaType: "image",
             likeCount: 19,
             likedByIds: ["parent1", "parent5"],
             commentCount: 6,
@@ -375,7 +371,7 @@ class MockDataService {
         "conv2": [
             Message(id: "m5", conversationId: "conv2", senderId: "parent2", senderName: "Mike Chen", content: "Good morning! I wanted to check on Ethan's progress with reading. He mentioned he's in a new reading group?", isRead: true, createdAt: Date().addingTimeInterval(-86400)),
             Message(id: "m6", conversationId: "conv2", senderId: "teacher1", senderName: "Mrs. Koelpin", content: "Yes! I moved Ethan up to the Blue reading group last week. He's been making excellent progress with his sight words and is starting to read chapter books!", isRead: true, createdAt: Date().addingTimeInterval(-82800)),
-            Message(id: "m7", conversationId: "conv2", senderId: "teacher1", senderName: "Mrs. Koelpin", content: "Here's a photo of him reading to the class yesterday. He was so proud!", isRead: true, createdAt: Date().addingTimeInterval(-79200)),
+            Message(id: "m7", conversationId: "conv2", senderId: "teacher1", senderName: "Mrs. Koelpin", content: "Here's a photo of him reading to the class yesterday. He was so proud!", imageURL: "https://picsum.photos/seed/reading2/600/400", isRead: true, createdAt: Date().addingTimeInterval(-79200)),
             Message(id: "m8", conversationId: "conv2", senderId: "teacher1", senderName: "Mrs. Koelpin", content: "Ethan has been doing great with his reading this week!", isRead: false, createdAt: Date().addingTimeInterval(-7200))
         ],
         "conv3": [
@@ -387,13 +383,13 @@ class MockDataService {
         "conv4": [
             Message(id: "m13", conversationId: "conv4", senderId: "teacher1", senderName: "Mrs. Koelpin", content: "Hi David! I wanted to remind you about the field trip permission slip for Jackson. It's due by Friday.", isRead: true, createdAt: Date().addingTimeInterval(-172800)),
             Message(id: "m14", conversationId: "conv4", senderId: "parent4", senderName: "David Johnson", content: "Thanks for the reminder! I'll send it with Jackson tomorrow.", isRead: true, createdAt: Date().addingTimeInterval(-169200)),
-            Message(id: "m15", conversationId: "conv4", senderId: "teacher1", senderName: "Mrs. Koelpin", content: "Perfect! Here's a preview of where we're going - the kids are so excited!", isRead: true, createdAt: Date().addingTimeInterval(-165600)),
+            Message(id: "m15", conversationId: "conv4", senderId: "teacher1", senderName: "Mrs. Koelpin", content: "Perfect! Here's a preview of where we're going - the kids are so excited!", imageURL: "https://picsum.photos/seed/fieldtrip/600/400", isRead: true, createdAt: Date().addingTimeInterval(-165600)),
             Message(id: "m16", conversationId: "conv4", senderId: "parent4", senderName: "David Johnson", content: "Thank you for the update on the field trip!", isRead: true, createdAt: Date().addingTimeInterval(-86400 * 2))
         ],
         "conv5": [
             Message(id: "m17", conversationId: "conv5", senderId: "parent5", senderName: "Emily Thompson", content: "Hi Mrs. Koelpin! How did Emma do on her presentation today? She was so nervous this morning.", isRead: true, createdAt: Date().addingTimeInterval(-14400)),
             Message(id: "m18", conversationId: "conv5", senderId: "teacher1", senderName: "Mrs. Koelpin", content: "She did AMAZING! Once she started talking about butterflies, all her nervousness disappeared. The class was so interested!", isRead: true, createdAt: Date().addingTimeInterval(-10800)),
-            Message(id: "m19", conversationId: "conv5", senderId: "teacher1", senderName: "Mrs. Koelpin", content: "Here's the photo from her presentation today!", isRead: true, createdAt: Date().addingTimeInterval(-3600))
+            Message(id: "m19", conversationId: "conv5", senderId: "teacher1", senderName: "Mrs. Koelpin", content: "Here's the photo from her presentation today!", imageURL: "https://picsum.photos/seed/presentation/600/400", isRead: false, createdAt: Date().addingTimeInterval(-3600))
         ]
     ]
 
@@ -496,26 +492,26 @@ class MockDataService {
 
     lazy var albumPhotos: [AlbumPhoto] = [
         // Winter Art Album
-        AlbumPhoto(id: "photo1", albumId: "album1", imageURL: "https://picsum.photos/seed/photo1/800/600", uploadedBy: "teacher1", uploadedByName: "Mrs. Koelpin", createdAt: Date().addingTimeInterval(-86400 * 3)),
-        AlbumPhoto(id: "photo2", albumId: "album1", imageURL: "https://picsum.photos/seed/photo2/800/600", uploadedBy: "teacher1", uploadedByName: "Mrs. Koelpin", createdAt: Date().addingTimeInterval(-86400 * 3 + 1800)),
-        AlbumPhoto(id: "photo3", albumId: "album1", imageURL: "https://picsum.photos/seed/photo3/800/600", uploadedBy: "teacher1", uploadedByName: "Mrs. Koelpin", createdAt: Date().addingTimeInterval(-86400 * 3 + 3600)),
+        AlbumPhoto(id: "photo1", albumId: "album1", imageURL: "https://picsum.photos/seed/snowflake1/800/600", caption: "Sofia's beautiful snowflake design!", uploadedBy: "teacher1", uploadedByName: "Mrs. Koelpin", likeCount: 12, likedByIds: ["parent1", "parent2", "parent3"], commentCount: 4, createdAt: Date().addingTimeInterval(-86400 * 3)),
+        AlbumPhoto(id: "photo2", albumId: "album1", imageURL: "https://picsum.photos/seed/snowman1/800/600", caption: "Ethan's creative snowman family", uploadedBy: "teacher1", uploadedByName: "Mrs. Koelpin", likeCount: 15, likedByIds: ["parent2", "parent4"], commentCount: 3, createdAt: Date().addingTimeInterval(-86400 * 3 + 1800)),
+        AlbumPhoto(id: "photo3", albumId: "album1", imageURL: "https://picsum.photos/seed/winterscene/800/600", caption: "Class masterpiece - Winter Wonderland!", uploadedBy: "teacher1", uploadedByName: "Mrs. Koelpin", likeCount: 28, likedByIds: ["parent1", "parent2", "parent3", "parent4", "parent5"], commentCount: 8, createdAt: Date().addingTimeInterval(-86400 * 3 + 3600)),
 
         // Museum Field Trip Album
-        AlbumPhoto(id: "photo4", albumId: "album2", imageURL: "https://picsum.photos/seed/photo4/800/600", uploadedBy: "teacher1", uploadedByName: "Mrs. Koelpin", createdAt: Date().addingTimeInterval(-86400 * 5)),
-        AlbumPhoto(id: "photo5", albumId: "album2", imageURL: "https://picsum.photos/seed/photo5/800/600", uploadedBy: "teacher1", uploadedByName: "Mrs. Koelpin", createdAt: Date().addingTimeInterval(-86400 * 5 + 1800)),
-        AlbumPhoto(id: "photo6", albumId: "album2", imageURL: "https://picsum.photos/seed/photo6/800/600", uploadedBy: "teacher1", uploadedByName: "Mrs. Koelpin", createdAt: Date().addingTimeInterval(-86400 * 5 + 3600)),
-        AlbumPhoto(id: "photo7", albumId: "album2", imageURL: "https://picsum.photos/seed/photo7/800/600", uploadedBy: "teacher1", uploadedByName: "Mrs. Koelpin", createdAt: Date().addingTimeInterval(-86400 * 5 + 5400)),
+        AlbumPhoto(id: "photo4", albumId: "album2", imageURL: "https://picsum.photos/seed/dino1/800/600", caption: "The kids were amazed by the T-Rex!", uploadedBy: "teacher1", uploadedByName: "Mrs. Koelpin", likeCount: 22, likedByIds: ["parent1", "parent3", "parent5"], commentCount: 6, createdAt: Date().addingTimeInterval(-86400 * 5)),
+        AlbumPhoto(id: "photo5", albumId: "album2", imageURL: "https://picsum.photos/seed/watertable/800/600", caption: "Water table experiments were a huge hit!", uploadedBy: "teacher1", uploadedByName: "Mrs. Koelpin", likeCount: 18, likedByIds: ["parent2", "parent4"], commentCount: 5, createdAt: Date().addingTimeInterval(-86400 * 5 + 1800)),
+        AlbumPhoto(id: "photo6", albumId: "album2", imageURL: "https://picsum.photos/seed/groupphoto/800/600", caption: "Our whole class in front of the museum!", uploadedBy: "teacher1", uploadedByName: "Mrs. Koelpin", likeCount: 35, likedByIds: ["parent1", "parent2", "parent3", "parent4", "parent5"], commentCount: 12, createdAt: Date().addingTimeInterval(-86400 * 5 + 3600)),
+        AlbumPhoto(id: "photo7", albumId: "album2", imageURL: "https://picsum.photos/seed/building/800/600", caption: "Jackson built an impressive tower!", uploadedBy: "parent4", uploadedByName: "David Johnson", likeCount: 14, likedByIds: ["parent1", "parent4"], commentCount: 3, createdAt: Date().addingTimeInterval(-86400 * 5 + 5400)),
 
         // Science Experiments Album
-        AlbumPhoto(id: "photo8", albumId: "album3", imageURL: "https://picsum.photos/seed/photo8/800/600", uploadedBy: "teacher1", uploadedByName: "Mrs. Koelpin", createdAt: Date().addingTimeInterval(-86400 * 7)),
-        AlbumPhoto(id: "photo9", albumId: "album3", imageURL: "https://picsum.photos/seed/photo9/800/600", uploadedBy: "teacher1", uploadedByName: "Mrs. Koelpin", createdAt: Date().addingTimeInterval(-86400 * 7 + 1800)),
+        AlbumPhoto(id: "photo8", albumId: "album3", imageURL: "https://picsum.photos/seed/volcano1/800/600", caption: "Volcano eruption! The moment of truth!", uploadedBy: "teacher1", uploadedByName: "Mrs. Koelpin", likeCount: 31, likedByIds: ["parent1", "parent2", "parent3", "parent4"], commentCount: 9, createdAt: Date().addingTimeInterval(-86400 * 7)),
+        AlbumPhoto(id: "photo9", albumId: "album3", imageURL: "https://picsum.photos/seed/slime/800/600", caption: "Making slime - everyone's favorite!", uploadedBy: "teacher1", uploadedByName: "Mrs. Koelpin", likeCount: 24, likedByIds: ["parent1", "parent5"], commentCount: 7, createdAt: Date().addingTimeInterval(-86400 * 7 + 1800)),
 
         // Reading Corner Album
-        AlbumPhoto(id: "photo10", albumId: "album4", imageURL: "https://picsum.photos/seed/photo10/800/600", uploadedBy: "teacher1", uploadedByName: "Mrs. Koelpin", createdAt: Date().addingTimeInterval(-86400 * 10)),
-        AlbumPhoto(id: "photo11", albumId: "album4", imageURL: "https://picsum.photos/seed/photo11/800/600", uploadedBy: "teacher1", uploadedByName: "Mrs. Koelpin", createdAt: Date().addingTimeInterval(-86400 * 10 + 1800)),
+        AlbumPhoto(id: "photo10", albumId: "album4", imageURL: "https://picsum.photos/seed/readingbean/800/600", caption: "Our cozy new bean bags!", uploadedBy: "teacher1", uploadedByName: "Mrs. Koelpin", likeCount: 19, likedByIds: ["parent1", "parent3"], commentCount: 5, createdAt: Date().addingTimeInterval(-86400 * 10)),
+        AlbumPhoto(id: "photo11", albumId: "album4", imageURL: "https://picsum.photos/seed/bookshelf/800/600", caption: "Thank you Thompson family for the bookshelf!", uploadedBy: "teacher1", uploadedByName: "Mrs. Koelpin", likeCount: 16, likedByIds: ["parent5"], commentCount: 4, createdAt: Date().addingTimeInterval(-86400 * 10 + 1800)),
 
         // Celebrations Album
-        AlbumPhoto(id: "photo12", albumId: "album5", imageURL: "https://picsum.photos/seed/photo12/800/600", uploadedBy: "teacher1", uploadedByName: "Mrs. Koelpin", createdAt: Date().addingTimeInterval(-86400 * 15)),
-        AlbumPhoto(id: "photo13", albumId: "album5", imageURL: "https://picsum.photos/seed/photo13/800/600", uploadedBy: "teacher1", uploadedByName: "Mrs. Koelpin", createdAt: Date().addingTimeInterval(-86400 * 20))
+        AlbumPhoto(id: "photo12", albumId: "album5", imageURL: "https://picsum.photos/seed/birthday1/800/600", caption: "Happy Birthday Emma!", uploadedBy: "teacher1", uploadedByName: "Mrs. Koelpin", likeCount: 25, likedByIds: ["parent5", "parent1", "parent2"], commentCount: 8, createdAt: Date().addingTimeInterval(-86400 * 15)),
+        AlbumPhoto(id: "photo13", albumId: "album5", imageURL: "https://picsum.photos/seed/award/800/600", caption: "Math Masters ceremony!", uploadedBy: "teacher1", uploadedByName: "Mrs. Koelpin", likeCount: 21, likedByIds: ["parent2", "parent5"], commentCount: 6, createdAt: Date().addingTimeInterval(-86400 * 20))
     ]
 }

@@ -76,6 +76,7 @@ class AuthViewModel: ObservableObject {
             let newUser = User(
                 id: UUID().uuidString,
                 email: email,
+                name: displayName,
                 displayName: displayName,
                 role: role,
                 classIds: role == .parent ? ["class1"] : [],
