@@ -1,27 +1,18 @@
 //
 //  TeacherLinkApp.swift
-//  TeacherLink
+//  HallPass (formerly TeacherLink)
 //
 //  A classroom communication app for teachers and parents
+//  Backend: Supabase (migrated from Firebase)
 //
 
 import SwiftUI
-import FirebaseCore
 
-// Set to true to use mock data (no Firebase required)
-let USE_MOCK_DATA = true
-
-class AppDelegate: NSObject, UIApplicationDelegate {
-    func application(_ application: UIApplication,
-                     didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey : Any]? = nil) -> Bool {
-        FirebaseApp.configure()
-        return true
-    }
-}
+// Set to true to use mock data (no Supabase required)
+let USE_MOCK_DATA = false
 
 @main
 struct TeacherLinkApp: App {
-    @UIApplicationDelegateAdaptor(AppDelegate.self) var delegate
     @StateObject private var authViewModel = AuthViewModel()
 
     var body: some Scene {
@@ -36,7 +27,7 @@ struct TeacherLinkApp: App {
                         .environmentObject(authViewModel)
                 }
             } else {
-                // Use Firebase-based flow
+                // Use Supabase-based flow
                 ContentView()
                     .environmentObject(AuthenticationService())
             }

@@ -1,12 +1,19 @@
 //
 //  User.swift
-//  TeacherLink
+//  HallPass (formerly TeacherLink)
 //
 
 import Foundation
 
-// UserRole is defined in AuthenticationService.swift
+// MARK: - UserRole Enum
+enum UserRole: String, Codable, CaseIterable {
+    case admin = "admin"
+    case teacher = "teacher"
+    case parent = "parent"
+    case student = "student"
+}
 
+// MARK: - User (for Mock Data)
 struct User: Identifiable, Codable {
     var id: String?
     var email: String

@@ -95,6 +95,8 @@ struct NewMessageView: View {
             .sheet(item: $selectedStudent) { student in
                 StudentParentMessagingView(student: student)
                     .environmentObject(messageViewModel)
+                    .environmentObject(classroomViewModel)
+                    .environmentObject(authViewModel)
             }
         }
     }
@@ -189,31 +191,39 @@ struct BroadcastMessageView: View {
 struct StudentParentMessagingView: View {
     @EnvironmentObject var authViewModel: AuthViewModel
     @EnvironmentObject var messageViewModel: MessageViewModel
+    @EnvironmentObject var classroomViewModel: ClassroomViewModel
     @Environment(\.dismiss) private var dismiss
 
     let student: Student
+    @State private var selectedConversation: Conversation?
+    @State private var showChat = false
+    @State private var isLoadingParents = true
+    @State private var parentUsers: [AppUser] = []
 
     var body: some View {
         NavigationStack {
-            VStack {
-                // Student Info
+            VStack(spacing: 0) {
+                // Student Info Header
                 VStack(spacing: 12) {
-                    StudentAvatar(student: student, size: 80)
+                    StudentAvatar(student: student, size: 60)
 
                     Text(student.fullName)
-                        .font(.title2.bold())
+                        .font(.title3.bold())
 
                     Text("\(student.parentIds.count) parent(s) connected")
+                        .font(.caption)
                         .foregroundColor(.secondary)
                 }
-                .padding(.top, 32)
-
-                Spacer()
+                .padding()
+                .frame(maxWidth: .infinity)
+                .background(Color(.systemGray6))
 
                 if student.parentIds.isEmpty {
-                    VStack(spacing: 8) {
+                    // No parents connected
+                    Spacer()
+                    VStack(spacing: 12) {
                         Image(systemName: "person.fill.questionmark")
-                            .font(.system(size: 40))
+                            .font(.system(size: 50))
                             .foregroundColor(.gray)
 
                         Text("No Parents Connected")
@@ -223,15 +233,55 @@ struct StudentParentMessagingView: View {
                             .font(.subheadline)
                             .foregroundColor(.secondary)
                             .multilineTextAlignment(.center)
-                            .padding(.horizontal)
+                            .padding(.horizontal, 32)
                     }
+                    Spacer()
+                } else if isLoadingParents {
+                    Spacer()
+                    ProgressView("Loading parents...")
+                    Spacer()
                 } else {
-                    Text("Select a parent to message")
-                        .foregroundColor(.secondary)
-                        .padding()
-                }
+                    // List of parents to message
+                    List {
+                        Section {
+                            ForEach(parentUsers, id: \.id) { parent in
+                                Button {
+                                    startConversation(with: parent)
+                                } label: {
+                                    HStack(spacing: 12) {
+                                        // Parent Avatar
+                                        Circle()
+                                            .fill(Color.green)
+                                            .frame(width: 44, height: 44)
+                                            .overlay(
+                                                Text(String(parent.name.prefix(1)).uppercased())
+                                                    .foregroundColor(.white)
+                                                    .fontWeight(.bold)
+                                            )
 
-                Spacer()
+                                        VStack(alignment: .leading, spacing: 2) {
+                                            Text(parent.name)
+                                                .font(.headline)
+                                                .foregroundColor(.primary)
+                                            Text(parent.email)
+                                                .font(.caption)
+                                                .foregroundColor(.secondary)
+                                        }
+
+                                        Spacer()
+
+                                        Image(systemName: "message.fill")
+                                            .foregroundColor(.blue)
+                                    }
+                                    .padding(.vertical, 4)
+                                }
+                            }
+                        } header: {
+                            Text("Select a parent to message")
+                        }
+                    }
+                    .listStyle(.insetGrouped)
+                }
             }
             .navigationTitle("Message Parent")
             .navigationBarTitleDisplayMode(.inline)
@@ -241,6 +291,75 @@ struct StudentParentMessagingView: View {
                         dismiss()
                     }
                 }
+            }
+            .navigationDestination(isPresented: $showChat) {
+                if let conversation = selectedConversation {
+                    ChatView(conversation: conversation)
+                        .environmentObject(messageViewModel)
+                        .environmentObject(authViewModel)
+                }
+            }
+            .onAppear {
+                loadParents()
+            }
+        }
+    }
+
+    private func loadParents() {
+        isLoadingParents = true
+
+        Task {
+            // Simulate loading
+            try? await Task.sleep(nanoseconds: 500_000_000)
+
+            // Get parents from mock data or classroom
+            if USE_MOCK_DATA {
+                // Get parent users from mock data that match this student's parentIds
+                parentUsers = MockDataService.shared.parentUsers.compactMap { user in
+                    guard let userId = user.id, student.parentIds.contains(userId) else { return nil }
+                    return AppUser(
+                        id: userId,
+                        email: user.email,
+                        name: user.displayName,
+                        role: .parent
+                    )
+                }
+            }
+
+            // If no parents found, create placeholder entries
+            if parentUsers.isEmpty && !student.parentIds.isEmpty {
+                parentUsers = student.parentIds.enumerated().map { index, parentId in
+                    AppUser(
+                        id: parentId,
+                        email: "parent\(index + 1)@example.com",
+                        name: "Parent \(index + 1)",
+                        role: .parent
+                    )
+                }
+            }
+
+            isLoadingParents = false
+        }
+    }
+
+    private func startConversation(with parent: AppUser) {
+        guard let currentUser = authViewModel.currentUser,
+              let currentUserId = currentUser.id,
+              let classId = classroomViewModel.selectedClassroom?.id else { return }
+
+        Task {
+            // Create or get existing conversation
+            let conversation = await messageViewModel.getOrCreateConversation(
+                participantIds: [currentUserId, parent.id],
+                participantNames: [currentUserId: currentUser.displayName, parent.id: parent.name],
+                classId: classId,
+                studentId: student.id,
+                studentName: student.fullName
+            )
+
+            await MainActor.run {
+                selectedConversation = conversation
+                showChat = true
             }
         }
     }

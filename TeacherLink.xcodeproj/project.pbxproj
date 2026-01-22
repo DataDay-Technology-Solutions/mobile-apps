@@ -25,6 +25,15 @@
 		023 /* MessageService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 123 /* MessageService.swift */; };
 		024 /* PointsService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 124 /* PointsService.swift */; };
 		025 /* MockDataService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 125 /* MockDataService.swift */; };
+		026 /* SupabaseConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = 126 /* SupabaseConfig.swift */; };
+		027 /* AuthenticationService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 127 /* AuthenticationService.swift */; };
+		028 /* AppUser.swift in Sources */ = {isa = PBXBuildFile; fileRef = 128 /* AppUser.swift */; };
+		029A /* SupabaseLoginView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 129A /* SupabaseLoginView.swift */; };
+		029E /* EmailConfirmationView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 129E /* EmailConfirmationView.swift */; };
+		029F /* AccountSetupView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 129F /* AccountSetupView.swift */; };
+		029B /* TeacherDashboardView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 129B /* TeacherDashboardView.swift */; };
+		029C /* ParentDashboardView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 129C /* ParentDashboardView.swift */; };
+		029D /* AdminDashboardView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 129D /* AdminDashboardView.swift */; };
 		030 /* AuthViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 130 /* AuthViewModel.swift */; };
 		031 /* ClassroomViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 131 /* ClassroomViewModel.swift */; };
 		032 /* StoryViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 132 /* StoryViewModel.swift */; };
@@ -32,6 +41,7 @@
 		034 /* PointsViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 134 /* PointsViewModel.swift */; };
 		035 /* PhotoAlbumViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 135 /* PhotoAlbumViewModel.swift */; };
 		036 /* ParentScoreViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 136 /* ParentScoreViewModel.swift */; };
+		037 /* AdminViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 137 /* AdminViewModel.swift */; };
 		040 /* MainTabView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 140 /* MainTabView.swift */; };
 		041 /* WelcomeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 141 /* WelcomeView.swift */; };
 		042 /* SignInView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 142 /* SignInView.swift */; };
@@ -72,16 +82,22 @@
 		079 /* RandomPickerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 179 /* RandomPickerView.swift */; };
 		07A /* PermissionSlipView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 17A /* PermissionSlipView.swift */; };
 		07B /* TeacherHomeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 17B /* TeacherHomeView.swift */; };
-		080 /* FirebaseAuth in Frameworks */ = {isa = PBXBuildFile; productRef = 180 /* FirebaseAuth */; };
-		081 /* FirebaseFirestore in Frameworks */ = {isa = PBXBuildFile; productRef = 181 /* FirebaseFirestore */; };
-		082 /* FirebaseStorage in Frameworks */ = {isa = PBXBuildFile; productRef = 182 /* FirebaseStorage */; };
+		718009502F217B6E000CB7F3 /* Auth in Frameworks */ = {isa = PBXBuildFile; productRef = 7180094F2F217B6E000CB7F3 /* Auth */; };
+		718009522F217B6E000CB7F3 /* Functions in Frameworks */ = {isa = PBXBuildFile; productRef = 718009512F217B6E000CB7F3 /* Functions */; };
+		718009542F217B6E000CB7F3 /* PostgREST in Frameworks */ = {isa = PBXBuildFile; productRef = 718009532F217B6E000CB7F3 /* PostgREST */; };
+		718009562F217B6E000CB7F3 /* Realtime in Frameworks */ = {isa = PBXBuildFile; productRef = 718009552F217B6E000CB7F3 /* Realtime */; };
+		718009582F217B6E000CB7F3 /* Storage in Frameworks */ = {isa = PBXBuildFile; productRef = 718009572F217B6E000CB7F3 /* Storage */; };
+		7180095A2F217B6E000CB7F3 /* Supabase in Frameworks */ = {isa = PBXBuildFile; productRef = 718009592F217B6E000CB7F3 /* Supabase */; };
+		/* Removed duplicate: 7180095C2F217F4D000CB7F3 SupabaseConfig.swift */
+		7180095E2F217FAB000CB7F3 /* FIXES_SUMMARY.md in Resources */ = {isa = PBXBuildFile; fileRef = 7180095D2F217FAB000CB7F3 /* FIXES_SUMMARY.md */; };
+		718009602F2180CC000CB7F3 /* QUICK_START.md in Resources */ = {isa = PBXBuildFile; fileRef = 7180095F2F2180CC000CB7F3 /* QUICK_START.md */; };
+		718009622F218135000CB7F3 /* DEPLOY_TO_IPHONE.md in Resources */ = {isa = PBXBuildFile; fileRef = 718009612F218135000CB7F3 /* DEPLOY_TO_IPHONE.md */; };
+		718009642F2181B6000CB7F3 /* BUILD_FIX_LATEST.md in Resources */ = {isa = PBXBuildFile; fileRef = 718009632F2181B6000CB7F3 /* BUILD_FIX_LATEST.md */; };
+		718009662F218278000CB7F3 /* BUNDLE_ID_GUIDE.md in Resources */ = {isa = PBXBuildFile; fileRef = 718009652F218278000CB7F3 /* BUNDLE_ID_GUIDE.md */; };
+		718009682F21856C000CB7F3 /* BUILD_VERIFIED.md in Resources */ = {isa = PBXBuildFile; fileRef = 718009672F21856C000CB7F3 /* BUILD_VERIFIED.md */; };
+		7180096A2F2185CB000CB7F3 /* FINAL_FIX.md in Resources */ = {isa = PBXBuildFile; fileRef = 718009692F2185CB000CB7F3 /* FINAL_FIX.md */; };
+		7180096C2F218698000CB7F3 /* SUCCESS_GUIDE.md in Resources */ = {isa = PBXBuildFile; fileRef = 7180096B2F218698000CB7F3 /* SUCCESS_GUIDE.md */; };
 		AAED601E2F1DAE5500A3963E /* GoogleService-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = AAED601D2F1DAE5500A3963E /* GoogleService-Info.plist */; };
-		AAED60222F1DD9D400A3963E /* AuthenticationService.swift in Sources */ = {isa = PBXBuildFile; fileRef = AAED60212F1DD9D400A3963E /* AuthenticationService.swift */; };
-		AAED60242F1DD9E000A3963E /* FirestoreService.swift in Sources */ = {isa = PBXBuildFile; fileRef = AAED60232F1DD9E000A3963E /* FirestoreService.swift */; };
-		AAED60262F1DDA0400A3963E /* AuthenticationViews.swift in Sources */ = {isa = PBXBuildFile; fileRef = AAED60252F1DDA0400A3963E /* AuthenticationViews.swift */; };
-		AAED60282F1DDA1100A3963E /* TeacherDashboardView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AAED60272F1DDA1100A3963E /* TeacherDashboardView.swift */; };
-		AAED602A2F1DDA1E00A3963E /* ParentDashboardView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AAED60292F1DDA1E00A3963E /* ParentDashboardView.swift */; };
-		AAED602C2F1DDA2800A3963E /* HallPassViews.swift in Sources */ = {isa = PBXBuildFile; fileRef = AAED602B2F1DDA2800A3963E /* HallPassViews.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -104,6 +120,15 @@
 		123 /* MessageService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MessageService.swift; sourceTree = "<group>"; };
 		124 /* PointsService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PointsService.swift; sourceTree = "<group>"; };
 		125 /* MockDataService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MockDataService.swift; sourceTree = "<group>"; };
+		126 /* SupabaseConfig.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SupabaseConfig.swift; sourceTree = "<group>"; };
+		127 /* AuthenticationService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AuthenticationService.swift; sourceTree = "<group>"; };
+		128 /* AppUser.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppUser.swift; sourceTree = "<group>"; };
+		129A /* SupabaseLoginView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SupabaseLoginView.swift; sourceTree = "<group>"; };
+		129E /* EmailConfirmationView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EmailConfirmationView.swift; sourceTree = "<group>"; };
+		129F /* AccountSetupView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AccountSetupView.swift; sourceTree = "<group>"; };
+		129B /* TeacherDashboardView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TeacherDashboardView.swift; sourceTree = "<group>"; };
+		129C /* ParentDashboardView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ParentDashboardView.swift; sourceTree = "<group>"; };
+		129D /* AdminDashboardView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AdminDashboardView.swift; sourceTree = "<group>"; };
 		130 /* AuthViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AuthViewModel.swift; sourceTree = "<group>"; };
 		131 /* ClassroomViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ClassroomViewModel.swift; sourceTree = "<group>"; };
 		132 /* StoryViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StoryViewModel.swift; sourceTree = "<group>"; };
@@ -111,6 +136,7 @@
 		134 /* PointsViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PointsViewModel.swift; sourceTree = "<group>"; };
 		135 /* PhotoAlbumViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PhotoAlbumViewModel.swift; sourceTree = "<group>"; };
 		136 /* ParentScoreViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ParentScoreViewModel.swift; sourceTree = "<group>"; };
+		137 /* AdminViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AdminViewModel.swift; sourceTree = "<group>"; };
 		140 /* MainTabView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MainTabView.swift; sourceTree = "<group>"; };
 		141 /* WelcomeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WelcomeView.swift; sourceTree = "<group>"; };
 		142 /* SignInView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SignInView.swift; sourceTree = "<group>"; };
@@ -151,13 +177,15 @@
 		179 /* RandomPickerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RandomPickerView.swift; sourceTree = "<group>"; };
 		17A /* PermissionSlipView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PermissionSlipView.swift; sourceTree = "<group>"; };
 		17B /* TeacherHomeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TeacherHomeView.swift; sourceTree = "<group>"; };
+		7180095D2F217FAB000CB7F3 /* FIXES_SUMMARY.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = FIXES_SUMMARY.md; sourceTree = "<group>"; };
+		7180095F2F2180CC000CB7F3 /* QUICK_START.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = QUICK_START.md; sourceTree = "<group>"; };
+		718009612F218135000CB7F3 /* DEPLOY_TO_IPHONE.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = DEPLOY_TO_IPHONE.md; sourceTree = "<group>"; };
+		718009632F2181B6000CB7F3 /* BUILD_FIX_LATEST.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = BUILD_FIX_LATEST.md; sourceTree = "<group>"; };
+		718009652F218278000CB7F3 /* BUNDLE_ID_GUIDE.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = BUNDLE_ID_GUIDE.md; sourceTree = "<group>"; };
+		718009672F21856C000CB7F3 /* BUILD_VERIFIED.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = BUILD_VERIFIED.md; sourceTree = "<group>"; };
+		718009692F2185CB000CB7F3 /* FINAL_FIX.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = FINAL_FIX.md; sourceTree = "<group>"; };
+		7180096B2F218698000CB7F3 /* SUCCESS_GUIDE.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = SUCCESS_GUIDE.md; sourceTree = "<group>"; };
 		AAED601D2F1DAE5500A3963E /* GoogleService-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "GoogleService-Info.plist"; sourceTree = "<group>"; };
-		AAED60212F1DD9D400A3963E /* AuthenticationService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AuthenticationService.swift; sourceTree = "<group>"; };
-		AAED60232F1DD9E000A3963E /* FirestoreService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FirestoreService.swift; sourceTree = "<group>"; };
-		AAED60252F1DDA0400A3963E /* AuthenticationViews.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AuthenticationViews.swift; sourceTree = "<group>"; };
-		AAED60272F1DDA1100A3963E /* TeacherDashboardView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TeacherDashboardView.swift; sourceTree = "<group>"; };
-		AAED60292F1DDA1E00A3963E /* ParentDashboardView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ParentDashboardView.swift; sourceTree = "<group>"; };
-		AAED602B2F1DDA2800A3963E /* HallPassViews.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HallPassViews.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -165,9 +193,12 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				080 /* FirebaseAuth in Frameworks */,
-				081 /* FirebaseFirestore in Frameworks */,
-				082 /* FirebaseStorage in Frameworks */,
+				718009542F217B6E000CB7F3 /* PostgREST in Frameworks */,
+				718009522F217B6E000CB7F3 /* Functions in Frameworks */,
+				7180095A2F217B6E000CB7F3 /* Supabase in Frameworks */,
+				718009502F217B6E000CB7F3 /* Auth in Frameworks */,
+				718009582F217B6E000CB7F3 /* Storage in Frameworks */,
+				718009562F217B6E000CB7F3 /* Realtime in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -177,10 +208,14 @@
 		300 = {
 			isa = PBXGroup;
 			children = (
-				AAED601F2F1DD99100A3963E /* Services */,
 				AAED601D2F1DAE5500A3963E /* GoogleService-Info.plist */,
 				301 /* TeacherLink */,
 				100 /* TeacherLink.app */,
+				7180095D2F217FAB000CB7F3 /* FIXES_SUMMARY.md */,
+				7180095F2F2180CC000CB7F3 /* QUICK_START.md */,
+				718009612F218135000CB7F3 /* DEPLOY_TO_IPHONE.md */,
+				718009632F2181B6000CB7F3 /* BUILD_FIX_LATEST.md */,
+				718009652F218278000CB7F3 /* BUNDLE_ID_GUIDE.md */,
 			);
 			sourceTree = "<group>";
 		};
@@ -203,6 +238,7 @@
 			isa = PBXGroup;
 			children = (
 				110 /* User.swift */,
+				128 /* AppUser.swift */,
 				111 /* Classroom.swift */,
 				112 /* Student.swift */,
 				113 /* Story.swift */,
@@ -221,6 +257,8 @@
 			children = (
 				140 /* MainTabView.swift */,
 				17B /* TeacherHomeView.swift */,
+				320 /* Admin */,
+				319 /* Home */,
 				308 /* Auth */,
 				309 /* Stories */,
 				315 /* Albums */,
@@ -240,6 +278,7 @@
 			isa = PBXGroup;
 			children = (
 				130 /* AuthViewModel.swift */,
+				137 /* AdminViewModel.swift */,
 				131 /* ClassroomViewModel.swift */,
 				132 /* StoryViewModel.swift */,
 				133 /* MessageViewModel.swift */,
@@ -254,11 +293,16 @@
 			isa = PBXGroup;
 			children = (
 				120 /* AuthService.swift */,
+				127 /* AuthenticationService.swift */,
 				121 /* ClassroomService.swift */,
 				122 /* StoryService.swift */,
 				123 /* MessageService.swift */,
 				124 /* PointsService.swift */,
 				125 /* MockDataService.swift */,
+				126 /* SupabaseConfig.swift */,
+				718009672F21856C000CB7F3 /* BUILD_VERIFIED.md */,
+				718009692F2185CB000CB7F3 /* FINAL_FIX.md */,
+				7180096B2F218698000CB7F3 /* SUCCESS_GUIDE.md */,
 			);
 			path = Services;
 			sourceTree = "<group>";
@@ -285,6 +329,9 @@
 				141 /* WelcomeView.swift */,
 				142 /* SignInView.swift */,
 				143 /* SignUpView.swift */,
+				129A /* SupabaseLoginView.swift */,
+				129E /* EmailConfirmationView.swift */,
+				129F /* AccountSetupView.swift */,
 			);
 			path = Auth;
 			sourceTree = "<group>";
@@ -392,25 +439,21 @@
 			path = Features;
 			sourceTree = "<group>";
 		};
-		AAED601F2F1DD99100A3963E /* Services */ = {
+		319 /* Home */ = {
 			isa = PBXGroup;
 			children = (
-				AAED60202F1DD99A00A3963E /* Views */,
-				AAED60212F1DD9D400A3963E /* AuthenticationService.swift */,
-				AAED60232F1DD9E000A3963E /* FirestoreService.swift */,
+				129B /* TeacherDashboardView.swift */,
+				129C /* ParentDashboardView.swift */,
 			);
-			path = Services;
+			path = Home;
 			sourceTree = "<group>";
 		};
-		AAED60202F1DD99A00A3963E /* Views */ = {
+		320 /* Admin */ = {
 			isa = PBXGroup;
 			children = (
-				AAED60252F1DDA0400A3963E /* AuthenticationViews.swift */,
-				AAED60272F1DDA1100A3963E /* TeacherDashboardView.swift */,
-				AAED60292F1DDA1E00A3963E /* ParentDashboardView.swift */,
-				AAED602B2F1DDA2800A3963E /* HallPassViews.swift */,
+				129D /* AdminDashboardView.swift */,
 			);
-			path = Views;
+			path = Admin;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -430,9 +473,12 @@
 			);
 			name = TeacherLink;
 			packageProductDependencies = (
-				180 /* FirebaseAuth */,
-				181 /* FirebaseFirestore */,
-				182 /* FirebaseStorage */,
+				7180094F2F217B6E000CB7F3 /* Auth */,
+				718009512F217B6E000CB7F3 /* Functions */,
+				718009532F217B6E000CB7F3 /* PostgREST */,
+				718009552F217B6E000CB7F3 /* Realtime */,
+				718009572F217B6E000CB7F3 /* Storage */,
+				718009592F217B6E000CB7F3 /* Supabase */,
 			);
 			productName = TeacherLink;
 			productReference = 100 /* TeacherLink.app */;
@@ -446,7 +492,7 @@
 			attributes = {
 				BuildIndependentTargetsInParallel = 1;
 				LastSwiftUpdateCheck = 1500;
-				LastUpgradeCheck = 1500;
+				LastUpgradeCheck = 2620;
 				TargetAttributes = {
 					400 = {
 						CreatedOnToolsVersion = 15.0;
@@ -463,7 +509,7 @@
 			);
 			mainGroup = 300;
 			packageReferences = (
-				700 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */,
+				7180094E2F217B6E000CB7F3 /* XCRemoteSwiftPackageReference "supabase-swift" */,
 			);
 			productRefGroup = 100 /* TeacherLink.app */;
 			projectDirPath = "";
@@ -480,7 +526,15 @@
 			buildActionMask = 2147483647;
 			files = (
 				003 /* Assets.xcassets in Resources */,
+				7180096C2F218698000CB7F3 /* SUCCESS_GUIDE.md in Resources */,
 				AAED601E2F1DAE5500A3963E /* GoogleService-Info.plist in Resources */,
+				718009642F2181B6000CB7F3 /* BUILD_FIX_LATEST.md in Resources */,
+				7180095E2F217FAB000CB7F3 /* FIXES_SUMMARY.md in Resources */,
+				718009622F218135000CB7F3 /* DEPLOY_TO_IPHONE.md in Resources */,
+				718009682F21856C000CB7F3 /* BUILD_VERIFIED.md in Resources */,
+				718009662F218278000CB7F3 /* BUNDLE_ID_GUIDE.md in Resources */,
+				7180096A2F2185CB000CB7F3 /* FINAL_FIX.md in Resources */,
+				718009602F2180CC000CB7F3 /* QUICK_START.md in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -493,7 +547,6 @@
 			files = (
 				001 /* TeacherLinkApp.swift in Sources */,
 				002 /* ContentView.swift in Sources */,
-				AAED60262F1DDA0400A3963E /* AuthenticationViews.swift in Sources */,
 				010 /* User.swift in Sources */,
 				011 /* Classroom.swift in Sources */,
 				012 /* Student.swift in Sources */,
@@ -507,7 +560,17 @@
 				023 /* MessageService.swift in Sources */,
 				024 /* PointsService.swift in Sources */,
 				025 /* MockDataService.swift in Sources */,
+				026 /* SupabaseConfig.swift in Sources */,
+				027 /* AuthenticationService.swift in Sources */,
+				028 /* AppUser.swift in Sources */,
+				029A /* SupabaseLoginView.swift in Sources */,
+				029E /* EmailConfirmationView.swift in Sources */,
+				029F /* AccountSetupView.swift in Sources */,
+				029B /* TeacherDashboardView.swift in Sources */,
+				029C /* ParentDashboardView.swift in Sources */,
+				029D /* AdminDashboardView.swift in Sources */,
 				030 /* AuthViewModel.swift in Sources */,
+				037 /* AdminViewModel.swift in Sources */,
 				031 /* ClassroomViewModel.swift in Sources */,
 				032 /* StoryViewModel.swift in Sources */,
 				033 /* MessageViewModel.swift in Sources */,
@@ -516,7 +579,6 @@
 				040 /* MainTabView.swift in Sources */,
 				041 /* WelcomeView.swift in Sources */,
 				042 /* SignInView.swift in Sources */,
-				AAED602C2F1DDA2800A3963E /* HallPassViews.swift in Sources */,
 				043 /* SignUpView.swift in Sources */,
 				044 /* StoriesView.swift in Sources */,
 				045 /* StoryCard.swift in Sources */,
@@ -527,14 +589,12 @@
 				050 /* NewMessageView.swift in Sources */,
 				051 /* StudentsView.swift in Sources */,
 				052 /* AddStudentView.swift in Sources */,
-				AAED60282F1DDA1100A3963E /* TeacherDashboardView.swift in Sources */,
 				053 /* StudentDetailView.swift in Sources */,
 				057 /* PointsView.swift in Sources */,
-				AAED60242F1DD9E000A3963E /* FirestoreService.swift in Sources */,
 				058 /* AwardPointsSheet.swift in Sources */,
 				059 /* StudentPointsHistoryView.swift in Sources */,
+				/* Removed duplicate SupabaseConfig.swift */
 				054 /* SettingsView.swift in Sources */,
-				AAED60222F1DD9D400A3963E /* AuthenticationService.swift in Sources */,
 				055 /* CreateClassView.swift in Sources */,
 				056 /* JoinClassView.swift in Sources */,
 				062 /* PhotoAlbumsView.swift in Sources */,
@@ -542,8 +602,8 @@
 				064 /* ClassInviteView.swift in Sources */,
 				060 /* CustomTextField.swift in Sources */,
 				061 /* ClassPickerView.swift in Sources */,
+				/* Removed duplicate MainTabView.swift */
 				065 /* DailyContentCard.swift in Sources */,
-				AAED602A2F1DDA1E00A3963E /* ParentDashboardView.swift in Sources */,
 				066 /* ParentScoreView.swift in Sources */,
 				067 /* ClassroomManagementView.swift in Sources */,
 				017 /* ParentProfile.swift in Sources */,
@@ -602,6 +662,7 @@
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				COPY_PHASE_STRIP = NO;
 				DEBUG_INFORMATION_FORMAT = dwarf;
+				DEVELOPMENT_TEAM = Q6JLYT4NCH;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
 				ENABLE_TESTABILITY = YES;
 				ENABLE_USER_SCRIPT_SANDBOXING = YES;
@@ -625,6 +686,7 @@
 				MTL_FAST_MATH = YES;
 				ONLY_ACTIVE_ARCH = YES;
 				SDKROOT = iphoneos;
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
 				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "DEBUG $(inherited)";
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 			};
@@ -665,6 +727,7 @@
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				COPY_PHASE_STRIP = NO;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				DEVELOPMENT_TEAM = Q6JLYT4NCH;
 				ENABLE_NS_ASSERTIONS = NO;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
 				ENABLE_USER_SCRIPT_SANDBOXING = YES;
@@ -681,6 +744,7 @@
 				MTL_ENABLE_DEBUG_INFO = NO;
 				MTL_FAST_MATH = YES;
 				SDKROOT = iphoneos;
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
 				SWIFT_COMPILATION_MODE = wholemodule;
 				VALIDATE_PRODUCT = YES;
 			};
@@ -693,7 +757,6 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = "";
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_KEY_CFBundleDisplayName = "Hall Pass";
@@ -710,7 +773,7 @@
 					"@executable_path/Frameworks",
 				);
 				MARKETING_VERSION = 1.0.0;
-				PRODUCT_BUNDLE_IDENTIFIER = com.hallpass.app;
+				PRODUCT_BUNDLE_IDENTIFIER = com.hallpass.ddtech.app;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_VERSION = 5.0;
@@ -725,7 +788,6 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = "";
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_KEY_CFBundleDisplayName = "Hall Pass";
@@ -742,7 +804,7 @@
 					"@executable_path/Frameworks",
 				);
 				MARKETING_VERSION = 1.0.0;
-				PRODUCT_BUNDLE_IDENTIFIER = com.hallpass.app;
+				PRODUCT_BUNDLE_IDENTIFIER = com.hallpass.ddtech.app;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_VERSION = 5.0;
@@ -774,31 +836,46 @@
 /* End XCConfigurationList section */
 
 /* Begin XCRemoteSwiftPackageReference section */
-		700 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */ = {
+		7180094E2F217B6E000CB7F3 /* XCRemoteSwiftPackageReference "supabase-swift" */ = {
 			isa = XCRemoteSwiftPackageReference;
-			repositoryURL = "https://github.com/firebase/firebase-ios-sdk.git";
+			repositoryURL = "https://github.com/supabase/supabase-swift";
 			requirement = {
 				kind = upToNextMajorVersion;
-				minimumVersion = 10.0.0;
+				minimumVersion = 2.5.1;
 			};
 		};
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
-		180 /* FirebaseAuth */ = {
+		7180094F2F217B6E000CB7F3 /* Auth */ = {
 			isa = XCSwiftPackageProductDependency;
-			package = 700 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
-			productName = FirebaseAuth;
+			package = 7180094E2F217B6E000CB7F3 /* XCRemoteSwiftPackageReference "supabase-swift" */;
+			productName = Auth;
 		};
-		181 /* FirebaseFirestore */ = {
+		718009512F217B6E000CB7F3 /* Functions */ = {
 			isa = XCSwiftPackageProductDependency;
-			package = 700 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
-			productName = FirebaseFirestore;
+			package = 7180094E2F217B6E000CB7F3 /* XCRemoteSwiftPackageReference "supabase-swift" */;
+			productName = Functions;
 		};
-		182 /* FirebaseStorage */ = {
+		718009532F217B6E000CB7F3 /* PostgREST */ = {
 			isa = XCSwiftPackageProductDependency;
-			package = 700 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
-			productName = FirebaseStorage;
+			package = 7180094E2F217B6E000CB7F3 /* XCRemoteSwiftPackageReference "supabase-swift" */;
+			productName = PostgREST;
+		};
+		718009552F217B6E000CB7F3 /* Realtime */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 7180094E2F217B6E000CB7F3 /* XCRemoteSwiftPackageReference "supabase-swift" */;
+			productName = Realtime;
+		};
+		718009572F217B6E000CB7F3 /* Storage */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 7180094E2F217B6E000CB7F3 /* XCRemoteSwiftPackageReference "supabase-swift" */;
+			productName = Storage;
+		};
+		718009592F217B6E000CB7F3 /* Supabase */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 7180094E2F217B6E000CB7F3 /* XCRemoteSwiftPackageReference "supabase-swift" */;
+			productName = Supabase;
 		};
 /* End XCSwiftPackageProductDependency section */
 	};

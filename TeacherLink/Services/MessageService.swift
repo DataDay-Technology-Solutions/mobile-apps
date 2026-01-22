@@ -1,25 +1,30 @@
 //
 //  MessageService.swift
-//  TeacherLink
+//  HallPass (formerly TeacherLink)
 //
 
 import Foundation
-import FirebaseFirestore
+import Supabase
 
 class MessageService {
     static let shared = MessageService()
-    private let db = Firestore.firestore()
+    private let supabase = SupabaseConfig.client
 
     private init() {}
 
     // MARK: - Conversations
 
     func createConversation(_ conversation: Conversation) async throws -> Conversation {
-        let docRef = db.collection("conversations").document()
-        var newConversation = conversation
-        newConversation.id = docRef.documentID
+        let response: [Conversation] = try await supabase
+            .from("conversations")
+            .insert(conversation)
+            .select()
+            .execute()
+            .value
 
-        try docRef.setData(from: newConversation)
+        guard let newConversation = response.first else {
+            throw MessageError.sendFailed
+        }
         return newConversation
     }
 
@@ -30,16 +35,19 @@ class MessageService {
         studentId: String? = nil,
         studentName: String? = nil
     ) async throws -> Conversation {
-        // Check if conversation already exists
         let sortedIds = participantIds.sorted()
-        let snapshot = try await db.collection("conversations")
-            .whereField("participantIds", isEqualTo: sortedIds)
-            .whereField("classId", isEqualTo: classId)
-            .limit(to: 1)
-            .getDocuments()
 
-        if let existing = snapshot.documents.first,
-           let conversation = try? existing.data(as: Conversation.self) {
+        // Check if conversation already exists
+        let existing: [Conversation] = try await supabase
+            .from("conversations")
+            .select()
+            .eq("class_id", value: classId)
+            .contains("participant_ids", value: sortedIds)
+            .limit(1)
+            .execute()
+            .value
+
+        if let conversation = existing.first {
             return conversation
         }
 
@@ -62,19 +70,26 @@ class MessageService {
     }
 
     func getConversationsForUser(userId: String) async throws -> [Conversation] {
-        let snapshot = try await db.collection("conversations")
-            .whereField("participantIds", arrayContains: userId)
-            .order(by: "lastMessageDate", descending: true)
-            .getDocuments()
+        let response: [Conversation] = try await supabase
+            .from("conversations")
+            .select()
+            .contains("participant_ids", value: [userId])
+            .order("last_message_date", ascending: false)
+            .execute()
+            .value
 
-        return snapshot.documents.compactMap { try? $0.data(as: Conversation.self) }
+        return response
     }
 
     func getConversation(id: String) async throws -> Conversation {
-        let document = try await db.collection("conversations").document(id).getDocument()
-        guard let conversation = try? document.data(as: Conversation.self) else {
-            throw MessageError.conversationNotFound
-        }
+        let conversation: Conversation = try await supabase
+            .from("conversations")
+            .select()
+            .eq("id", value: id)
+            .single()
+            .execute()
+            .value
+
         return conversation
     }
 
@@ -85,20 +100,19 @@ class MessageService {
             throw MessageError.invalidConversation
         }
 
-        let docRef = db.collection("conversations").document(message.conversationId)
-            .collection("messages").document()
+        // Insert message
+        let response: [Message] = try await supabase
+            .from("messages")
+            .insert(message)
+            .select()
+            .execute()
+            .value
 
-        var newMessage = message
-        newMessage.id = docRef.documentID
+        guard let newMessage = response.first else {
+            throw MessageError.sendFailed
+        }
 
-        // Use batch to update conversation and add message atomically
-        let batch = db.batch()
-
-        try batch.setData(from: newMessage, forDocument: docRef)
-
-        let conversationRef = db.collection("conversations").document(message.conversationId)
-
-        // Get conversation to update unread counts
+        // Update conversation
         let conversation = try await getConversation(id: message.conversationId)
         var unreadCounts = conversation.unreadCounts
         for participantId in conversation.participantIds {
@@ -107,54 +121,64 @@ class MessageService {
             }
         }
 
-        batch.updateData([
-            "lastMessage": message.content,
-            "lastMessageDate": Timestamp(date: message.createdAt),
-            "lastMessageSenderId": message.senderId,
-            "unreadCounts": unreadCounts
-        ], forDocument: conversationRef)
+        try await supabase
+            .from("conversations")
+            .update([
+                "last_message": AnyJSON.string(message.content),
+                "last_message_date": AnyJSON.string(ISO8601DateFormatter().string(from: message.createdAt)),
+                "last_message_sender_id": AnyJSON.string(message.senderId),
+                "unread_counts": AnyJSON.object(unreadCounts.mapValues { AnyJSON.integer($0) })
+            ])
+            .eq("id", value: message.conversationId)
+            .execute()
 
-        try await batch.commit()
         return newMessage
     }
 
     func getMessages(conversationId: String, limit: Int = 50) async throws -> [Message] {
-        let snapshot = try await db.collection("conversations").document(conversationId)
-            .collection("messages")
-            .order(by: "createdAt", descending: false)
-            .limit(toLast: limit)
-            .getDocuments()
+        let response: [Message] = try await supabase
+            .from("messages")
+            .select()
+            .eq("conversation_id", value: conversationId)
+            .order("created_at", ascending: true)
+            .limit(limit)
+            .execute()
+            .value
 
-        return snapshot.documents.compactMap { try? $0.data(as: Message.self) }
+        return response
     }
 
     func markAsRead(conversationId: String, userId: String) async throws {
-        let conversationRef = db.collection("conversations").document(conversationId)
+        // Update conversation unread count
+        let conversation = try await getConversation(id: conversationId)
+        var unreadCounts = conversation.unreadCounts
+        unreadCounts[userId] = 0
 
-        try await conversationRef.updateData([
-            "unreadCounts.\(userId)": 0
-        ])
+        try await supabase
+            .from("conversations")
+            .update(["unread_counts": AnyJSON.object(unreadCounts.mapValues { AnyJSON.integer($0) })])
+            .eq("id", value: conversationId)
+            .execute()
 
         // Mark individual messages as read
-        let messagesSnapshot = try await conversationRef.collection("messages")
-            .whereField("senderId", isNotEqualTo: userId)
-            .whereField("isRead", isEqualTo: false)
-            .getDocuments()
-
-        let batch = db.batch()
-        for document in messagesSnapshot.documents {
-            batch.updateData([
-                "isRead": true,
-                "readAt": Timestamp(date: Date())
-            ], forDocument: document.reference)
-        }
-
-        try await batch.commit()
+        try await supabase
+            .from("messages")
+            .update([
+                "is_read": AnyJSON.bool(true),
+                "read_at": AnyJSON.string(ISO8601DateFormatter().string(from: Date()))
+            ])
+            .eq("conversation_id", value: conversationId)
+            .neq("sender_id", value: userId)
+            .eq("is_read", value: false)
+            .execute()
     }
 
     func deleteMessage(conversationId: String, messageId: String) async throws {
-        try await db.collection("conversations").document(conversationId)
-            .collection("messages").document(messageId).delete()
+        try await supabase
+            .from("messages")
+            .delete()
+            .eq("id", value: messageId)
+            .execute()
     }
 
     func getTotalUnreadCount(userId: String) async throws -> Int {
@@ -171,8 +195,6 @@ class MessageService {
         parentIds: [String],
         content: String
     ) async throws {
-        let batch = db.batch()
-
         for parentId in parentIds {
             let conversation = try await getOrCreateConversation(
                 participantIds: [teacherId, parentId],
@@ -182,51 +204,92 @@ class MessageService {
 
             guard let conversationId = conversation.id else { continue }
 
-            let messageRef = db.collection("conversations").document(conversationId)
-                .collection("messages").document()
-
             let message = Message(
-                id: messageRef.documentID,
                 conversationId: conversationId,
                 senderId: teacherId,
                 senderName: teacherName,
                 content: content
             )
 
-            try batch.setData(from: message, forDocument: messageRef)
-
-            let conversationRef = db.collection("conversations").document(conversationId)
-            batch.updateData([
-                "lastMessage": content,
-                "lastMessageDate": Timestamp(date: Date()),
-                "lastMessageSenderId": teacherId,
-                "unreadCounts.\(parentId)": FieldValue.increment(Int64(1))
-            ], forDocument: conversationRef)
+            _ = try await sendMessage(message)
         }
-
-        try await batch.commit()
     }
 
     // MARK: - Real-time Listeners
 
-    func listenToConversations(userId: String, completion: @escaping ([Conversation]) -> Void) -> ListenerRegistration {
-        return db.collection("conversations")
-            .whereField("participantIds", arrayContains: userId)
-            .order(by: "lastMessageDate", descending: true)
-            .addSnapshotListener { snapshot, _ in
-                let conversations = snapshot?.documents.compactMap { try? $0.data(as: Conversation.self) } ?? []
-                completion(conversations)
+    private var conversationsChannel: RealtimeChannelV2?
+    private var messagesChannel: RealtimeChannelV2?
+
+    func listenToConversations(userId: String, completion: @escaping ([Conversation]) -> Void) {
+        // Initial fetch
+        Task {
+            let conversations = try? await getConversationsForUser(userId: userId)
+            await MainActor.run {
+                completion(conversations ?? [])
             }
+        }
+
+        // Set up realtime subscription
+        conversationsChannel = supabase.realtimeV2.channel("conversations_\(userId)")
+
+        Task {
+            await conversationsChannel?.subscribe()
+
+            let changes = conversationsChannel?.postgresChange(
+                AnyAction.self,
+                schema: "public",
+                table: "conversations"
+            )
+
+            if let changes = changes {
+                for await _ in changes {
+                    let conversations = try? await getConversationsForUser(userId: userId)
+                    await MainActor.run {
+                        completion(conversations ?? [])
+                    }
+                }
+            }
+        }
     }
 
-    func listenToMessages(conversationId: String, completion: @escaping ([Message]) -> Void) -> ListenerRegistration {
-        return db.collection("conversations").document(conversationId)
-            .collection("messages")
-            .order(by: "createdAt", descending: false)
-            .addSnapshotListener { snapshot, _ in
-                let messages = snapshot?.documents.compactMap { try? $0.data(as: Message.self) } ?? []
-                completion(messages)
+    func listenToMessages(conversationId: String, completion: @escaping ([Message]) -> Void) {
+        // Initial fetch
+        Task {
+            let messages = try? await getMessages(conversationId: conversationId)
+            await MainActor.run {
+                completion(messages ?? [])
             }
+        }
+
+        // Set up realtime subscription
+        messagesChannel = supabase.realtimeV2.channel("messages_\(conversationId)")
+
+        Task {
+            await messagesChannel?.subscribe()
+
+            let changes = messagesChannel?.postgresChange(
+                AnyAction.self,
+                schema: "public",
+                table: "messages",
+                filter: "conversation_id=eq.\(conversationId)"
+            )
+
+            if let changes = changes {
+                for await _ in changes {
+                    let messages = try? await getMessages(conversationId: conversationId)
+                    await MainActor.run {
+                        completion(messages ?? [])
+                    }
+                }
+            }
+        }
+    }
+
+    func stopListening() {
+        Task {
+            await conversationsChannel?.unsubscribe()
+            await messagesChannel?.unsubscribe()
+        }
     }
 }
 

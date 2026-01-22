@@ -1,78 +1,107 @@
 //
 //  ClassroomService.swift
-//  TeacherLink
+//  HallPass (formerly TeacherLink)
 //
 
 import Foundation
-import FirebaseFirestore
+import Supabase
 
 class ClassroomService {
     static let shared = ClassroomService()
-    private let db = Firestore.firestore()
+    private let supabase = SupabaseConfig.client
 
     private init() {}
 
     // MARK: - Classroom CRUD
 
     func createClassroom(_ classroom: Classroom) async throws -> Classroom {
-        let docRef = db.collection("classrooms").document()
-        var newClassroom = classroom
-        newClassroom.id = docRef.documentID
+        let response: [Classroom] = try await supabase
+            .from("classrooms")
+            .insert(classroom)
+            .select()
+            .execute()
+            .value
 
-        try docRef.setData(from: newClassroom)
+        guard let newClassroom = response.first, let classId = newClassroom.id else {
+            throw ClassroomError.notFound
+        }
 
         // Add class to teacher's class list
-        try await db.collection("users").document(classroom.teacherId).updateData([
-            "classIds": FieldValue.arrayUnion([docRef.documentID])
-        ])
+        // Note: AppUser uses classroomId (single), not classIds (multiple)
+        // For now, we'll just update the single classroomId
+        try await supabase
+            .from("users")
+            .update(["classroom_id": AnyJSON.string(classId)])
+            .eq("id", value: classroom.teacherId)
+            .execute()
 
         return newClassroom
     }
 
     func getClassroom(id: String) async throws -> Classroom {
-        let document = try await db.collection("classrooms").document(id).getDocument()
-        guard let classroom = try? document.data(as: Classroom.self) else {
-            throw ClassroomError.notFound
-        }
+        let classroom: Classroom = try await supabase
+            .from("classrooms")
+            .select()
+            .eq("id", value: id)
+            .single()
+            .execute()
+            .value
+
         return classroom
     }
 
     func getClassroomsForTeacher(teacherId: String) async throws -> [Classroom] {
-        let snapshot = try await db.collection("classrooms")
-            .whereField("teacherId", isEqualTo: teacherId)
-            .order(by: "createdAt", descending: true)
-            .getDocuments()
+        let response: [Classroom] = try await supabase
+            .from("classrooms")
+            .select()
+            .eq("teacher_id", value: teacherId)
+            .order("created_at", ascending: false)
+            .execute()
+            .value
 
-        return snapshot.documents.compactMap { try? $0.data(as: Classroom.self) }
+        return response
     }
 
     func getClassroomsForParent(parentId: String) async throws -> [Classroom] {
-        let snapshot = try await db.collection("classrooms")
-            .whereField("parentIds", arrayContains: parentId)
-            .getDocuments()
+        let response: [Classroom] = try await supabase
+            .from("classrooms")
+            .select()
+            .contains("parent_ids", value: [parentId])
+            .execute()
+            .value
 
-        return snapshot.documents.compactMap { try? $0.data(as: Classroom.self) }
+        return response
     }
 
     func updateClassroom(_ classroom: Classroom) async throws {
         guard let classId = classroom.id else { return }
-        try db.collection("classrooms").document(classId).setData(from: classroom, merge: true)
+        try await supabase
+            .from("classrooms")
+            .update(classroom)
+            .eq("id", value: classId)
+            .execute()
     }
 
     func deleteClassroom(id: String) async throws {
-        try await db.collection("classrooms").document(id).delete()
+        try await supabase
+            .from("classrooms")
+            .delete()
+            .eq("id", value: id)
+            .execute()
     }
 
     // MARK: - Class Code Join
 
     func joinClassWithCode(code: String, parentId: String) async throws -> Classroom {
-        let snapshot = try await db.collection("classrooms")
-            .whereField("classCode", isEqualTo: code.uppercased())
-            .limit(to: 1)
-            .getDocuments()
+        let classrooms: [Classroom] = try await supabase
+            .from("classrooms")
+            .select()
+            .eq("class_code", value: code.uppercased())
+            .limit(1)
+            .execute()
+            .value
 
-        guard let document = snapshot.documents.first,
-              var classroom = try? document.data(as: Classroom.self) else {
+        guard var classroom = classrooms.first, let classId = classroom.id else {
             throw ClassroomError.invalidCode
         }
 
@@ -80,86 +109,193 @@ class ClassroomService {
             throw ClassroomError.alreadyJoined
         }
 
-        try await db.collection("classrooms").document(document.documentID).updateData([
-            "parentIds": FieldValue.arrayUnion([parentId])
-        ])
-
-        try await db.collection("users").document(parentId).updateData([
-            "classIds": FieldValue.arrayUnion([document.documentID])
-        ])
-
+        // Update classroom with new parent
         classroom.parentIds.append(parentId)
+        try await supabase
+            .from("classrooms")
+            .update(["parent_ids": AnyJSON.array(classroom.parentIds.map { AnyJSON.string($0) })])
+            .eq("id", value: classId)
+            .execute()
+
+        // Update parent's class - AppUser uses classroomId (single)
+        try await supabase
+            .from("users")
+            .update(["classroom_id": AnyJSON.string(classId)])
+            .eq("id", value: parentId)
+            .execute()
+
         return classroom
     }
 
     // MARK: - Students
 
     func addStudent(_ student: Student) async throws -> Student {
-        let docRef = db.collection("students").document()
-        var newStudent = student
-        newStudent.id = docRef.documentID
+        let response: [Student] = try await supabase
+            .from("students")
+            .insert(student)
+            .select()
+            .execute()
+            .value
 
-        try docRef.setData(from: newStudent)
+        guard let newStudent = response.first, let studentId = newStudent.id else {
+            throw ClassroomError.studentNotFound
+        }
 
-        try await db.collection("classrooms").document(student.classId).updateData([
-            "studentIds": FieldValue.arrayUnion([docRef.documentID])
-        ])
+        // Update classroom's student list
+        let classroom = try await getClassroom(id: student.classId)
+        var studentIds = classroom.studentIds
+        studentIds.append(studentId)
+
+        try await supabase
+            .from("classrooms")
+            .update(["student_ids": AnyJSON.array(studentIds.map { AnyJSON.string($0) })])
+            .eq("id", value: student.classId)
+            .execute()
 
         return newStudent
     }
 
     func getStudentsForClass(classId: String) async throws -> [Student] {
-        let snapshot = try await db.collection("students")
-            .whereField("classId", isEqualTo: classId)
-            .order(by: "lastName")
-            .getDocuments()
+        let response: [Student] = try await supabase
+            .from("students")
+            .select()
+            .eq("class_id", value: classId)
+            .order("last_name", ascending: true)
+            .execute()
+            .value
 
-        return snapshot.documents.compactMap { try? $0.data(as: Student.self) }
+        return response
     }
 
     func getStudent(id: String) async throws -> Student {
-        let document = try await db.collection("students").document(id).getDocument()
-        guard let student = try? document.data(as: Student.self) else {
-            throw ClassroomError.studentNotFound
-        }
+        let student: Student = try await supabase
+            .from("students")
+            .select()
+            .eq("id", value: id)
+            .single()
+            .execute()
+            .value
+
         return student
     }
 
     func updateStudent(_ student: Student) async throws {
         guard let studentId = student.id else { return }
-        try db.collection("students").document(studentId).setData(from: student, merge: true)
+        try await supabase
+            .from("students")
+            .update(student)
+            .eq("id", value: studentId)
+            .execute()
     }
 
     func deleteStudent(id: String, classId: String) async throws {
-        try await db.collection("students").document(id).delete()
-        try await db.collection("classrooms").document(classId).updateData([
-            "studentIds": FieldValue.arrayRemove([id])
-        ])
+        try await supabase
+            .from("students")
+            .delete()
+            .eq("id", value: id)
+            .execute()
+
+        // Update classroom's student list
+        let classroom = try await getClassroom(id: classId)
+        let studentIds = classroom.studentIds.filter { $0 != id }
+
+        try await supabase
+            .from("classrooms")
+            .update(["student_ids": AnyJSON.array(studentIds.map { AnyJSON.string($0) })])
+            .eq("id", value: classId)
+            .execute()
     }
 
     func linkParentToStudent(studentId: String, parentId: String) async throws {
-        try await db.collection("students").document(studentId).updateData([
-            "parentIds": FieldValue.arrayUnion([parentId])
-        ])
+        let student = try await getStudent(id: studentId)
+        var parentIds = student.parentIds ?? []
+        if !parentIds.contains(parentId) {
+            parentIds.append(parentId)
+        }
+
+        try await supabase
+            .from("students")
+            .update(["parent_ids": AnyJSON.array(parentIds.map { AnyJSON.string($0) })])
+            .eq("id", value: studentId)
+            .execute()
     }
 
     // MARK: - Real-time Listeners
 
-    func listenToClassroom(id: String, completion: @escaping (Classroom?) -> Void) -> ListenerRegistration {
-        return db.collection("classrooms").document(id).addSnapshotListener { snapshot, _ in
-            let classroom = try? snapshot?.data(as: Classroom.self)
-            completion(classroom)
+    private var classroomChannel: RealtimeChannelV2?
+    private var studentsChannel: RealtimeChannelV2?
+
+    func listenToClassroom(id: String, completion: @escaping (Classroom?) -> Void) {
+        // Initial fetch
+        Task {
+            let classroom = try? await getClassroom(id: id)
+            await MainActor.run {
+                completion(classroom)
+            }
+        }
+
+        // Set up realtime subscription
+        classroomChannel = supabase.realtimeV2.channel("classroom_\(id)")
+
+        Task {
+            await classroomChannel?.subscribe()
+
+            let changes = classroomChannel?.postgresChange(
+                AnyAction.self,
+                schema: "public",
+                table: "classrooms",
+                filter: "id=eq.\(id)"
+            )
+
+            if let changes = changes {
+                for await _ in changes {
+                    let classroom = try? await getClassroom(id: id)
+                    await MainActor.run {
+                        completion(classroom)
+                    }
+                }
+            }
         }
     }
 
-    func listenToStudents(classId: String, completion: @escaping ([Student]) -> Void) -> ListenerRegistration {
-        return db.collection("students")
-            .whereField("classId", isEqualTo: classId)
-            .order(by: "lastName")
-            .addSnapshotListener { snapshot, _ in
-                let students = snapshot?.documents.compactMap { try? $0.data(as: Student.self) } ?? []
-                completion(students)
+    func listenToStudents(classId: String, completion: @escaping ([Student]) -> Void) {
+        // Initial fetch
+        Task {
+            let students = try? await getStudentsForClass(classId: classId)
+            await MainActor.run {
+                completion(students ?? [])
             }
+        }
+
+        // Set up realtime subscription
+        studentsChannel = supabase.realtimeV2.channel("students_\(classId)")
+
+        Task {
+            await studentsChannel?.subscribe()
+
+            let changes = studentsChannel?.postgresChange(
+                AnyAction.self,
+                schema: "public",
+                table: "students",
+                filter: "class_id=eq.\(classId)"
+            )
+
+            if let changes = changes {
+                for await _ in changes {
+                    let students = try? await getStudentsForClass(classId: classId)
+                    await MainActor.run {
+                        completion(students ?? [])
+                    }
+                }
+            }
+        }
+    }
+
+    func stopListening() {
+        Task {
+            await classroomChannel?.unsubscribe()
+            await studentsChannel?.unsubscribe()
+        }
     }
 }
 

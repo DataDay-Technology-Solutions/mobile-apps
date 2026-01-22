@@ -229,4 +229,64 @@ class MessageViewModel: ObservableObject {
         selectedConversation = nil
         messages = []
     }
+
+    // Get or create a conversation between participants
+    func getOrCreateConversation(
+        participantIds: [String],
+        participantNames: [String: String],
+        classId: String,
+        studentId: String? = nil,
+        studentName: String? = nil
+    ) async -> Conversation? {
+        isLoading = true
+        errorMessage = nil
+
+        let sortedIds = participantIds.sorted()
+
+        // Check if conversation already exists
+        if let existing = conversations.first(where: { $0.participantIds.sorted() == sortedIds }) {
+            isLoading = false
+            return existing
+        }
+
+        var conversation: Conversation?
+
+        if USE_MOCK_DATA {
+            try? await Task.sleep(nanoseconds: 200_000_000)
+
+            conversation = Conversation(
+                id: UUID().uuidString,
+                participantIds: sortedIds,
+                participantNames: participantNames,
+                classId: classId,
+                studentId: studentId,
+                studentName: studentName,
+                unreadCounts: Dictionary(uniqueKeysWithValues: sortedIds.map { ($0, 0) })
+            )
+
+            if let conv = conversation {
+                conversations.insert(conv, at: 0)
+            }
+        } else {
+            // Use real MessageService for Supabase
+            do {
+                conversation = try await MessageService.shared.getOrCreateConversation(
+                    participantIds: sortedIds,
+                    participantNames: participantNames,
+                    classId: classId,
+                    studentId: studentId,
+                    studentName: studentName
+                )
+
+                if let conv = conversation, !conversations.contains(where: { $0.id == conv.id }) {
+                    conversations.insert(conv, at: 0)
+                }
+            } catch {
+                errorMessage = error.localizedDescription
+            }
+        }
+
+        isLoading = false
+        return conversation
+    }
 }

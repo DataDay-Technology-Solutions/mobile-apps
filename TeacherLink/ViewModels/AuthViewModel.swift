@@ -1,6 +1,6 @@
 //
 //  AuthViewModel.swift
-//  TeacherLink
+//  HallPass (formerly TeacherLink)
 //
 
 import Foundation
@@ -86,7 +86,7 @@ class AuthViewModel: ObservableObject {
             currentUser = newUser
             isAuthenticated = true
         } else {
-            errorMessage = "Firebase not configured. Enable USE_MOCK_DATA or add GoogleService-Info.plist"
+            errorMessage = "Supabase not configured. Enable USE_MOCK_DATA or configure SupabaseConfig"
         }
 
         isLoading = false
@@ -112,7 +112,7 @@ class AuthViewModel: ObservableObject {
                 errorMessage = "Invalid email or password"
             }
         } else {
-            errorMessage = "Firebase not configured. Enable USE_MOCK_DATA or add GoogleService-Info.plist"
+            errorMessage = "Supabase not configured. Enable USE_MOCK_DATA or configure SupabaseConfig"
         }
 
         isLoading = false
