@@ -25,6 +25,10 @@ class StoryViewModel: ObservableObject {
     func listenToStories(classId: String) {
         if USE_MOCK_DATA {
             stories = MockDataService.shared.stories
+        } else {
+            StoryService.shared.listenToStories(classId: classId) { [weak self] stories in
+                self?.stories = stories
+            }
         }
     }
 
@@ -35,6 +39,12 @@ class StoryViewModel: ObservableObject {
         if USE_MOCK_DATA {
             try? await Task.sleep(nanoseconds: 300_000_000)
             stories = MockDataService.shared.stories
+        } else {
+            do {
+                stories = try await StoryService.shared.getStoriesForClass(classId: classId)
+            } catch {
+                errorMessage = error.localizedDescription
+            }
         }
 
         isLoading = false
@@ -64,6 +74,23 @@ class StoryViewModel: ObservableObject {
                 createdAt: Date()
             )
             stories.insert(story, at: 0)
+        } else {
+            do {
+                let story = Story(
+                    id: nil,
+                    classId: classId,
+                    authorId: authorId,
+                    authorName: authorName,
+                    type: isAnnouncement ? .announcement : .text,
+                    content: content,
+                    isAnnouncement: isAnnouncement,
+                    createdAt: Date()
+                )
+                let created = try await StoryService.shared.createStory(story)
+                stories.insert(created, at: 0)
+            } catch {
+                errorMessage = error.localizedDescription
+            }
         }
 
         isLoading = false
@@ -98,6 +125,29 @@ class StoryViewModel: ObservableObject {
                 createdAt: Date()
             )
             stories.insert(story, at: 0)
+        } else {
+            do {
+                uploadProgress = 0.2
+                let storyId = UUID().uuidString
+                let imageUrl = try await StoryService.shared.uploadImage(imageData, storyId: storyId)
+                uploadProgress = 0.8
+
+                let story = Story(
+                    id: nil,
+                    classId: classId,
+                    authorId: authorId,
+                    authorName: authorName,
+                    type: .photo,
+                    content: content,
+                    mediaURLs: [imageUrl],
+                    createdAt: Date()
+                )
+                let created = try await StoryService.shared.createStory(story)
+                stories.insert(created, at: 0)
+                uploadProgress = 1.0
+            } catch {
+                errorMessage = error.localizedDescription
+            }
         }
 
         isUploading = false
@@ -131,6 +181,29 @@ class StoryViewModel: ObservableObject {
                 createdAt: Date()
             )
             stories.insert(story, at: 0)
+        } else {
+            do {
+                uploadProgress = 0.2
+                let storyId = UUID().uuidString
+                let videoUrlString = try await StoryService.shared.uploadVideo(videoURL, storyId: storyId)
+                uploadProgress = 0.8
+
+                let story = Story(
+                    id: nil,
+                    classId: classId,
+                    authorId: authorId,
+                    authorName: authorName,
+                    type: .video,
+                    content: content,
+                    mediaURLs: [videoUrlString],
+                    createdAt: Date()
+                )
+                let created = try await StoryService.shared.createStory(story)
+                stories.insert(created, at: 0)
+                uploadProgress = 1.0
+            } catch {
+                errorMessage = error.localizedDescription
+            }
         }
 
         isUploading = false
@@ -150,6 +223,23 @@ class StoryViewModel: ObservableObject {
                 updatedStory.likeCount += 1
             }
             stories[index] = updatedStory
+        } else {
+            do {
+                // Optimistically update UI
+                var updatedStory = stories[index]
+                if updatedStory.likedByIds.contains(userId) {
+                    updatedStory.likedByIds.removeAll { $0 == userId }
+                    updatedStory.likeCount = max(0, updatedStory.likeCount - 1)
+                } else {
+                    updatedStory.likedByIds.append(userId)
+                    updatedStory.likeCount += 1
+                }
+                stories[index] = updatedStory
+
+                try await StoryService.shared.toggleLike(storyId: storyId, userId: userId)
+            } catch {
+                errorMessage = error.localizedDescription
+            }
         }
     }
 
@@ -158,6 +248,13 @@ class StoryViewModel: ObservableObject {
 
         if USE_MOCK_DATA {
             stories.removeAll { $0.id == storyId }
+        } else {
+            do {
+                try await StoryService.shared.deleteStory(id: storyId)
+                stories.removeAll { $0.id == storyId }
+            } catch {
+                errorMessage = error.localizedDescription
+            }
         }
     }
 
@@ -170,12 +267,22 @@ class StoryViewModel: ObservableObject {
                 StoryComment(id: "c1", storyId: storyId, authorId: "parent1", authorName: "Sarah Smith", content: "This is wonderful! Emma loved it!", createdAt: Date().addingTimeInterval(-1800)),
                 StoryComment(id: "c2", storyId: storyId, authorId: "parent2", authorName: "John Brown", content: "Thank you for sharing!", createdAt: Date().addingTimeInterval(-3600))
             ]
+        } else {
+            StoryService.shared.listenToComments(storyId: storyId) { [weak self] comments in
+                self?.comments = comments
+            }
         }
     }
 
     func loadComments(storyId: String) async {
         if USE_MOCK_DATA {
             listenToComments(storyId: storyId)
+        } else {
+            do {
+                comments = try await StoryService.shared.getComments(storyId: storyId)
+            } catch {
+                errorMessage = error.localizedDescription
+            }
         }
     }
 
@@ -195,6 +302,25 @@ class StoryViewModel: ObservableObject {
             if let index = stories.firstIndex(where: { $0.id == storyId }) {
                 stories[index].commentCount += 1
             }
+        } else {
+            do {
+                let comment = StoryComment(
+                    id: nil,
+                    storyId: storyId,
+                    authorId: authorId,
+                    authorName: authorName,
+                    content: content,
+                    createdAt: Date()
+                )
+                let created = try await StoryService.shared.addComment(comment)
+                comments.append(created)
+
+                if let index = stories.firstIndex(where: { $0.id == storyId }) {
+                    stories[index].commentCount += 1
+                }
+            } catch {
+                errorMessage = error.localizedDescription
+            }
         }
     }
 
@@ -204,6 +330,17 @@ class StoryViewModel: ObservableObject {
 
             if let index = stories.firstIndex(where: { $0.id == storyId }) {
                 stories[index].commentCount = max(0, stories[index].commentCount - 1)
+            }
+        } else {
+            do {
+                try await StoryService.shared.deleteComment(storyId: storyId, commentId: commentId)
+                comments.removeAll { $0.id == commentId }
+
+                if let index = stories.firstIndex(where: { $0.id == storyId }) {
+                    stories[index].commentCount = max(0, stories[index].commentCount - 1)
+                }
+            } catch {
+                errorMessage = error.localizedDescription
             }
         }
     }

@@ -35,6 +35,30 @@ class ClassroomViewModel: ObservableObject {
         if USE_MOCK_DATA {
             try? await Task.sleep(nanoseconds: 300_000_000)
             loadMockData()
+        } else {
+            // Real Supabase implementation
+            do {
+                guard let userId = user.id else {
+                    errorMessage = "User ID not found"
+                    isLoading = false
+                    return
+                }
+
+                if user.role == .teacher {
+                    classrooms = try await ClassroomService.shared.getClassroomsForTeacher(teacherId: userId)
+                } else if user.role == .parent {
+                    classrooms = try await ClassroomService.shared.getClassroomsForParent(parentId: userId)
+                }
+
+                // Select the first classroom if available
+                if let first = classrooms.first {
+                    selectedClassroom = first
+                    // Load students for the selected classroom
+                    students = try await ClassroomService.shared.getStudentsForClass(classId: first.id ?? "")
+                }
+            } catch {
+                errorMessage = error.localizedDescription
+            }
         }
 
         isLoading = false
@@ -44,6 +68,17 @@ class ClassroomViewModel: ObservableObject {
         selectedClassroom = classroom
         if USE_MOCK_DATA {
             students = MockDataService.shared.students
+        } else {
+            // Load students for selected classroom
+            Task {
+                if let classId = classroom.id {
+                    do {
+                        students = try await ClassroomService.shared.getStudentsForClass(classId: classId)
+                    } catch {
+                        errorMessage = error.localizedDescription
+                    }
+                }
+            }
         }
     }
 
@@ -63,6 +98,23 @@ class ClassroomViewModel: ObservableObject {
             )
             classrooms.insert(classroom, at: 0)
             selectedClassroom = classroom
+        } else {
+            // Real Supabase implementation
+            do {
+                let classroom = Classroom(
+                    id: nil,
+                    name: name,
+                    gradeLevel: gradeLevel,
+                    teacherId: teacherId,
+                    teacherName: teacherName
+                )
+                let created = try await ClassroomService.shared.createClassroom(classroom)
+                classrooms.insert(created, at: 0)
+                selectedClassroom = created
+                successMessage = "Class '\(name)' created successfully!"
+            } catch {
+                errorMessage = error.localizedDescription
+            }
         }
 
         isLoading = false
@@ -81,6 +133,16 @@ class ClassroomViewModel: ObservableObject {
                 selectedClassroom = classroom
             } else {
                 errorMessage = "Invalid class code"
+            }
+        } else {
+            // Real Supabase implementation
+            do {
+                let classroom = try await ClassroomService.shared.joinClassWithCode(code: code, parentId: parentId)
+                classrooms.append(classroom)
+                selectedClassroom = classroom
+                successMessage = "Successfully joined '\(classroom.name)'!"
+            } catch {
+                errorMessage = error.localizedDescription
             }
         }
 
@@ -104,6 +166,22 @@ class ClassroomViewModel: ObservableObject {
             )
             students.append(student)
             students.sort { $0.lastName < $1.lastName }
+        } else {
+            // Real Supabase implementation
+            do {
+                let student = Student(
+                    id: nil,
+                    firstName: firstName,
+                    lastName: lastName,
+                    classId: classId
+                )
+                let created = try await ClassroomService.shared.addStudent(student)
+                students.append(created)
+                students.sort { $0.lastName < $1.lastName }
+                successMessage = "\(firstName) \(lastName) added to class!"
+            } catch {
+                errorMessage = error.localizedDescription
+            }
         }
 
         isLoading = false
@@ -113,6 +191,16 @@ class ClassroomViewModel: ObservableObject {
         if USE_MOCK_DATA {
             students.removeAll { $0.id == student.id }
             successMessage = "\(student.fullName) has been removed from the class."
+        } else {
+            // Real Supabase implementation
+            guard let studentId = student.id else { return }
+            do {
+                try await ClassroomService.shared.deleteStudent(id: studentId, classId: student.classId)
+                students.removeAll { $0.id == student.id }
+                successMessage = "\(student.fullName) has been removed from the class."
+            } catch {
+                errorMessage = error.localizedDescription
+            }
         }
     }
 
@@ -124,6 +212,20 @@ class ClassroomViewModel: ObservableObject {
             students[index].lastName = lastName
             students.sort { $0.lastName < $1.lastName }
             successMessage = "Student updated successfully."
+        } else {
+            // Real Supabase implementation
+            do {
+                var updatedStudent = student
+                updatedStudent.firstName = firstName
+                updatedStudent.lastName = lastName
+                try await ClassroomService.shared.updateStudent(updatedStudent)
+                students[index].firstName = firstName
+                students[index].lastName = lastName
+                students.sort { $0.lastName < $1.lastName }
+                successMessage = "Student updated successfully."
+            } catch {
+                errorMessage = error.localizedDescription
+            }
         }
     }
 
@@ -186,6 +288,18 @@ class ClassroomViewModel: ObservableObject {
             if !students[studentIndex].parentIds.contains(parentId) {
                 students[studentIndex].parentIds.append(parentId)
             }
+        } else {
+            // Real Supabase implementation
+            do {
+                try await ClassroomService.shared.linkParentToStudent(studentId: studentId, parentId: parentId)
+                if let studentIndex = students.firstIndex(where: { $0.id == studentId }) {
+                    if !students[studentIndex].parentIds.contains(parentId) {
+                        students[studentIndex].parentIds.append(parentId)
+                    }
+                }
+            } catch {
+                errorMessage = error.localizedDescription
+            }
         }
     }
 
@@ -220,6 +334,19 @@ class ClassroomViewModel: ObservableObject {
             selectedClassroom = classroom
             if let index = classrooms.firstIndex(where: { $0.id == classroom.id }) {
                 classrooms[index] = classroom
+            }
+        } else {
+            // Real Supabase implementation
+            do {
+                classroom.classCode = Classroom.generateClassCode()
+                try await ClassroomService.shared.updateClassroom(classroom)
+                selectedClassroom = classroom
+                if let index = classrooms.firstIndex(where: { $0.id == classroom.id }) {
+                    classrooms[index] = classroom
+                }
+                successMessage = "Class code regenerated!"
+            } catch {
+                errorMessage = error.localizedDescription
             }
         }
     }

@@ -44,6 +44,15 @@ class MessageViewModel: ObservableObject {
             }
 
             updateUnreadCount(userId: userId)
+        } else {
+            MessageService.shared.listenToConversations(userId: userId) { [weak self] conversations in
+                if role == .parent {
+                    self?.conversations = conversations.filter { $0.participantIds.contains(userId) }
+                } else {
+                    self?.conversations = conversations
+                }
+                self?.updateUnreadCount(userId: userId)
+            }
         }
     }
 
@@ -66,6 +75,20 @@ class MessageViewModel: ObservableObject {
             }
 
             updateUnreadCount(userId: userId)
+        } else {
+            do {
+                let allConversations = try await MessageService.shared.getConversationsForUser(userId: userId)
+
+                if role == .parent {
+                    conversations = allConversations.filter { $0.participantIds.contains(userId) }
+                } else {
+                    conversations = allConversations
+                }
+
+                updateUnreadCount(userId: userId)
+            } catch {
+                errorMessage = error.localizedDescription
+            }
         }
 
         isLoading = false
@@ -88,6 +111,10 @@ class MessageViewModel: ObservableObject {
     func listenToMessages(conversationId: String) {
         if USE_MOCK_DATA {
             messages = MockDataService.shared.messages[conversationId] ?? []
+        } else {
+            MessageService.shared.listenToMessages(conversationId: conversationId) { [weak self] messages in
+                self?.messages = messages
+            }
         }
     }
 
@@ -98,6 +125,12 @@ class MessageViewModel: ObservableObject {
         if USE_MOCK_DATA {
             try? await Task.sleep(nanoseconds: 200_000_000)
             messages = MockDataService.shared.messages[conversationId] ?? []
+        } else {
+            do {
+                messages = try await MessageService.shared.getMessages(conversationId: conversationId)
+            } catch {
+                errorMessage = error.localizedDescription
+            }
         }
 
         isLoading = false
@@ -132,6 +165,32 @@ class MessageViewModel: ObservableObject {
             // If sender is a parent, check if admin should be CC'd
             if senderRole == .parent {
                 checkAdminCC(parentId: senderId)
+            }
+        } else {
+            do {
+                let message = Message(
+                    id: nil,
+                    conversationId: conversationId,
+                    senderId: senderId,
+                    senderName: senderName,
+                    content: content,
+                    createdAt: Date()
+                )
+                let sent = try await MessageService.shared.sendMessage(message)
+                messages.append(sent)
+
+                // Update conversation preview
+                if let index = conversations.firstIndex(where: { $0.id == conversationId }) {
+                    conversations[index].lastMessage = content
+                    conversations[index].lastMessageDate = Date()
+                    conversations[index].lastMessageSenderId = senderId
+                }
+
+                if senderRole == .parent {
+                    checkAdminCC(parentId: senderId)
+                }
+            } catch {
+                errorMessage = error.localizedDescription
             }
         }
 
@@ -192,6 +251,25 @@ class MessageViewModel: ObservableObject {
             if let conv = conversation {
                 conversations.insert(conv, at: 0)
             }
+        } else {
+            do {
+                conversation = try await MessageService.shared.getOrCreateConversation(
+                    participantIds: [currentUserId, otherUserId],
+                    participantNames: [
+                        currentUserId: currentUser.displayName,
+                        otherUserId: user.displayName
+                    ],
+                    classId: classId,
+                    studentId: studentId,
+                    studentName: studentName
+                )
+
+                if let conv = conversation, !conversations.contains(where: { $0.id == conv.id }) {
+                    conversations.insert(conv, at: 0)
+                }
+            } catch {
+                errorMessage = error.localizedDescription
+            }
         }
 
         isLoading = false
@@ -203,6 +281,16 @@ class MessageViewModel: ObservableObject {
             if let index = conversations.firstIndex(where: { $0.id == conversationId }) {
                 conversations[index].unreadCounts[userId] = 0
                 updateUnreadCount(userId: userId)
+            }
+        } else {
+            do {
+                try await MessageService.shared.markAsRead(conversationId: conversationId, userId: userId)
+                if let index = conversations.firstIndex(where: { $0.id == conversationId }) {
+                    conversations[index].unreadCounts[userId] = 0
+                    updateUnreadCount(userId: userId)
+                }
+            } catch {
+                errorMessage = error.localizedDescription
             }
         }
     }
@@ -220,6 +308,18 @@ class MessageViewModel: ObservableObject {
         if USE_MOCK_DATA {
             try? await Task.sleep(nanoseconds: 500_000_000)
             // In mock mode, just simulate success
+        } else {
+            do {
+                try await MessageService.shared.sendBroadcastMessage(
+                    teacherId: teacherId,
+                    teacherName: teacherName,
+                    classId: classId,
+                    parentIds: parentIds,
+                    content: content
+                )
+            } catch {
+                errorMessage = error.localizedDescription
+            }
         }
 
         isSending = false
