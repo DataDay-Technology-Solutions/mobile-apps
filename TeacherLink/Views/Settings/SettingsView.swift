@@ -1,6 +1,6 @@
 //
 //  SettingsView.swift
-//  TeacherLink
+//  Hall Pass
 //
 
 import SwiftUI
@@ -12,6 +12,10 @@ struct SettingsView: View {
     @State private var showCreateClass = false
     @State private var showJoinClass = false
     @State private var showSignOutConfirm = false
+    @State private var showQRInvite = false
+
+    // Admin email for CC on flagged parent communications
+    @AppStorage("adminEmail") private var adminEmail: String = ""
 
     var body: some View {
         NavigationStack {
@@ -20,7 +24,7 @@ struct SettingsView: View {
                 Section {
                     HStack(spacing: 16) {
                         Circle()
-                            .fill(Color.blue)
+                            .fill(AppTheme.gradient)
                             .frame(width: 60, height: 60)
                             .overlay(
                                 Text(authViewModel.currentUser?.initials ?? "?")
@@ -37,7 +41,7 @@ struct SettingsView: View {
                                 .foregroundColor(.white)
                                 .padding(.horizontal, 8)
                                 .padding(.vertical, 2)
-                                .background(authViewModel.isTeacher ? Color.blue : Color.green)
+                                .background(authViewModel.isTeacher ? AppTheme.primary : AppTheme.secondary)
                                 .cornerRadius(4)
 
                             Text(authViewModel.currentUser?.email ?? "")
@@ -50,12 +54,24 @@ struct SettingsView: View {
 
                 // Classes Section
                 Section {
-                    ForEach(classroomViewModel.classrooms) { classroom in
-                        ClassroomRow(
-                            classroom: classroom,
-                            isSelected: classroom.id == classroomViewModel.selectedClassroom?.id
-                        ) {
-                            classroomViewModel.selectClassroom(classroom)
+                    // Debug: Show classroom count
+                    Text("DEBUG: \(classroomViewModel.classrooms.count) classrooms loaded")
+                        .font(.caption)
+                        .foregroundColor(.orange)
+
+                    ForEach(0..<classroomViewModel.classrooms.count, id: \.self) { index in
+                        let classroom = classroomViewModel.classrooms[index]
+                        VStack(alignment: .leading, spacing: 4) {
+                            Text("Row \(index): \(classroom.name) - id: \(classroom.id ?? "nil")")
+                                .font(.caption2)
+                                .foregroundColor(.orange)
+
+                            ClassroomRow(
+                                classroom: classroom,
+                                isSelected: classroom.id == classroomViewModel.selectedClassroom?.id
+                            ) {
+                                classroomViewModel.selectClassroom(classroom)
+                            }
                         }
                     }
 
@@ -97,11 +113,17 @@ struct SettingsView: View {
                                         .foregroundColor(.blue)
                                 }
 
-                                ShareLink(item: "Join my class \"\(classroom.name)\" on TeacherLink!\n\nClass Code: \(classroom.classCode)\n\nDownload the app and enter this code to connect with your child's classroom.") {
+                                ShareLink(item: "Join my class \"\(classroom.name)\" on Hall Pass!\n\nClass Code: \(classroom.classCode)\n\nDownload the app and enter this code to connect with your child's classroom.") {
                                     Image(systemName: "square.and.arrow.up")
                                         .foregroundColor(.blue)
                                 }
                             }
+                        }
+
+                        Button {
+                            showQRInvite = true
+                        } label: {
+                            Label("Show QR Code Invite", systemImage: "qrcode")
                         }
 
                         Button {
@@ -115,6 +137,56 @@ struct SettingsView: View {
                         Text("Invite Parents")
                     } footer: {
                         Text("Share this code with parents so they can join your class and receive updates.")
+                    }
+                }
+
+                // Teacher Tools Section
+                if authViewModel.isTeacher {
+                    Section {
+                        NavigationLink {
+                            ParentScoreView()
+                                .environmentObject(classroomViewModel)
+                        } label: {
+                            Label {
+                                VStack(alignment: .leading, spacing: 2) {
+                                    Text("Admin Support")
+                                    Text("Flag parents for admin visibility")
+                                        .font(.caption)
+                                        .foregroundColor(.secondary)
+                                }
+                            } icon: {
+                                Image(systemName: "bell.badge.fill")
+                                    .foregroundColor(.orange)
+                            }
+                        }
+                    } header: {
+                        Text("Teacher Tools")
+                    }
+
+                    // Admin Email Configuration
+                    Section {
+                        VStack(alignment: .leading, spacing: 8) {
+                            TextField("admin@school.edu", text: $adminEmail)
+                                .keyboardType(.emailAddress)
+                                .textContentType(.emailAddress)
+                                .autocapitalization(.none)
+                                .disableAutocorrection(true)
+
+                            if !adminEmail.isEmpty {
+                                HStack(spacing: 4) {
+                                    Image(systemName: "checkmark.circle.fill")
+                                        .foregroundColor(.green)
+                                        .font(.caption)
+                                    Text("Admin will be CC'd on flagged parent messages")
+                                        .font(.caption)
+                                        .foregroundColor(.secondary)
+                                }
+                            }
+                        }
+                    } header: {
+                        Text("Admin Email for CC")
+                    } footer: {
+                        Text("When you mark a parent for admin attention, this email will be CC'd on all communications with that parent.")
                     }
                 }
 
@@ -159,6 +231,11 @@ struct SettingsView: View {
             .sheet(isPresented: $showJoinClass) {
                 JoinClassView()
                     .environmentObject(classroomViewModel)
+            }
+            .sheet(isPresented: $showQRInvite) {
+                if let classroom = classroomViewModel.selectedClassroom {
+                    ClassInviteView(classroom: classroom)
+                }
             }
             .confirmationDialog("Sign Out", isPresented: $showSignOutConfirm) {
                 Button("Sign Out", role: .destructive) {
@@ -209,13 +286,7 @@ struct ClassroomRow: View {
     }
 
     private var classColor: Color {
-        switch classroom.avatarColor {
-        case "blue": return .blue
-        case "green": return .green
-        case "purple": return .purple
-        case "orange": return .orange
-        default: return .blue
-        }
+        return .blue
     }
 }
 

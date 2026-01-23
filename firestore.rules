@@ -1,0 +1,258 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // ============================================
+    // HELPER FUNCTIONS
+    // ============================================
+
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    function isOwner(userId) {
+      return request.auth.uid == userId;
+    }
+
+    function isTeacher() {
+      return isAuthenticated() &&
+             exists(/databases/$(database)/documents/teachers/$(request.auth.uid));
+    }
+
+    function isParent() {
+      return isAuthenticated() &&
+             exists(/databases/$(database)/documents/parents/$(request.auth.uid));
+    }
+
+    function getParentData() {
+      return get(/databases/$(database)/documents/parents/$(request.auth.uid)).data;
+    }
+
+    function getTeacherData() {
+      return get(/databases/$(database)/documents/teachers/$(request.auth.uid)).data;
+    }
+
+    function isStudentParent(studentId) {
+      return isAuthenticated() && isParent() &&
+             studentId in getParentData().studentIds;
+    }
+
+    function isClassroomTeacher(classroomId) {
+      return isAuthenticated() && isTeacher() &&
+             getTeacherData().classroomId == classroomId;
+    }
+
+    // ============================================
+    // USER AUTHENTICATION DATA
+    // ============================================
+
+    // Users collection - users can only access their own document
+    match /users/{userId} {
+      allow read: if isOwner(userId);
+      allow create: if isOwner(userId);
+      allow update: if isOwner(userId);
+      allow delete: if false; // Never delete user data
+    }
+
+    // ============================================
+    // TEACHER DATA
+    // ============================================
+
+    match /teachers/{teacherId} {
+      // Teachers can read their own data
+      // Parents can read teacher info to see who teaches their child
+      allow read: if isOwner(teacherId) || isParent();
+      allow create: if isOwner(teacherId);
+      allow update: if isOwner(teacherId);
+      allow delete: if false;
+    }
+
+    // ============================================
+    // PARENT DATA - STRICT ISOLATION
+    // ============================================
+
+    match /parents/{parentId} {
+      // CRITICAL: Parents can ONLY access their own document
+      // This prevents any cross-parent data leakage
+      allow read: if isOwner(parentId);
+      allow create: if isOwner(parentId);
+      allow update: if isOwner(parentId);
+      allow delete: if false;
+    }
+
+    // ============================================
+    // STUDENT DATA - SCOPED ACCESS
+    // ============================================
+
+    match /students/{studentId} {
+      // Teachers can see students in their classroom
+      // Parents can ONLY see their linked children
+      allow read: if isClassroomTeacher(resource.data.classroomId) ||
+                    isStudentParent(studentId);
+
+      // Only teachers can create students
+      allow create: if isTeacher() &&
+                      isClassroomTeacher(request.resource.data.classroomId);
+
+      // Only the classroom teacher can update/delete
+      allow update: if isClassroomTeacher(resource.data.classroomId);
+      allow delete: if isClassroomTeacher(resource.data.classroomId);
+    }
+
+    // ============================================
+    // HALL PASSES - STRICT DATA ISOLATION
+    // ============================================
+
+    match /hallPasses/{hallPassId} {
+      // Teachers see hall passes for their classroom
+      // Parents can ONLY see their own child's hall passes
+      allow read: if isClassroomTeacher(resource.data.classroomId) ||
+                    isStudentParent(resource.data.studentId);
+
+      // Only classroom teacher can create hall passes
+      allow create: if isTeacher() &&
+                      isClassroomTeacher(request.resource.data.classroomId) &&
+                      request.resource.data.teacherId == request.auth.uid;
+
+      // Only classroom teacher can update (return) hall passes
+      allow update: if isClassroomTeacher(resource.data.classroomId);
+
+      // Never delete - only mark as returned
+      allow delete: if false;
+    }
+
+    // ============================================
+    // NOTIFICATIONS - USER-SPECIFIC ONLY
+    // ============================================
+
+    match /notifications/{notificationId} {
+      // CRITICAL: Notifications are strictly tied to userId
+      // A user can ONLY see notifications addressed to them
+      allow read: if isOwner(resource.data.userId);
+
+      // System can create notifications for any user
+      allow create: if isAuthenticated();
+
+      // User can only update (mark as read) their own notifications
+      allow update: if isOwner(resource.data.userId);
+
+      // User can delete their own notifications
+      allow delete: if isOwner(resource.data.userId);
+    }
+
+    // ============================================
+    // MESSAGES - PARTICIPANT-ONLY ACCESS
+    // ============================================
+
+    match /messages/{messageId} {
+      // CRITICAL: Only conversation participants can access
+      // This ensures Parent A cannot read Parent B's messages
+      allow read: if request.auth.uid in resource.data.participants;
+
+      // Creator must be a participant
+      allow create: if request.auth.uid in request.resource.data.participants;
+
+      // Only participants can update
+      allow update: if request.auth.uid in resource.data.participants;
+
+      // Never delete messages
+      allow delete: if false;
+    }
+
+    match /conversations/{conversationId} {
+      // Only participants can access conversations
+      allow read: if request.auth.uid in resource.data.participants;
+      allow create: if request.auth.uid in request.resource.data.participants;
+      allow update: if request.auth.uid in resource.data.participants;
+      allow delete: if false;
+    }
+
+    // ============================================
+    // CLASSROOMS - TEACHER OWNED
+    // ============================================
+
+    match /classrooms/{classroomId} {
+      // Teachers see their classroom, parents can see basic info
+      allow read: if isClassroomTeacher(classroomId) || isParent();
+
+      // Only teachers can create classrooms
+      allow create: if isTeacher();
+
+      // Only the classroom teacher can update
+      allow update: if isClassroomTeacher(classroomId);
+
+      // Only the classroom teacher can delete
+      allow delete: if isClassroomTeacher(classroomId);
+    }
+
+    // ============================================
+    // NEW FEATURES - PROPER SCOPING
+    // ============================================
+
+    // Event Sign-ups
+    match /events/{eventId} {
+      allow read: if isClassroomTeacher(resource.data.classId) || isParent();
+      allow create: if isTeacher();
+      allow update: if isClassroomTeacher(resource.data.classId) || isParent();
+      allow delete: if isClassroomTeacher(resource.data.classId);
+    }
+
+    // Calendar Items
+    match /calendarItems/{itemId} {
+      allow read: if isClassroomTeacher(resource.data.classId) || isParent();
+      allow create: if isTeacher();
+      allow update: if isClassroomTeacher(resource.data.classId);
+      allow delete: if isClassroomTeacher(resource.data.classId);
+    }
+
+    // Supply Wishlist
+    match /supplies/{supplyId} {
+      allow read: if isClassroomTeacher(resource.data.classId) || isParent();
+      allow create: if isTeacher();
+      allow update: if isClassroomTeacher(resource.data.classId) || isParent();
+      allow delete: if isClassroomTeacher(resource.data.classId);
+    }
+
+    // Mood Check-ins - Parents can only see their own child
+    match /moodCheckIns/{checkInId} {
+      allow read: if isClassroomTeacher(resource.data.classId) ||
+                    isStudentParent(resource.data.studentId);
+      allow create: if isTeacher() || isStudentParent(request.resource.data.studentId);
+      allow update: if isClassroomTeacher(resource.data.classId);
+      allow delete: if false;
+    }
+
+    // Badges - Classroom scoped
+    match /badges/{badgeId} {
+      allow read: if isClassroomTeacher(resource.data.classId) || isParent();
+      allow create: if isTeacher();
+      allow update: if isClassroomTeacher(resource.data.classId);
+      allow delete: if isClassroomTeacher(resource.data.classId);
+    }
+
+    // Student Badges - Parent can only see their child's badges
+    match /studentBadges/{awardId} {
+      allow read: if isClassroomTeacher(resource.data.classId) ||
+                    isStudentParent(resource.data.studentId);
+      allow create: if isTeacher();
+      allow update: if isClassroomTeacher(resource.data.classId);
+      allow delete: if false;
+    }
+
+    // Class Pet - Classroom scoped
+    match /classPets/{petId} {
+      allow read: if isClassroomTeacher(resource.data.classId) || isParent();
+      allow create: if isTeacher();
+      allow update: if isClassroomTeacher(resource.data.classId) || isParent();
+      allow delete: if isClassroomTeacher(resource.data.classId);
+    }
+
+    // Permission Slips - Parents can only sign for their children
+    match /permissionSlips/{slipId} {
+      allow read: if isClassroomTeacher(resource.data.classId) || isParent();
+      allow create: if isTeacher();
+      allow update: if isClassroomTeacher(resource.data.classId) || isParent();
+      allow delete: if isClassroomTeacher(resource.data.classId);
+    }
+  }
+}

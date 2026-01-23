@@ -95,6 +95,8 @@ struct NewMessageView: View {
             .sheet(item: $selectedStudent) { student in
                 StudentParentMessagingView(student: student)
                     .environmentObject(messageViewModel)
+                    .environmentObject(classroomViewModel)
+                    .environmentObject(authViewModel)
             }
         }
     }
@@ -189,31 +191,39 @@ struct BroadcastMessageView: View {
 struct StudentParentMessagingView: View {
     @EnvironmentObject var authViewModel: AuthViewModel
     @EnvironmentObject var messageViewModel: MessageViewModel
+    @EnvironmentObject var classroomViewModel: ClassroomViewModel
     @Environment(\.dismiss) private var dismiss
 
     let student: Student
+    @State private var selectedConversation: Conversation?
+    @State private var showChat = false
+    @State private var isLoadingParents = true
+    @State private var parentUsers: [AppUser] = []
 
     var body: some View {
         NavigationStack {
-            VStack {
-                // Student Info
+            VStack(spacing: 0) {
+                // Student Info Header
                 VStack(spacing: 12) {
-                    StudentAvatar(student: student, size: 80)
+                    StudentAvatar(student: student, size: 60)
 
                     Text(student.fullName)
-                        .font(.title2.bold())
+                        .font(.title3.bold())
 
                     Text("\(student.parentIds.count) parent(s) connected")
+                        .font(.caption)
                         .foregroundColor(.secondary)
                 }
-                .padding(.top, 32)
-
-                Spacer()
+                .padding()
+                .frame(maxWidth: .infinity)
+                .background(Color(.systemGray6))
 
                 if student.parentIds.isEmpty {
-                    VStack(spacing: 8) {
+                    // No parents connected
+                    Spacer()
+                    VStack(spacing: 12) {
                         Image(systemName: "person.fill.questionmark")
-                            .font(.system(size: 40))
+                            .font(.system(size: 50))
                             .foregroundColor(.gray)
 
                         Text("No Parents Connected")
@@ -223,15 +233,55 @@ struct StudentParentMessagingView: View {
                             .font(.subheadline)
                             .foregroundColor(.secondary)
                             .multilineTextAlignment(.center)
-                            .padding(.horizontal)
+                            .padding(.horizontal, 32)
                     }
+                    Spacer()
+                } else if isLoadingParents {
+                    Spacer()
+                    ProgressView("Loading parents...")
+                    Spacer()
                 } else {
-                    Text("Select a parent to message")
-                        .foregroundColor(.secondary)
-                        .padding()
-                }
+                    // List of parents to message
+                    List {
+                        Section {
+                            ForEach(parentUsers, id: \.id) { parent in
+                                Button {
+                                    startConversation(with: parent)
+                                } label: {
+                                    HStack(spacing: 12) {
+                                        // Parent Avatar
+                                        Circle()
+                                            .fill(Color.green)
+                                            .frame(width: 44, height: 44)
+                                            .overlay(
+                                                Text(String(parent.name.prefix(1)).uppercased())
+                                                    .foregroundColor(.white)
+                                                    .fontWeight(.bold)
+                                            )
 
-                Spacer()
+                                        VStack(alignment: .leading, spacing: 2) {
+                                            Text(parent.name)
+                                                .font(.headline)
+                                                .foregroundColor(.primary)
+                                            Text(parent.email)
+                                                .font(.caption)
+                                                .foregroundColor(.secondary)
+                                        }
+
+                                        Spacer()
+
+                                        Image(systemName: "message.fill")
+                                            .foregroundColor(.blue)
+                                    }
+                                    .padding(.vertical, 4)
+                                }
+                            }
+                        } header: {
+                            Text("Select a parent to message")
+                        }
+                    }
+                    .listStyle(.insetGrouped)
+                }
             }
             .navigationTitle("Message Parent")
             .navigationBarTitleDisplayMode(.inline)
@@ -241,6 +291,244 @@ struct StudentParentMessagingView: View {
                         dismiss()
                     }
                 }
+            }
+            .navigationDestination(isPresented: $showChat) {
+                if let conversation = selectedConversation {
+                    ChatView(conversation: conversation)
+                        .environmentObject(messageViewModel)
+                        .environmentObject(authViewModel)
+                }
+            }
+            .onAppear {
+                loadParents()
+            }
+        }
+    }
+
+    private func loadParents() {
+        isLoadingParents = true
+
+        Task {
+            // Simulate loading
+            try? await Task.sleep(nanoseconds: 500_000_000)
+
+            // Get parents from mock data or classroom
+            if USE_MOCK_DATA {
+                // Get parent users from mock data that match this student's parentIds
+                parentUsers = MockDataService.shared.parentUsers.compactMap { user in
+                    guard let userId = user.id, student.parentIds.contains(userId) else { return nil }
+                    return AppUser(
+                        id: userId,
+                        email: user.email,
+                        name: user.displayName ?? user.name,
+                        role: .parent
+                    )
+                }
+            }
+
+            // If no parents found, create placeholder entries
+            if parentUsers.isEmpty && !student.parentIds.isEmpty {
+                parentUsers = student.parentIds.enumerated().map { index, parentId in
+                    AppUser(
+                        id: parentId,
+                        email: "parent\(index + 1)@example.com",
+                        name: "Parent \(index + 1)",
+                        role: .parent
+                    )
+                }
+            }
+
+            isLoadingParents = false
+        }
+    }
+
+    private func startConversation(with parent: AppUser) {
+        guard let currentUser = authViewModel.currentUser,
+              let currentUserId = currentUser.id,
+              let classId = classroomViewModel.selectedClassroom?.id else { return }
+
+        Task {
+            // Create or get existing conversation
+            let conversation = await messageViewModel.getOrCreateConversation(
+                participantIds: [currentUserId, parent.id],
+                participantNames: [currentUserId: currentUser.displayName ?? currentUser.name, parent.id: parent.name],
+                classId: classId,
+                studentId: student.id,
+                studentName: student.fullName
+            )
+
+            await MainActor.run {
+                selectedConversation = conversation
+                showChat = true
+            }
+        }
+    }
+}
+
+// MARK: - Parent New Message View
+struct ParentNewMessageView: View {
+    @EnvironmentObject var authViewModel: AuthViewModel
+    @EnvironmentObject var classroomViewModel: ClassroomViewModel
+    @EnvironmentObject var messageViewModel: MessageViewModel
+    @Environment(\.dismiss) private var dismiss
+
+    @State private var selectedConversation: Conversation?
+    @State private var showChat = false
+    @State private var isLoading = false
+    @State private var teacherName: String = "Teacher"
+
+    var body: some View {
+        NavigationStack {
+            VStack(spacing: 24) {
+                Spacer()
+
+                // Header
+                VStack(spacing: 12) {
+                    Image(systemName: "message.badge.filled.fill")
+                        .font(.system(size: 60))
+                        .foregroundColor(.blue)
+
+                    Text("Message Your Child's Teacher")
+                        .font(.title2.bold())
+
+                    Text("Send a message about your child's progress or any questions you have.")
+                        .font(.subheadline)
+                        .foregroundColor(.secondary)
+                        .multilineTextAlignment(.center)
+                        .padding(.horizontal, 32)
+                }
+
+                // Teacher Card
+                if let classroom = classroomViewModel.selectedClassroom {
+                    Button {
+                        startConversationWithTeacher()
+                    } label: {
+                        HStack(spacing: 16) {
+                            // Teacher Avatar
+                            Circle()
+                                .fill(Color.blue)
+                                .frame(width: 56, height: 56)
+                                .overlay(
+                                    Text(teacherName.prefix(1).uppercased())
+                                        .foregroundColor(.white)
+                                        .font(.title2.bold())
+                                )
+
+                            VStack(alignment: .leading, spacing: 4) {
+                                Text(teacherName)
+                                    .font(.headline)
+                                    .foregroundColor(.primary)
+
+                                Text(classroom.name)
+                                    .font(.subheadline)
+                                    .foregroundColor(.secondary)
+
+                                if let student = linkedStudent {
+                                    Text("About: \(student.fullName)")
+                                        .font(.caption)
+                                        .foregroundColor(.blue)
+                                }
+                            }
+
+                            Spacer()
+
+                            if isLoading {
+                                ProgressView()
+                            } else {
+                                Image(systemName: "chevron.right")
+                                    .foregroundColor(.secondary)
+                            }
+                        }
+                        .padding()
+                        .background(Color(.systemGray6))
+                        .cornerRadius(12)
+                    }
+                    .disabled(isLoading)
+                    .padding(.horizontal)
+                }
+
+                Spacer()
+                Spacer()
+            }
+            .navigationTitle("New Message")
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .navigationBarLeading) {
+                    Button("Cancel") {
+                        dismiss()
+                    }
+                }
+            }
+            .navigationDestination(isPresented: $showChat) {
+                if let conversation = selectedConversation {
+                    ChatView(conversation: conversation)
+                        .environmentObject(messageViewModel)
+                        .environmentObject(authViewModel)
+                }
+            }
+            .onAppear {
+                loadTeacherName()
+            }
+        }
+    }
+
+    private var linkedStudent: Student? {
+        // Get the first student linked to this parent in the current classroom
+        guard let userId = authViewModel.currentUser?.id else { return nil }
+        return classroomViewModel.students.first { student in
+            student.parentIds.contains(userId)
+        }
+    }
+
+    private func loadTeacherName() {
+        guard let teacherId = classroomViewModel.selectedClassroom?.teacherId else { return }
+
+        Task {
+            // Try to fetch teacher info from Supabase
+            do {
+                let user: AppUser = try await SupabaseConfig.client
+                    .from("users")
+                    .select()
+                    .eq("id", value: teacherId)
+                    .single()
+                    .execute()
+                    .value
+
+                await MainActor.run {
+                    teacherName = user.name
+                }
+            } catch {
+                print("Could not fetch teacher name: \(error)")
+            }
+        }
+    }
+
+    private func startConversationWithTeacher() {
+        guard let currentUser = authViewModel.currentUser,
+              let currentUserId = currentUser.id,
+              let classroom = classroomViewModel.selectedClassroom,
+              let classId = classroom.id else { return }
+
+        isLoading = true
+
+        Task {
+            let student = linkedStudent
+
+            let conversation = await messageViewModel.getOrCreateConversation(
+                participantIds: [currentUserId, classroom.teacherId],
+                participantNames: [
+                    currentUserId: currentUser.displayName ?? currentUser.name,
+                    classroom.teacherId: teacherName
+                ],
+                classId: classId,
+                studentId: student?.id,
+                studentName: student?.fullName
+            )
+
+            await MainActor.run {
+                isLoading = false
+                selectedConversation = conversation
+                showChat = true
             }
         }
     }

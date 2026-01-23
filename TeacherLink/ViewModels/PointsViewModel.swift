@@ -30,6 +30,13 @@ class PointsViewModel: ObservableObject {
         if USE_MOCK_DATA {
             classSummaries = MockDataService.shared.pointsSummaries
             recentPoints = MockDataService.shared.pointsHistory
+        } else {
+            PointsService.shared.listenToClassSummaries(classId: classId) { [weak self] summaries in
+                self?.classSummaries = summaries
+            }
+            PointsService.shared.listenToRecentPoints(classId: classId) { [weak self] records in
+                self?.recentPoints = records
+            }
         }
     }
 
@@ -86,6 +93,41 @@ class PointsViewModel: ObservableObject {
 
             // Sort by points
             classSummaries.sort { $0.totalPoints > $1.totalPoints }
+        } else {
+            do {
+                let record = try await PointsService.shared.awardPoints(
+                    studentId: studentId,
+                    classId: student.classId,
+                    behavior: behavior,
+                    note: note,
+                    awardedBy: awardedBy,
+                    awardedByName: awardedByName
+                )
+                recentPoints.insert(record, at: 0)
+
+                // Update local summary
+                if let index = classSummaries.firstIndex(where: { $0.studentId == studentId }) {
+                    classSummaries[index].totalPoints += behavior.points
+                    if behavior.isPositive {
+                        classSummaries[index].positiveCount += 1
+                    } else {
+                        classSummaries[index].negativeCount += 1
+                    }
+                } else {
+                    let summary = StudentPointsSummary(
+                        studentId: studentId,
+                        classId: student.classId,
+                        totalPoints: behavior.points,
+                        positiveCount: behavior.isPositive ? 1 : 0,
+                        negativeCount: behavior.isPositive ? 0 : 1
+                    )
+                    classSummaries.append(summary)
+                }
+
+                classSummaries.sort { $0.totalPoints > $1.totalPoints }
+            } catch {
+                errorMessage = error.localizedDescription
+            }
         }
 
         isLoading = false
@@ -130,6 +172,50 @@ class PointsViewModel: ObservableObject {
             }
 
             classSummaries.sort { $0.totalPoints > $1.totalPoints }
+        } else {
+            do {
+                let studentIds = students.compactMap { $0.id }
+                guard let classId = students.first?.classId else { return }
+
+                try await PointsService.shared.awardPointsToMultipleStudents(
+                    studentIds: studentIds,
+                    classId: classId,
+                    behavior: behavior,
+                    awardedBy: awardedBy,
+                    awardedByName: awardedByName
+                )
+
+                // Update local state
+                for student in students {
+                    guard let studentId = student.id else { continue }
+
+                    let record = PointRecord(
+                        id: UUID().uuidString,
+                        studentId: studentId,
+                        classId: student.classId,
+                        behaviorId: behavior.id,
+                        behaviorName: behavior.name,
+                        points: behavior.points,
+                        awardedBy: awardedBy,
+                        awardedByName: awardedByName,
+                        createdAt: Date()
+                    )
+                    recentPoints.insert(record, at: 0)
+
+                    if let index = classSummaries.firstIndex(where: { $0.studentId == studentId }) {
+                        classSummaries[index].totalPoints += behavior.points
+                        if behavior.isPositive {
+                            classSummaries[index].positiveCount += 1
+                        } else {
+                            classSummaries[index].negativeCount += 1
+                        }
+                    }
+                }
+
+                classSummaries.sort { $0.totalPoints > $1.totalPoints }
+            } catch {
+                errorMessage = error.localizedDescription
+            }
         }
 
         isLoading = false
@@ -145,6 +231,14 @@ class PointsViewModel: ObservableObject {
             studentHistory = MockDataService.shared.pointsHistory.filter { $0.studentId == studentId }
             selectedStudentSummary = classSummaries.first { $0.studentId == studentId }
                 ?? StudentPointsSummary(studentId: studentId, classId: classId)
+        } else {
+            do {
+                studentHistory = try await PointsService.shared.getPointsHistory(studentId: studentId)
+                selectedStudentSummary = try await PointsService.shared.getStudentSummary(studentId: studentId, classId: classId)
+            } catch {
+                errorMessage = error.localizedDescription
+                selectedStudentSummary = StudentPointsSummary(studentId: studentId, classId: classId)
+            }
         }
 
         isLoading = false
@@ -154,6 +248,10 @@ class PointsViewModel: ObservableObject {
         if USE_MOCK_DATA {
             selectedStudentSummary = classSummaries.first { $0.studentId == studentId }
                 ?? StudentPointsSummary(studentId: studentId, classId: classId)
+        } else {
+            PointsService.shared.listenToStudentPoints(studentId: studentId, classId: classId) { [weak self] summary in
+                self?.selectedStudentSummary = summary
+            }
         }
     }
 
@@ -172,6 +270,20 @@ class PointsViewModel: ObservableObject {
                 classSummaries[index] = StudentPointsSummary(studentId: studentId, classId: classId)
             }
             selectedStudentSummary = StudentPointsSummary(studentId: studentId, classId: classId)
+        } else {
+            do {
+                try await PointsService.shared.resetStudentPoints(studentId: studentId, classId: classId)
+
+                recentPoints.removeAll { $0.studentId == studentId }
+                studentHistory = []
+
+                if let index = classSummaries.firstIndex(where: { $0.studentId == studentId }) {
+                    classSummaries[index] = StudentPointsSummary(studentId: studentId, classId: classId)
+                }
+                selectedStudentSummary = StudentPointsSummary(studentId: studentId, classId: classId)
+            } catch {
+                errorMessage = error.localizedDescription
+            }
         }
 
         isLoading = false

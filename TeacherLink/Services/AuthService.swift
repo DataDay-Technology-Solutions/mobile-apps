@@ -1,21 +1,19 @@
 //
 //  AuthService.swift
-//  TeacherLink
+//  HallPass (formerly TeacherLink)
 //
 
 import Foundation
-import FirebaseAuth
-import FirebaseFirestore
+import Supabase
 
 class AuthService {
     static let shared = AuthService()
-    private let auth = Auth.auth()
-    private let db = Firestore.firestore()
+    private let supabase = SupabaseConfig.client
 
     private init() {}
 
-    var currentUser: FirebaseAuth.User? {
-        auth.currentUser
+    var currentUser: Supabase.User? {
+        supabase.auth.currentUser
     }
 
     var isAuthenticated: Bool {
@@ -25,61 +23,90 @@ class AuthService {
     func signUp(
         email: String,
         password: String,
-        displayName: String,
+        name: String,
         role: UserRole
-    ) async throws -> User {
-        let result = try await auth.createUser(withEmail: email, password: password)
-
-        let changeRequest = result.user.createProfileChangeRequest()
-        changeRequest.displayName = displayName
-        try await changeRequest.commitChanges()
-
-        let user = User(
-            id: result.user.uid,
+    ) async throws -> AppUser {
+        let response = try await supabase.auth.signUp(
             email: email,
-            displayName: displayName,
-            role: role,
-            classIds: [],
-            createdAt: Date()
+            password: password,
+            data: ["name": AnyJSON.string(name)]
         )
 
-        try await db.collection("users").document(result.user.uid).setData(from: user)
+        let authUser = response.user
+        let userId: UUID = authUser.id
+
+        let user = AppUser(
+            id: userId.uuidString.lowercased(),
+            email: email,
+            name: name,
+            role: role,
+            classroomId: nil
+        )
+
+        // Convert to DatabaseUser for insertion
+        let dbUser = DatabaseUser(from: user)
+        try await supabase
+            .from("users")
+            .insert(dbUser)
+            .execute()
+
         return user
     }
 
-    func signIn(email: String, password: String) async throws -> User {
-        let result = try await auth.signIn(withEmail: email, password: password)
-        return try await getUser(userId: result.user.uid)
+    func signIn(email: String, password: String) async throws -> AppUser {
+        try await supabase.auth.signIn(email: email, password: password)
+
+        guard let authUser = supabase.auth.currentUser else {
+            throw AuthError.userNotFound
+        }
+
+        let userId: UUID = authUser.id
+        return try await getUser(userId: userId)
     }
 
     func signOut() throws {
-        try auth.signOut()
-    }
-
-    func getUser(userId: String) async throws -> User {
-        let document = try await db.collection("users").document(userId).getDocument()
-        guard let user = try? document.data(as: User.self) else {
-            throw AuthError.userNotFound
+        Task {
+            try await supabase.auth.signOut()
         }
-        return user
     }
 
-    func updateUser(_ user: User) async throws {
-        guard let userId = user.id else { return }
-        try db.collection("users").document(userId).setData(from: user, merge: true)
+    func getUser(userId: UUID) async throws -> AppUser {
+        let dbUser: DatabaseUser = try await supabase
+            .from("users")
+            .select()
+            .eq("id", value: userId.uuidString.lowercased())
+            .single()
+            .execute()
+            .value
+
+        return dbUser.toAppUser()
+    }
+
+    func updateUser(_ user: AppUser) async throws {
+        let dbUser = DatabaseUser(from: user)
+        try await supabase
+            .from("users")
+            .update(dbUser)
+            .eq("id", value: user.id)
+            .execute()
     }
 
     func resetPassword(email: String) async throws {
-        try await auth.sendPasswordReset(withEmail: email)
+        try await supabase.auth.resetPasswordForEmail(email)
     }
 
     func updateFCMToken(_ token: String) async throws {
-        guard let userId = currentUser?.uid else { return }
-        try await db.collection("users").document(userId).updateData([
-            "fcmToken": token
-        ])
+        guard let user = currentUser else { return }
+        let userId: UUID = user.id
+        try await supabase
+            .from("users")
+            .update(["fcm_token": AnyJSON.string(token)])
+            .eq("id", value: userId.uuidString.lowercased())
+            .execute()
     }
 }
+
+// Note: AppUser is defined in AuthenticationService.swift to avoid duplication
 
 enum AuthError: LocalizedError {
     case userNotFound

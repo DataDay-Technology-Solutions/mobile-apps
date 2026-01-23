@@ -19,29 +19,17 @@ struct StoryCard: View {
             HStack {
                 // Author Avatar
                 Circle()
-                    .fill(story.isAnnouncement ? Color.orange : Color.blue)
+                    .fill(Color.blue)
                     .frame(width: 40, height: 40)
                     .overlay(
-                        Image(systemName: story.isAnnouncement ? "megaphone.fill" : "person.fill")
+                        Image(systemName: "person.fill")
                             .foregroundColor(.white)
                             .font(.system(size: 16))
                     )
 
                 VStack(alignment: .leading, spacing: 2) {
-                    HStack {
-                        Text(story.authorName)
-                            .font(.subheadline.bold())
-
-                        if story.isAnnouncement {
-                            Text("ANNOUNCEMENT")
-                                .font(.caption2.bold())
-                                .foregroundColor(.white)
-                                .padding(.horizontal, 6)
-                                .padding(.vertical, 2)
-                                .background(Color.orange)
-                                .cornerRadius(4)
-                        }
-                    }
+                    Text(story.authorName)
+                        .font(.subheadline.bold())
 
                     Text(story.timeAgo)
                         .font(.caption)
@@ -67,14 +55,14 @@ struct StoryCard: View {
             }
 
             // Content
-            if !story.content.isEmpty {
-                Text(story.content)
+            if let content = story.content, !content.isEmpty {
+                Text(content)
                     .font(.body)
             }
 
             // Media
-            if !story.mediaURLs.isEmpty {
-                StoryMediaView(mediaURLs: story.mediaURLs, type: story.type)
+            if !story.mediaUrls.isEmpty {
+                StoryMediaView(mediaUrls: story.mediaUrls, mediaType: story.mediaType)
             }
 
             // Actions
@@ -139,11 +127,11 @@ struct StoryCard: View {
 }
 
 struct StoryMediaView: View {
-    let mediaURLs: [String]
-    let type: StoryType
+    let mediaUrls: [String]
+    let mediaType: String?
 
     var body: some View {
-        if type == .video {
+        if mediaType == "video" {
             // Video placeholder - would use AVPlayer in real app
             ZStack {
                 Rectangle()
@@ -155,10 +143,10 @@ struct StoryMediaView: View {
                     .font(.system(size: 50))
                     .foregroundColor(.white)
             }
-        } else if !mediaURLs.isEmpty {
+        } else if !mediaUrls.isEmpty {
             // Photo grid
-            if mediaURLs.count == 1 {
-                AsyncImage(url: URL(string: mediaURLs[0])) { phase in
+            if mediaUrls.count == 1 {
+                AsyncImage(url: URL(string: mediaUrls[0])) { phase in
                     switch phase {
                     case .empty:
                         Rectangle()
@@ -192,7 +180,7 @@ struct StoryMediaView: View {
                     GridItem(.flexible()),
                     GridItem(.flexible())
                 ], spacing: 4) {
-                    ForEach(Array(mediaURLs.prefix(4).enumerated()), id: \.offset) { index, url in
+                    ForEach(Array(mediaUrls.prefix(4).enumerated()), id: \.offset) { index, url in
                         AsyncImage(url: URL(string: url)) { phase in
                             switch phase {
                             case .success(let image):
@@ -207,11 +195,11 @@ struct StoryMediaView: View {
                             }
                         }
                         .overlay {
-                            if index == 3 && mediaURLs.count > 4 {
+                            if index == 3 && mediaUrls.count > 4 {
                                 Rectangle()
                                     .fill(.black.opacity(0.5))
                                     .overlay(
-                                        Text("+\(mediaURLs.count - 4)")
+                                        Text("+\(mediaUrls.count - 4)")
                                             .font(.title2.bold())
                                             .foregroundColor(.white)
                                     )
@@ -231,9 +219,7 @@ struct StoryMediaView: View {
         classId: "class1",
         authorId: "teacher1",
         authorName: "Mrs. Smith",
-        type: .text,
-        content: "Today we learned about butterflies! The students were so engaged and curious. Ask your child about the butterfly lifecycle!",
-        isAnnouncement: false
+        content: "Today we learned about butterflies! The students were so engaged and curious. Ask your child about the butterfly lifecycle!"
     ))
     .environmentObject(AuthViewModel())
     .environmentObject(StoryViewModel())

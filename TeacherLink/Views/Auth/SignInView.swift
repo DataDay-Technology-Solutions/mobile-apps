@@ -1,6 +1,6 @@
 //
 //  SignInView.swift
-//  TeacherLink
+//  Hall Pass
 //
 
 import SwiftUI
@@ -17,11 +17,17 @@ struct SignInView: View {
         NavigationStack {
             ScrollView {
                 VStack(spacing: 32) {
-                    // Header
-                    VStack(spacing: 8) {
-                        Image(systemName: "person.circle.fill")
-                            .font(.system(size: 60))
-                            .foregroundColor(.blue)
+                    // Header with paper airplane
+                    VStack(spacing: 12) {
+                        ZStack {
+                            Circle()
+                                .fill(AppTheme.gradient)
+                                .frame(width: 80, height: 80)
+
+                            Image(systemName: "paperplane.fill")
+                                .font(.system(size: 32))
+                                .foregroundColor(.white)
+                        }
 
                         Text("Welcome Back")
                             .font(.title.bold())
@@ -57,7 +63,7 @@ struct SignInView: View {
                     } label: {
                         Text("Forgot Password?")
                             .font(.subheadline)
-                            .foregroundColor(.blue)
+                            .foregroundColor(AppTheme.primary)
                     }
 
                     // Error Message
@@ -82,14 +88,17 @@ struct SignInView: View {
                             ProgressView()
                                 .tint(.white)
                         } else {
-                            Text("Sign In")
+                            HStack {
+                                Text("Sign In")
+                                Image(systemName: "arrow.right")
+                            }
                         }
                     }
                     .font(.headline)
                     .foregroundColor(.white)
                     .frame(maxWidth: .infinity)
                     .padding()
-                    .background(isFormValid ? Color.blue : Color.gray)
+                    .background(isFormValid ? AppTheme.gradient : LinearGradient(colors: [.gray], startPoint: .leading, endPoint: .trailing))
                     .cornerRadius(12)
                     .padding(.horizontal, 24)
                     .disabled(!isFormValid || authViewModel.isLoading)
@@ -103,6 +112,7 @@ struct SignInView: View {
                     Button("Cancel") {
                         dismiss()
                     }
+                    .foregroundColor(AppTheme.primary)
                 }
             }
             .sheet(isPresented: $showForgotPassword) {
@@ -130,7 +140,7 @@ struct ForgotPasswordView: View {
                     VStack(spacing: 16) {
                         Image(systemName: "envelope.badge.fill")
                             .font(.system(size: 60))
-                            .foregroundColor(.green)
+                            .foregroundColor(AppTheme.secondary)
 
                         Text("Email Sent!")
                             .font(.title.bold())
@@ -145,7 +155,7 @@ struct ForgotPasswordView: View {
                         .font(.headline)
                         .foregroundColor(.white)
                         .padding()
-                        .background(Color.blue)
+                        .background(AppTheme.gradient)
                         .cornerRadius(12)
                     }
                 } else {
@@ -183,7 +193,7 @@ struct ForgotPasswordView: View {
                         .foregroundColor(.white)
                         .frame(maxWidth: .infinity)
                         .padding()
-                        .background(!email.isEmpty ? Color.blue : Color.gray)
+                        .background(!email.isEmpty ? AppTheme.gradient : LinearGradient(colors: [.gray], startPoint: .leading, endPoint: .trailing))
                         .cornerRadius(12)
                         .disabled(email.isEmpty || authViewModel.isLoading)
                     }
@@ -195,6 +205,7 @@ struct ForgotPasswordView: View {
                     Button("Cancel") {
                         dismiss()
                     }
+                    .foregroundColor(AppTheme.primary)
                 }
             }
         }

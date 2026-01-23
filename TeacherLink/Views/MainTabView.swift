@@ -10,40 +10,55 @@ struct MainTabView: View {
     @StateObject private var classroomViewModel = ClassroomViewModel()
     @StateObject private var storyViewModel = StoryViewModel()
     @StateObject private var messageViewModel = MessageViewModel()
+    @StateObject private var albumViewModel = PhotoAlbumViewModel()
 
     @State private var selectedTab = 0
 
     var body: some View {
         TabView(selection: $selectedTab) {
-            StoriesView()
+            // Teachers get dashboard home, parents get stories feed
+            if authViewModel.isTeacher {
+                TeacherHomeView()
+                    .environmentObject(authViewModel)
+                    .environmentObject(classroomViewModel)
+                    .environmentObject(storyViewModel)
+                    .tabItem {
+                        Label("Home", systemImage: "house.fill")
+                    }
+                    .tag(0)
+            } else {
+                StoriesView()
+                    .environmentObject(classroomViewModel)
+                    .environmentObject(storyViewModel)
+                    .tabItem {
+                        Label("Feed", systemImage: "house.fill")
+                    }
+                    .tag(0)
+            }
+
+            PhotoAlbumsView()
                 .environmentObject(classroomViewModel)
-                .environmentObject(storyViewModel)
+                .environmentObject(albumViewModel)
                 .tabItem {
-                    Label("Stories", systemImage: "photo.stack.fill")
+                    Label("Albums", systemImage: "photo.on.rectangle.angled")
                 }
-                .tag(0)
+                .tag(1)
 
             MessagesView()
+                .environmentObject(authViewModel)
                 .environmentObject(classroomViewModel)
                 .environmentObject(messageViewModel)
                 .tabItem {
                     Label("Messages", systemImage: "message.fill")
                 }
                 .badge(messageViewModel.totalUnreadCount > 0 ? messageViewModel.totalUnreadCount : 0)
-                .tag(1)
+                .tag(2)
 
             if authViewModel.isTeacher {
-                PointsView()
+                ClassroomManagementView()
                     .environmentObject(classroomViewModel)
                     .tabItem {
-                        Label("Points", systemImage: "star.fill")
-                    }
-                    .tag(2)
-
-                StudentsView()
-                    .environmentObject(classroomViewModel)
-                    .tabItem {
-                        Label("Students", systemImage: "person.3.fill")
+                        Label("Class", systemImage: "person.3.fill")
                     }
                     .tag(3)
             }
@@ -51,7 +66,7 @@ struct MainTabView: View {
             SettingsView()
                 .environmentObject(classroomViewModel)
                 .tabItem {
-                    Label("Settings", systemImage: "gearshape.fill")
+                    Label("More", systemImage: "ellipsis.circle.fill")
                 }
                 .tag(4)
         }
@@ -72,6 +87,7 @@ struct MainTabView: View {
 
             if let classId = classroomViewModel.selectedClassroom?.id {
                 storyViewModel.listenToStories(classId: classId)
+                await albumViewModel.loadAlbums(classId: classId)
             }
         }
     }

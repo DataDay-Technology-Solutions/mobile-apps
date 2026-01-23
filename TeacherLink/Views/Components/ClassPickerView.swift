@@ -20,7 +20,7 @@ struct ClassPickerView: View {
                 } label: {
                     HStack {
                         Circle()
-                            .fill(colorFor(classroom.avatarColor))
+                            .fill(.blue)  // Default color
                             .frame(width: 44, height: 44)
                             .overlay(
                                 Text(classroom.name.prefix(1))

@@ -34,6 +34,10 @@ struct StoriesView: View {
                 } else {
                     ScrollView {
                         LazyVStack(spacing: 16) {
+                            // Daily Joke and Fun Fact at the top
+                            DailyContentSection()
+
+                            // Stories Feed
                             ForEach(storyViewModel.stories) { story in
                                 StoryCard(story: story)
                                     .environmentObject(storyViewModel)

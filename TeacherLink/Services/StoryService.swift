@@ -1,45 +1,55 @@
 //
 //  StoryService.swift
-//  TeacherLink
+//  HallPass (formerly TeacherLink)
 //
 
 import Foundation
-import FirebaseFirestore
-import FirebaseStorage
+import Supabase
 
 class StoryService {
     static let shared = StoryService()
-    private let db = Firestore.firestore()
-    private let storage = Storage.storage()
+    private let supabase = SupabaseConfig.client
 
     private init() {}
 
     // MARK: - Story CRUD
 
     func createStory(_ story: Story) async throws -> Story {
-        let docRef = db.collection("stories").document()
-        var newStory = story
-        newStory.id = docRef.documentID
+        let response: [Story] = try await supabase
+            .from("stories")
+            .insert(story)
+            .select()
+            .execute()
+            .value
 
-        try docRef.setData(from: newStory)
+        guard let newStory = response.first else {
+            throw StoryError.uploadFailed
+        }
         return newStory
     }
 
     func getStoriesForClass(classId: String, limit: Int = 20) async throws -> [Story] {
-        let snapshot = try await db.collection("stories")
-            .whereField("classId", isEqualTo: classId)
-            .order(by: "createdAt", descending: true)
-            .limit(to: limit)
-            .getDocuments()
+        let response: [Story] = try await supabase
+            .from("stories")
+            .select()
+            .eq("class_id", value: classId)
+            .order("created_at", ascending: false)
+            .limit(limit)
+            .execute()
+            .value
 
-        return snapshot.documents.compactMap { try? $0.data(as: Story.self) }
+        return response
     }
 
     func getStory(id: String) async throws -> Story {
-        let document = try await db.collection("stories").document(id).getDocument()
-        guard let story = try? document.data(as: Story.self) else {
-            throw StoryError.notFound
-        }
+        let story: Story = try await supabase
+            .from("stories")
+            .select()
+            .eq("id", value: id)
+            .single()
+            .execute()
+            .value
+
         return story
     }
 
@@ -47,131 +57,217 @@ class StoryService {
         guard let storyId = story.id else { return }
         var updatedStory = story
         updatedStory.updatedAt = Date()
-        try db.collection("stories").document(storyId).setData(from: updatedStory, merge: true)
+
+        try await supabase
+            .from("stories")
+            .update(updatedStory)
+            .eq("id", value: storyId)
+            .execute()
     }
 
     func deleteStory(id: String) async throws {
         // Delete associated media files
         let story = try await getStory(id: id)
-        for url in story.mediaURLs {
+        for url in story.mediaUrls {
             try? await deleteMedia(url: url)
         }
-        try await db.collection("stories").document(id).delete()
+
+        try await supabase
+            .from("stories")
+            .delete()
+            .eq("id", value: id)
+            .execute()
     }
 
     // MARK: - Likes
 
     func toggleLike(storyId: String, userId: String) async throws {
-        let storyRef = db.collection("stories").document(storyId)
+        var story = try await getStory(id: storyId)
 
-        try await db.runTransaction { transaction, _ in
-            guard let document = try? transaction.getDocument(storyRef),
-                  var story = try? document.data(as: Story.self) else {
-                return nil
-            }
-
-            if story.likedByIds.contains(userId) {
-                story.likedByIds.removeAll { $0 == userId }
-                story.likeCount = max(0, story.likeCount - 1)
-            } else {
-                story.likedByIds.append(userId)
-                story.likeCount += 1
-            }
-
-            try? transaction.setData(from: story, forDocument: storyRef)
-            return nil
+        if story.likedByIds.contains(userId) {
+            story.likedByIds.removeAll { $0 == userId }
+            story.likeCount = max(0, story.likeCount - 1)
+        } else {
+            story.likedByIds.append(userId)
+            story.likeCount += 1
         }
+
+        try await supabase
+            .from("stories")
+            .update([
+                "liked_by_ids": AnyJSON.array(story.likedByIds.map { .string($0) }),
+                "like_count": AnyJSON.integer(story.likeCount)
+            ])
+            .eq("id", value: storyId)
+            .execute()
     }
 
     // MARK: - Comments
 
     func addComment(_ comment: StoryComment) async throws -> StoryComment {
-        let docRef = db.collection("stories").document(comment.storyId)
-            .collection("comments").document()
+        let response: [StoryComment] = try await supabase
+            .from("story_comments")
+            .insert(comment)
+            .select()
+            .execute()
+            .value
 
-        var newComment = comment
-        newComment.id = docRef.documentID
+        guard let newComment = response.first else {
+            throw StoryError.uploadFailed
+        }
 
-        try docRef.setData(from: newComment)
-
-        try await db.collection("stories").document(comment.storyId).updateData([
-            "commentCount": FieldValue.increment(Int64(1))
-        ])
+        // Update comment count
+        try await supabase.rpc("increment_comment_count", params: ["story_id": comment.storyId]).execute()
 
         return newComment
     }
 
     func getComments(storyId: String) async throws -> [StoryComment] {
-        let snapshot = try await db.collection("stories").document(storyId)
-            .collection("comments")
-            .order(by: "createdAt", descending: false)
-            .getDocuments()
+        let response: [StoryComment] = try await supabase
+            .from("story_comments")
+            .select()
+            .eq("story_id", value: storyId)
+            .order("created_at", ascending: true)
+            .execute()
+            .value
 
-        return snapshot.documents.compactMap { try? $0.data(as: StoryComment.self) }
+        return response
     }
 
     func deleteComment(storyId: String, commentId: String) async throws {
-        try await db.collection("stories").document(storyId)
-            .collection("comments").document(commentId).delete()
+        try await supabase
+            .from("story_comments")
+            .delete()
+            .eq("id", value: commentId)
+            .execute()
 
-        try await db.collection("stories").document(storyId).updateData([
-            "commentCount": FieldValue.increment(Int64(-1))
-        ])
+        // Decrement comment count
+        try await supabase.rpc("decrement_comment_count", params: ["story_id": storyId]).execute()
     }
 
-    // MARK: - Media Upload
+    // MARK: - Media Upload (using Supabase Storage)
 
     func uploadImage(_ imageData: Data, storyId: String) async throws -> String {
         let filename = "\(UUID().uuidString).jpg"
         let path = "stories/\(storyId)/\(filename)"
-        let storageRef = storage.reference().child(path)
 
-        let metadata = StorageMetadata()
-        metadata.contentType = "image/jpeg"
+        try await supabase.storage
+            .from("media")
+            .upload(path: path, file: imageData, options: FileOptions(contentType: "image/jpeg"))
 
-        _ = try await storageRef.putDataAsync(imageData, metadata: metadata)
-        let url = try await storageRef.downloadURL()
-        return url.absoluteString
+        let publicURL = try supabase.storage
+            .from("media")
+            .getPublicURL(path: path)
+
+        return publicURL.absoluteString
     }
 
     func uploadVideo(_ videoURL: URL, storyId: String) async throws -> String {
         let filename = "\(UUID().uuidString).mp4"
         let path = "stories/\(storyId)/\(filename)"
-        let storageRef = storage.reference().child(path)
+        let videoData = try Data(contentsOf: videoURL)
 
-        let metadata = StorageMetadata()
-        metadata.contentType = "video/mp4"
+        try await supabase.storage
+            .from("media")
+            .upload(path: path, file: videoData, options: FileOptions(contentType: "video/mp4"))
 
-        _ = try await storageRef.putFileAsync(from: videoURL, metadata: metadata)
-        let url = try await storageRef.downloadURL()
-        return url.absoluteString
+        let publicURL = try supabase.storage
+            .from("media")
+            .getPublicURL(path: path)
+
+        return publicURL.absoluteString
     }
 
     private func deleteMedia(url: String) async throws {
-        let storageRef = storage.reference(forURL: url)
-        try await storageRef.delete()
+        // Extract path from URL
+        guard let urlComponents = URLComponents(string: url),
+              let path = urlComponents.path.components(separatedBy: "/media/").last else {
+            return
+        }
+
+        try await supabase.storage
+            .from("media")
+            .remove(paths: [path])
     }
 
     // MARK: - Real-time Listeners
 
-    func listenToStories(classId: String, completion: @escaping ([Story]) -> Void) -> ListenerRegistration {
-        return db.collection("stories")
-            .whereField("classId", isEqualTo: classId)
-            .order(by: "createdAt", descending: true)
-            .addSnapshotListener { snapshot, _ in
-                let stories = snapshot?.documents.compactMap { try? $0.data(as: Story.self) } ?? []
-                completion(stories)
+    private var storiesChannel: RealtimeChannelV2?
+    private var commentsChannel: RealtimeChannelV2?
+
+    func listenToStories(classId: String, completion: @escaping ([Story]) -> Void) {
+        // Initial fetch
+        Task {
+            let stories = try? await getStoriesForClass(classId: classId)
+            await MainActor.run {
+                completion(stories ?? [])
             }
+        }
+
+        // Set up realtime subscription
+        storiesChannel = supabase.realtimeV2.channel("stories_\(classId)")
+
+        Task {
+            // IMPORTANT: Set up postgresChange BEFORE subscribing
+            let changes = storiesChannel?.postgresChange(
+                AnyAction.self,
+                schema: "public",
+                table: "stories",
+                filter: .eq("class_id", value: "\(classId)")
+            )
+
+            try? await storiesChannel?.subscribe()
+
+            if let changes = changes {
+                for await _ in changes {
+                    let stories = try? await getStoriesForClass(classId: classId)
+                    await MainActor.run {
+                        completion(stories ?? [])
+                    }
+                }
+            }
+        }
     }
 
-    func listenToComments(storyId: String, completion: @escaping ([StoryComment]) -> Void) -> ListenerRegistration {
-        return db.collection("stories").document(storyId)
-            .collection("comments")
-            .order(by: "createdAt", descending: false)
-            .addSnapshotListener { snapshot, _ in
-                let comments = snapshot?.documents.compactMap { try? $0.data(as: StoryComment.self) } ?? []
-                completion(comments)
+    func listenToComments(storyId: String, completion: @escaping ([StoryComment]) -> Void) {
+        // Initial fetch
+        Task {
+            let comments = try? await getComments(storyId: storyId)
+            await MainActor.run {
+                completion(comments ?? [])
             }
+        }
+
+        // Set up realtime subscription
+        commentsChannel = supabase.realtimeV2.channel("comments_\(storyId)")
+
+        Task {
+            // IMPORTANT: Set up postgresChange BEFORE subscribing
+            let changes = commentsChannel?.postgresChange(
+                AnyAction.self,
+                schema: "public",
+                table: "story_comments",
+                filter: .eq("story_id", value: "\(storyId)")
+            )
+
+            try? await commentsChannel?.subscribe()
+
+            if let changes = changes {
+                for await _ in changes {
+                    let comments = try? await getComments(storyId: storyId)
+                    await MainActor.run {
+                        completion(comments ?? [])
+                    }
+                }
+            }
+        }
+    }
+
+    func stopListening() {
+        Task {
+            await storiesChannel?.unsubscribe()
+            await commentsChannel?.unsubscribe()
+        }
     }
 }
 

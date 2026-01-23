@@ -43,20 +43,25 @@ struct MessagesView: View {
             }
             .navigationTitle("Messages")
             .toolbar {
-                if authViewModel.isTeacher {
-                    ToolbarItem(placement: .navigationBarTrailing) {
-                        Button {
-                            showNewMessage = true
-                        } label: {
-                            Image(systemName: "square.and.pencil")
-                        }
+                ToolbarItem(placement: .navigationBarTrailing) {
+                    Button {
+                        showNewMessage = true
+                    } label: {
+                        Image(systemName: "square.and.pencil")
                     }
                 }
             }
             .sheet(isPresented: $showNewMessage) {
-                NewMessageView()
-                    .environmentObject(classroomViewModel)
-                    .environmentObject(messageViewModel)
+                if authViewModel.isTeacher {
+                    NewMessageView()
+                        .environmentObject(classroomViewModel)
+                        .environmentObject(messageViewModel)
+                } else {
+                    ParentNewMessageView()
+                        .environmentObject(authViewModel)
+                        .environmentObject(classroomViewModel)
+                        .environmentObject(messageViewModel)
+                }
             }
         }
     }
@@ -98,7 +103,7 @@ struct ConversationRow: View {
                 }
 
                 HStack {
-                    Text(conversation.lastMessage)
+                    Text(conversation.lastMessage ?? "")
                         .font(.subheadline)
                         .foregroundColor(.secondary)
                         .lineLimit(1)

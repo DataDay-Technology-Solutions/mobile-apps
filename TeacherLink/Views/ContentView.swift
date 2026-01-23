@@ -5,7 +5,7 @@
 
 import SwiftUI
 
-struct ContentView: View {
+struct MockContentView: View {
     @EnvironmentObject var authViewModel: AuthViewModel
 
     var body: some View {
@@ -21,6 +21,6 @@ struct ContentView: View {
 }
 
 #Preview {
-    ContentView()
+    MockContentView()
         .environmentObject(AuthViewModel())
 }

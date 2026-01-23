@@ -1,0 +1,5 @@
+export { authService, AuthError } from './auth'
+export { classroomService, ClassroomError } from './classroom'
+export { messageService, MessageError } from './message'
+export { pointsService, PointsError } from './points'
+export { storyService, StoryError } from './story'

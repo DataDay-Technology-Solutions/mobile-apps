@@ -12,11 +12,11 @@ struct Classroom: Identifiable, Codable {
     var teacherId: String
     var teacherName: String
     var classCode: String
+    var schoolId: String?
+    var districtId: String?
     var studentIds: [String]
     var parentIds: [String]
     var createdAt: Date
-    var schoolYear: String
-    var avatarColor: String
 
     var studentCount: Int {
         studentIds.count
@@ -26,6 +26,26 @@ struct Classroom: Identifiable, Codable {
         parentIds.count
     }
 
+    /// A guaranteed unique identifier for SwiftUI ForEach (handles optional id)
+    var uniqueId: String {
+        id ?? classCode
+    }
+
+    // CodingKeys for proper Supabase snake_case mapping
+    enum CodingKeys: String, CodingKey {
+        case id
+        case name
+        case gradeLevel = "grade_level"
+        case teacherId = "teacher_id"
+        case teacherName = "teacher_name"
+        case classCode = "class_code"
+        case schoolId = "school_id"
+        case districtId = "district_id"
+        case studentIds = "student_ids"
+        case parentIds = "parent_ids"
+        case createdAt = "created_at"
+    }
+
     init(
         id: String? = nil,
         name: String,
@@ -33,11 +53,11 @@ struct Classroom: Identifiable, Codable {
         teacherId: String,
         teacherName: String,
         classCode: String = "",
+        schoolId: String? = nil,
+        districtId: String? = nil,
         studentIds: [String] = [],
         parentIds: [String] = [],
-        createdAt: Date = Date(),
-        schoolYear: String = "",
-        avatarColor: String = "blue"
+        createdAt: Date = Date()
     ) {
         self.id = id
         self.name = name
@@ -45,11 +65,11 @@ struct Classroom: Identifiable, Codable {
         self.teacherId = teacherId
         self.teacherName = teacherName
         self.classCode = classCode.isEmpty ? Classroom.generateClassCode() : classCode
+        self.schoolId = schoolId
+        self.districtId = districtId
         self.studentIds = studentIds
         self.parentIds = parentIds
         self.createdAt = createdAt
-        self.schoolYear = schoolYear.isEmpty ? Classroom.currentSchoolYear() : schoolYear
-        self.avatarColor = avatarColor
     }
 
     static func generateClassCode() -> String {

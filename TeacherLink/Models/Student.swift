@@ -5,13 +5,16 @@
 
 import Foundation
 
-struct Student: Identifiable, Codable {
+struct Student: Identifiable, Codable, Hashable {
     var id: String?
     var firstName: String
     var lastName: String
+    var name: String  // Required by database - full name
     var classId: String
+    var classroomId: String?  // Legacy field
     var parentIds: [String]
-    var avatarStyle: AvatarStyle
+    var parentId: String?  // Legacy field - first parent
+    var inviteCode: String?  // Unique code for parents to link to this student
     var createdAt: Date
 
     var fullName: String {
@@ -22,49 +25,52 @@ struct Student: Identifiable, Codable {
         String(firstName.prefix(1) + lastName.prefix(1)).uppercased()
     }
 
+    // CodingKeys for proper Supabase snake_case mapping
+    enum CodingKeys: String, CodingKey {
+        case id
+        case firstName = "first_name"
+        case lastName = "last_name"
+        case name
+        case classId = "class_id"
+        case classroomId = "classroom_id"
+        case parentIds = "parent_ids"
+        case parentId = "parent_id"
+        case inviteCode = "invite_code"
+        case createdAt = "created_at"
+    }
+
+    // Generate a unique invite code for a student
+    static func generateInviteCode() -> String {
+        let letters = "ABCDEFGHJKLMNPQRSTUVWXYZ"
+        let numbers = "23456789"
+        var code = "S"  // Prefix with S for Student
+        for _ in 0..<3 {
+            code += String(letters.randomElement()!)
+        }
+        for _ in 0..<2 {
+            code += String(numbers.randomElement()!)
+        }
+        return code
+    }
+
     init(
         id: String? = nil,
         firstName: String,
         lastName: String,
         classId: String,
         parentIds: [String] = [],
-        avatarStyle: AvatarStyle = AvatarStyle.random(),
+        inviteCode: String? = nil,
         createdAt: Date = Date()
     ) {
         self.id = id
         self.firstName = firstName
         self.lastName = lastName
+        self.name = "\(firstName) \(lastName)"  // Auto-populate name
         self.classId = classId
+        self.classroomId = classId  // Copy to legacy field
         self.parentIds = parentIds
-        self.avatarStyle = avatarStyle
+        self.parentId = parentIds.first  // Copy first parent to legacy field
+        self.inviteCode = inviteCode ?? Student.generateInviteCode()
         self.createdAt = createdAt
-    }
-}
-
-struct AvatarStyle: Codable {
-    var backgroundColor: String
-    var characterType: String
-    var accessory: String?
-
-    static let backgroundColors = [
-        "avatarBlue", "avatarGreen", "avatarPurple", "avatarOrange",
-        "avatarPink", "avatarTeal", "avatarYellow", "avatarRed"
-    ]
-
-    static let characterTypes = [
-        "monster1", "monster2", "monster3", "monster4",
-        "monster5", "monster6", "monster7", "monster8"
-    ]
-
-    static let accessories = [
-        nil, "glasses", "hat", "bowtie", "crown", "headband"
-    ]
-
-    static func random() -> AvatarStyle {
-        AvatarStyle(
-            backgroundColor: backgroundColors.randomElement()!,
-            characterType: characterTypes.randomElement()!,
-            accessory: accessories.randomElement() ?? nil
-        )
     }
 }
