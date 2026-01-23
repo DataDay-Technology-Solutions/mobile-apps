@@ -16,6 +16,11 @@ struct SupabaseConfig {
     // Singleton client
     static let client = SupabaseClient(
         supabaseURL: supabaseURL,
-        supabaseKey: supabaseKey
+        supabaseKey: supabaseKey,
+        options: SupabaseClientOptions(
+            auth: SupabaseClientOptions.AuthOptions(
+                emitLocalSessionAsInitialSession: true
+            )
+        )
     )
 }

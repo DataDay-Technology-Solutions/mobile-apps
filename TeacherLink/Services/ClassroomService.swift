@@ -256,7 +256,7 @@ class ClassroomService {
     func linkParentToStudent(studentId: String, parentId: String) async throws {
         print("🟦 [ClassroomService] Linking parent \(parentId) to student \(studentId)")
         let student = try await getStudent(id: studentId)
-        var parentIds = student.parentIds ?? []
+        var parentIds = student.parentIds
         if !parentIds.contains(parentId) {
             parentIds.append(parentId)
         }

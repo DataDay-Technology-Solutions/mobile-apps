@@ -46,16 +46,25 @@ class AuthenticationService: ObservableObject {
         isLoading = true
         do {
             let session = try await supabase.auth.session
-            let user = session.user
-            // Check if email is confirmed
-            if user.emailConfirmedAt != nil {
-                await loadUserProfile(userId: user.id)
-            } else {
-                // Email not confirmed yet
-                needsEmailConfirmation = true
-                pendingEmail = user.email
+            
+            // Check if session is expired
+            if session.isExpired {
+                // Session is expired, treat as logged out
                 isAuthenticated = false
                 appUser = nil
+                needsEmailConfirmation = false
+            } else {
+                let user = session.user
+                // Check if email is confirmed
+                if user.emailConfirmedAt != nil {
+                    await loadUserProfile(userId: user.id)
+                } else {
+                    // Email not confirmed yet
+                    needsEmailConfirmation = true
+                    pendingEmail = user.email
+                    isAuthenticated = false
+                    appUser = nil
+                }
             }
         } catch {
             // No session exists - user needs to login

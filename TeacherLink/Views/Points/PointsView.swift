@@ -20,7 +20,7 @@ struct PointsView: View {
         NavigationStack {
             VStack(spacing: 0) {
                 // Class Points Header
-                if let classroom = classroomViewModel.selectedClassroom {
+                if classroomViewModel.selectedClassroom != nil {
                     ClassPointsHeader(
                         summaries: pointsViewModel.classSummaries,
                         studentCount: classroomViewModel.students.count
