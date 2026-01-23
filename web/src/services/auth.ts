@@ -9,12 +9,15 @@ export class AuthError extends Error {
 }
 
 function isAbortError(err: unknown): boolean {
-  return (
-    (err instanceof Error && err.name === 'AbortError') ||
-    (err instanceof DOMException && err.name === 'AbortError') ||
-    (typeof err === 'object' && err !== null && 'name' in err && (err as {name: string}).name === 'AbortError') ||
-    (typeof err === 'object' && err !== null && 'message' in err && String((err as {message: unknown}).message).includes('aborted'))
-  )
+  // Only check for actual AbortError, not just any error with "aborted" in message
+  if (err instanceof Error && err.name === 'AbortError') return true
+  if (err instanceof DOMException && err.name === 'AbortError') return true
+  // Check for AbortError-like objects (some fetch implementations)
+  if (typeof err === 'object' && err !== null && 'name' in err) {
+    const name = (err as { name: unknown }).name
+    if (name === 'AbortError') return true
+  }
+  return false
 }
 
 async function withRetry<T>(fn: () => Promise<T>, maxRetries = 3): Promise<T> {
@@ -70,28 +73,35 @@ export const authService = {
   },
 
   async signIn(email: string, password: string): Promise<AppUser> {
-    return withRetry(async () => {
-      const supabase = createClient()
+    const supabase = createClient()
 
-      const { data: authData, error: authError } = await supabase.auth.signInWithPassword({
-        email,
-        password,
-      })
-
-      if (authError) throw new AuthError(authError.message)
-      if (!authData.user) throw new AuthError('Failed to sign in')
-
-      // Get user profile
-      const { data: userData, error: userError } = await supabase
-        .from('users')
-        .select()
-        .eq('id', authData.user.id)
-        .single()
-
-      if (userError) throw new AuthError(userError.message)
-
-      return userData as AppUser
+    console.log('Auth service: signing in...')
+    const { data: authData, error: authError } = await supabase.auth.signInWithPassword({
+      email,
+      password,
     })
+
+    if (authError) {
+      console.error('Auth service: sign in error', authError)
+      throw new AuthError(authError.message)
+    }
+    if (!authData.user) throw new AuthError('Failed to sign in')
+
+    console.log('Auth service: fetching user profile...')
+    // Get user profile
+    const { data: userData, error: userError } = await supabase
+      .from('users')
+      .select()
+      .eq('id', authData.user.id)
+      .single()
+
+    if (userError) {
+      console.error('Auth service: user profile error', userError)
+      throw new AuthError(userError.message)
+    }
+
+    console.log('Auth service: sign in complete')
+    return userData as AppUser
   },
 
   async signOut(): Promise<void> {

@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useRef } from 'react'
+import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { useAuth } from '@/contexts/auth-context'
@@ -29,8 +29,6 @@ export default function SignupPage() {
   const [loading, setLoading] = useState(false)
   const { signUp } = useAuth()
   const router = useRouter()
-  const retryCountRef = useRef(0)
-  const maxRetries = 5
 
   const handleRoleSelect = (selectedRole: Role) => {
     setRole(selectedRole)
@@ -57,30 +55,22 @@ export default function SignupPage() {
     }
 
     setLoading(true)
-    retryCountRef.current = 0
 
-    const attemptSignUp = async (): Promise<void> => {
-      try {
-        await signUp(email, password, name, role)
-        router.push('/dashboard')
-      } catch (err) {
-        if (isAbortError(err) && retryCountRef.current < maxRetries) {
-          retryCountRef.current++
-          console.log(`Sign up aborted, retrying... (attempt ${retryCountRef.current}/${maxRetries})`)
-          await new Promise(resolve => setTimeout(resolve, 200 * retryCountRef.current))
-          return attemptSignUp()
-        }
-        if (isAbortError(err)) {
-          setError('Connection interrupted. Please try again.')
-        } else {
-          setError(err instanceof Error ? err.message : 'Failed to create account')
-        }
-      } finally {
-        setLoading(false)
+    try {
+      console.log('Attempting sign up...')
+      await signUp(email, password, name, role)
+      console.log('Sign up successful, redirecting...')
+      router.push('/dashboard')
+    } catch (err) {
+      console.error('Sign up error:', err)
+      if (isAbortError(err)) {
+        setError('Connection interrupted. Please try again.')
+      } else {
+        setError(err instanceof Error ? err.message : 'Failed to create account')
       }
+    } finally {
+      setLoading(false)
     }
-
-    await attemptSignUp()
   }
 
   return (

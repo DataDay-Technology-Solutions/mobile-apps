@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useRef } from 'react'
+import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { useAuth } from '@/contexts/auth-context'
@@ -8,11 +8,15 @@ import { Button, Input, Card, CardHeader, CardTitle, CardDescription, CardConten
 import { LogIn, Mail, Lock, ArrowRight } from 'lucide-react'
 
 function isAbortError(err: unknown): boolean {
-  return (
-    (err instanceof Error && err.name === 'AbortError') ||
-    (err instanceof DOMException && err.name === 'AbortError') ||
-    (typeof err === 'object' && err !== null && 'message' in err && String((err as {message: unknown}).message).includes('aborted'))
-  )
+  // Only check for actual AbortError, not just any error with "aborted" in message
+  if (err instanceof Error && err.name === 'AbortError') return true
+  if (err instanceof DOMException && err.name === 'AbortError') return true
+  // Check for AbortError-like objects (some fetch implementations)
+  if (typeof err === 'object' && err !== null && 'name' in err) {
+    const name = (err as { name: unknown }).name
+    if (name === 'AbortError') return true
+  }
+  return false
 }
 
 export default function LoginPage() {
@@ -22,38 +26,35 @@ export default function LoginPage() {
   const [loading, setLoading] = useState(false)
   const { signIn } = useAuth()
   const router = useRouter()
-  const retryCountRef = useRef(0)
-  const maxRetries = 5
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setError('')
     setLoading(true)
-    retryCountRef.current = 0
 
-    const attemptSignIn = async (): Promise<void> => {
-      try {
-        await signIn(email, password)
-        router.push('/dashboard')
-      } catch (err) {
-        if (isAbortError(err) && retryCountRef.current < maxRetries) {
-          retryCountRef.current++
-          console.log(`Sign in aborted, retrying... (attempt ${retryCountRef.current}/${maxRetries})`)
-          await new Promise(resolve => setTimeout(resolve, 200 * retryCountRef.current))
-          return attemptSignIn()
-        }
-        // Don't show "aborted" errors to user - just show generic message
-        if (isAbortError(err)) {
-          setError('Connection interrupted. Please try again.')
-        } else {
-          setError(err instanceof Error ? err.message : 'Failed to sign in')
-        }
-      } finally {
-        setLoading(false)
+    try {
+      console.log('Attempting sign in...')
+      await signIn(email, password)
+      console.log('Sign in successful, redirecting...')
+      router.push('/dashboard')
+    } catch (err: unknown) {
+      console.error('Sign in error:', err)
+      console.error('Error type:', typeof err)
+      console.error('Error name:', err instanceof Error ? err.name : 'not an Error')
+      console.error('Error message:', err instanceof Error ? err.message : String(err))
+      console.error('Full error object:', JSON.stringify(err, Object.getOwnPropertyNames(err as object)))
+
+      if (isAbortError(err)) {
+        console.error('Detected as AbortError')
+        setError('Connection interrupted. Please try again.')
+      } else {
+        const message = err instanceof Error ? err.message : 'Failed to sign in'
+        console.error('Setting error message:', message)
+        setError(message)
       }
+    } finally {
+      setLoading(false)
     }
-
-    await attemptSignIn()
   }
 
   return (
