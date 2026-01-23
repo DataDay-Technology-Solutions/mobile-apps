@@ -273,6 +273,225 @@ export default function LandingPage() {
         </div>
       </section>
 
+      {/* Mobile App Coming Soon */}
+      <section className="py-24 bg-gradient-to-b from-gray-900 via-blue-950 to-gray-900 relative overflow-hidden">
+        {/* Background effects */}
+        <div className="absolute inset-0">
+          <div className="absolute top-1/3 left-1/4 w-64 h-64 bg-blue-500/20 rounded-full blur-3xl"></div>
+          <div className="absolute bottom-1/4 right-1/3 w-64 h-64 bg-purple-500/20 rounded-full blur-3xl"></div>
+        </div>
+
+        <div className="relative z-10 max-w-7xl mx-auto px-4">
+          <div className="text-center mb-12">
+            <div className="inline-flex items-center gap-2 px-4 py-2 bg-blue-500/20 border border-blue-500/30 rounded-full mb-6">
+              <span className="relative flex h-2 w-2">
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-blue-400 opacity-75"></span>
+                <span className="relative inline-flex rounded-full h-2 w-2 bg-blue-400"></span>
+              </span>
+              <span className="text-blue-300 font-semibold text-sm">Coming Soon to App Store</span>
+            </div>
+            <h2 className="text-4xl sm:text-5xl font-bold text-white mb-4">
+              HallPass <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-purple-400">Mobile</span>
+            </h2>
+            <p className="text-xl text-gray-300 max-w-2xl mx-auto">
+              The full HallPass experience in your pocket. Native iOS app for teachers and parents
+              with push notifications, offline access, and everything you love about HallPass.
+            </p>
+          </div>
+
+          <div className="flex flex-col lg:flex-row items-center justify-center gap-8 lg:gap-16">
+            {/* Phone Mockup - Teacher View */}
+            <div className="relative group">
+              <div className="absolute -inset-4 bg-gradient-to-r from-blue-500/30 to-purple-500/30 rounded-[3rem] blur-2xl opacity-50 group-hover:opacity-70 transition-opacity"></div>
+              <div className="relative w-[280px] bg-gray-800 rounded-[2.5rem] p-3 border-4 border-gray-700 shadow-2xl">
+                {/* Phone notch */}
+                <div className="absolute top-0 left-1/2 -translate-x-1/2 w-32 h-6 bg-gray-700 rounded-b-2xl"></div>
+                {/* Screen */}
+                <div className="bg-gray-50 rounded-[2rem] overflow-hidden h-[500px]">
+                  <div className="h-8 bg-white flex items-center justify-center text-xs text-gray-400">
+                    9:41
+                  </div>
+                  <div className="p-4">
+                    <div className="flex justify-between items-center mb-6">
+                      <div>
+                        <p className="text-xs text-gray-500">Good morning,</p>
+                        <p className="text-lg font-bold text-gray-900">Mrs. Smith</p>
+                      </div>
+                      <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-purple-500 rounded-full"></div>
+                    </div>
+                    <div className="grid grid-cols-2 gap-3 mb-6">
+                      <div className="bg-white rounded-xl p-3 shadow-sm">
+                        <div className="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center mb-2">
+                          <svg className="w-4 h-4 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
+                          </svg>
+                        </div>
+                        <p className="text-xl font-bold text-gray-900">24</p>
+                        <p className="text-xs text-gray-500">Students</p>
+                      </div>
+                      <div className="bg-white rounded-xl p-3 shadow-sm">
+                        <div className="w-8 h-8 bg-yellow-100 rounded-lg flex items-center justify-center mb-2">
+                          <svg className="w-4 h-4 text-yellow-600" fill="currentColor" viewBox="0 0 24 24">
+                            <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
+                          </svg>
+                        </div>
+                        <p className="text-xl font-bold text-gray-900">847</p>
+                        <p className="text-xs text-gray-500">Points Today</p>
+                      </div>
+                    </div>
+                    <p className="text-sm font-semibold text-gray-900 mb-3">Recent Posts</p>
+                    <div className="bg-white rounded-xl p-3 shadow-sm">
+                      <div className="flex items-center gap-2 mb-2">
+                        <div className="w-8 h-8 bg-blue-500 rounded-full flex items-center justify-center text-white text-xs font-bold">MS</div>
+                        <div>
+                          <p className="text-sm font-medium text-gray-900">Art class today!</p>
+                          <p className="text-xs text-gray-500">2 min ago</p>
+                        </div>
+                      </div>
+                      <div className="flex gap-1">
+                        <div className="w-12 h-12 bg-gradient-to-br from-pink-200 to-purple-200 rounded-lg"></div>
+                        <div className="w-12 h-12 bg-gradient-to-br from-blue-200 to-green-200 rounded-lg"></div>
+                        <div className="w-12 h-12 bg-gradient-to-br from-yellow-200 to-orange-200 rounded-lg"></div>
+                      </div>
+                    </div>
+                  </div>
+                  <div className="absolute bottom-0 left-0 right-0 bg-white border-t border-gray-100 flex justify-around py-3 rounded-b-[2rem]">
+                    <div className="flex flex-col items-center text-blue-600">
+                      <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                        <path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/>
+                      </svg>
+                      <span className="text-[10px] mt-1">Home</span>
+                    </div>
+                    <div className="flex flex-col items-center text-gray-400">
+                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
+                      </svg>
+                      <span className="text-[10px] mt-1">Students</span>
+                    </div>
+                    <div className="flex flex-col items-center text-gray-400">
+                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+                      </svg>
+                      <span className="text-[10px] mt-1">Messages</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Phone Mockup - Parent View */}
+            <div className="relative group hidden lg:block">
+              <div className="absolute -inset-4 bg-gradient-to-r from-purple-500/30 to-pink-500/30 rounded-[3rem] blur-2xl opacity-50 group-hover:opacity-70 transition-opacity"></div>
+              <div className="relative w-[280px] bg-gray-800 rounded-[2.5rem] p-3 border-4 border-gray-700 shadow-2xl">
+                <div className="absolute top-0 left-1/2 -translate-x-1/2 w-32 h-6 bg-gray-700 rounded-b-2xl"></div>
+                <div className="bg-gray-50 rounded-[2rem] overflow-hidden h-[500px]">
+                  <div className="h-8 bg-white flex items-center justify-center text-xs text-gray-400">
+                    9:41
+                  </div>
+                  <div className="p-4">
+                    <div className="flex items-center gap-2 mb-4">
+                      <svg className="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                      </svg>
+                      <span className="text-sm text-blue-600 font-medium">Back</span>
+                    </div>
+                    <div className="text-center mb-4">
+                      <div className="w-16 h-16 bg-gradient-to-br from-green-400 to-blue-500 rounded-full mx-auto mb-3 flex items-center justify-center text-white font-bold text-xl">EJ</div>
+                      <h3 className="text-lg font-bold text-gray-900">Emma Johnson</h3>
+                      <p className="text-sm text-gray-500">Mrs. Smith&apos;s Class</p>
+                    </div>
+                    <div className="bg-yellow-50 rounded-xl p-3 mb-4 text-center border border-yellow-200">
+                      <div className="flex items-center justify-center gap-1 mb-1">
+                        <svg className="w-5 h-5 text-yellow-500" fill="currentColor" viewBox="0 0 24 24">
+                          <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
+                        </svg>
+                        <p className="text-2xl font-bold text-yellow-600">156</p>
+                      </div>
+                      <p className="text-xs text-yellow-600">Total Points</p>
+                    </div>
+                    <p className="text-sm font-semibold text-gray-900 mb-2">Recent Activity</p>
+                    <div className="space-y-2">
+                      <div className="bg-white rounded-lg p-2 shadow-sm flex items-center gap-2">
+                        <div className="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center">
+                          <span className="text-green-600 text-xs font-bold">+5</span>
+                        </div>
+                        <div className="flex-1">
+                          <p className="text-xs font-medium text-gray-900">Helping others</p>
+                          <p className="text-[10px] text-gray-500">Today, 2:30 PM</p>
+                        </div>
+                      </div>
+                      <div className="bg-white rounded-lg p-2 shadow-sm flex items-center gap-2">
+                        <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">
+                          <span className="text-blue-600 text-xs font-bold">+3</span>
+                        </div>
+                        <div className="flex-1">
+                          <p className="text-xs font-medium text-gray-900">Great participation</p>
+                          <p className="text-[10px] text-gray-500">Today, 11:15 AM</p>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Feature list */}
+          <div className="mt-16 grid grid-cols-2 md:grid-cols-4 gap-8 max-w-4xl mx-auto">
+            <div className="text-center">
+              <div className="w-12 h-12 bg-blue-500/20 rounded-xl flex items-center justify-center mx-auto mb-3">
+                <svg className="w-6 h-6 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
+                </svg>
+              </div>
+              <p className="text-white font-semibold">Push Notifications</p>
+              <p className="text-sm text-gray-400 mt-1">Never miss a moment</p>
+            </div>
+            <div className="text-center">
+              <div className="w-12 h-12 bg-purple-500/20 rounded-xl flex items-center justify-center mx-auto mb-3">
+                <svg className="w-6 h-6 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                </svg>
+              </div>
+              <p className="text-white font-semibold">Photo Sharing</p>
+              <p className="text-sm text-gray-400 mt-1">Share classroom moments</p>
+            </div>
+            <div className="text-center">
+              <div className="w-12 h-12 bg-yellow-500/20 rounded-xl flex items-center justify-center mx-auto mb-3">
+                <svg className="w-6 h-6 text-yellow-400" fill="currentColor" viewBox="0 0 24 24">
+                  <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
+                </svg>
+              </div>
+              <p className="text-white font-semibold">Behavior Points</p>
+              <p className="text-sm text-gray-400 mt-1">Track & reward students</p>
+            </div>
+            <div className="text-center">
+              <div className="w-12 h-12 bg-green-500/20 rounded-xl flex items-center justify-center mx-auto mb-3">
+                <svg className="w-6 h-6 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+                </svg>
+              </div>
+              <p className="text-white font-semibold">Direct Messages</p>
+              <p className="text-sm text-gray-400 mt-1">Private teacher-parent chat</p>
+            </div>
+          </div>
+
+          {/* App Store Badge */}
+          <div className="mt-12 text-center">
+            <p className="text-gray-400 mb-4">Native SwiftUI app for iOS. Android coming later.</p>
+            <div className="inline-flex items-center gap-3 px-6 py-3 bg-gray-800/50 border border-gray-700 rounded-xl">
+              <svg className="w-8 h-8 text-white" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.81-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M13 3.5c.73-.83 1.94-1.46 2.94-1.5.13 1.17-.34 2.35-1.04 3.19-.69.85-1.83 1.51-2.95 1.42-.15-1.15.41-2.35 1.05-3.11z"/>
+              </svg>
+              <div className="text-left">
+                <p className="text-xs text-gray-400">Waiting for</p>
+                <p className="text-white font-semibold">App Store Review</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
       {/* Testimonials */}
       <section id="testimonials" className="py-24 bg-white">
         <div className="max-w-7xl mx-auto px-4">
