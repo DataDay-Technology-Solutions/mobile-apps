@@ -72,7 +72,7 @@ export default function MessagesPage() {
                 className="pl-10"
               />
             </div>
-            {isTeacher && selectedClassroom && (
+            {selectedClassroom && (
               <Button onClick={() => setShowNewMessage(true)}>
                 <Plus className="h-4 w-4 mr-2" />
                 New Message
@@ -106,7 +106,7 @@ export default function MessagesPage() {
                   <p className="text-gray-500 mb-4">
                     {searchQuery ? 'No conversations match your search' : 'No conversations yet'}
                   </p>
-                  {isTeacher && selectedClassroom && !searchQuery && (
+                  {selectedClassroom && !searchQuery && (
                     <Button size="sm" onClick={() => setShowNewMessage(true)}>
                       <Plus className="h-4 w-4 mr-2" />
                       Start a Conversation
@@ -183,8 +183,11 @@ export default function MessagesPage() {
             onClose={() => setShowNewMessage(false)}
             students={students}
             classroomId={selectedClassroom?.id}
+            teacherId={selectedClassroom?.teacher_id}
             userId={user?.id}
             userName={user?.name}
+            userRole={user?.role}
+            linkedStudents={user?.student_ids || []}
           />
         )}
       </main>
@@ -196,25 +199,39 @@ interface NewMessageModalProps {
   onClose: () => void
   students: any[]
   classroomId?: string
+  teacherId?: string
   userId?: string
   userName?: string
+  userRole?: string
+  linkedStudents?: string[]
 }
 
-function NewMessageModal({ onClose, students, classroomId, userId, userName }: NewMessageModalProps) {
-  const [selectedStudent, setSelectedStudent] = useState<any>(null)
+function NewMessageModal({ onClose, students, classroomId, teacherId, userId, userName, userRole, linkedStudents = [] }: NewMessageModalProps) {
   const [loading, setLoading] = useState(false)
+  const [teacherName, setTeacherName] = useState<string>('')
 
+  const isTeacher = userRole === 'teacher'
   const studentsWithParents = students.filter(s => s.parent_ids.length > 0)
 
-  const handleStartConversation = async (student: any) => {
+  // Fetch teacher name for parent view
+  useEffect(() => {
+    if (!isTeacher && teacherId) {
+      // Fetch teacher name
+      import('@/services/auth').then(({ authService }) => {
+        authService.getUser(teacherId).then(teacher => {
+          if (teacher) setTeacherName(teacher.name)
+        })
+      })
+    }
+  }, [isTeacher, teacherId])
+
+  // For teachers: message a student's parent
+  const handleStartConversationWithParent = async (student: any) => {
     if (!userId || !userName || !classroomId) return
 
     setLoading(true)
     try {
-      // For now, we'll create a conversation with the first parent
       const parentId = student.parent_ids[0]
-
-      // Get parent name (we'd need to fetch this, but for now use placeholder)
       const participantNames = {
         [userId]: userName,
         [parentId]: `${student.first_name}'s Parent`,
@@ -228,7 +245,6 @@ function NewMessageModal({ onClose, students, classroomId, userId, userName }: N
         `${student.first_name} ${student.last_name}`
       )
 
-      // Navigate to the conversation
       window.location.href = `/messages/${conversation.id}`
     } catch (error) {
       console.error('Failed to create conversation:', error)
@@ -236,6 +252,36 @@ function NewMessageModal({ onClose, students, classroomId, userId, userName }: N
       setLoading(false)
     }
   }
+
+  // For parents: message the teacher about their child
+  const handleStartConversationWithTeacher = async (studentId?: string, studentName?: string) => {
+    if (!userId || !userName || !classroomId || !teacherId) return
+
+    setLoading(true)
+    try {
+      const participantNames = {
+        [userId]: userName,
+        [teacherId]: teacherName || 'Teacher',
+      }
+
+      const conversation = await messageService.getOrCreateConversation(
+        [userId, teacherId],
+        participantNames,
+        classroomId,
+        studentId,
+        studentName
+      )
+
+      window.location.href = `/messages/${conversation.id}`
+    } catch (error) {
+      console.error('Failed to create conversation:', error)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  // Get linked students for parent view
+  const myLinkedStudents = students.filter(s => linkedStudents.includes(s.id))
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
@@ -250,24 +296,97 @@ function NewMessageModal({ onClose, students, classroomId, userId, userName }: N
           </button>
         </CardHeader>
         <CardContent className="flex-1 overflow-y-auto">
-          <p className="text-sm text-gray-500 mb-4">
-            Select a student to message their parent
-          </p>
-          {studentsWithParents.length === 0 ? (
-            <div className="text-center py-8">
-              <div className="mx-auto h-12 w-12 rounded-full bg-gray-100 flex items-center justify-center mb-4">
-                <Users className="h-6 w-6 text-gray-400" />
-              </div>
-              <p className="text-gray-500">
-                No students have connected parents yet
+          {isTeacher ? (
+            // Teacher view: select a student to message their parent
+            <>
+              <p className="text-sm text-gray-500 mb-4">
+                Select a student to message their parent
               </p>
-            </div>
+              {studentsWithParents.length === 0 ? (
+                <div className="text-center py-8">
+                  <div className="mx-auto h-12 w-12 rounded-full bg-gray-100 flex items-center justify-center mb-4">
+                    <Users className="h-6 w-6 text-gray-400" />
+                  </div>
+                  <p className="text-gray-500">
+                    No students have connected parents yet
+                  </p>
+                </div>
+              ) : (
+                <div className="space-y-2">
+                  {studentsWithParents.map((student) => (
+                    <button
+                      key={student.id}
+                      onClick={() => handleStartConversationWithParent(student)}
+                      disabled={loading}
+                      className={cn(
+                        'w-full flex items-center gap-3 p-3 rounded-lg border border-gray-200',
+                        'hover:border-blue-300 hover:bg-blue-50 transition-colors text-left',
+                        'disabled:opacity-50 disabled:cursor-not-allowed'
+                      )}
+                    >
+                      <Avatar
+                        initials={`${student.first_name[0]}${student.last_name[0]}`}
+                        size="md"
+                      />
+                      <div className="flex-1">
+                        <p className="font-medium text-gray-900">
+                          {student.first_name} {student.last_name}
+                        </p>
+                        <p className="text-sm text-gray-500">
+                          {student.parent_ids.length} parent{student.parent_ids.length !== 1 ? 's' : ''} connected
+                        </p>
+                      </div>
+                    </button>
+                  ))}
+                </div>
+              )}
+            </>
           ) : (
-            <div className="space-y-2">
-              {studentsWithParents.map((student) => (
+            // Parent view: message the teacher
+            <>
+              <p className="text-sm text-gray-500 mb-4">
+                Message your child&apos;s teacher
+              </p>
+              {myLinkedStudents.length > 1 ? (
+                // Multiple children - let parent select which child to discuss
+                <div className="space-y-2">
+                  <p className="text-xs text-gray-400 mb-2">Select which child this message is about:</p>
+                  {myLinkedStudents.map((student) => (
+                    <button
+                      key={student.id}
+                      onClick={() => handleStartConversationWithTeacher(student.id, `${student.first_name} ${student.last_name}`)}
+                      disabled={loading}
+                      className={cn(
+                        'w-full flex items-center gap-3 p-3 rounded-lg border border-gray-200',
+                        'hover:border-blue-300 hover:bg-blue-50 transition-colors text-left',
+                        'disabled:opacity-50 disabled:cursor-not-allowed'
+                      )}
+                    >
+                      <Avatar
+                        initials={`${student.first_name[0]}${student.last_name[0]}`}
+                        size="md"
+                      />
+                      <div className="flex-1">
+                        <p className="font-medium text-gray-900">
+                          About {student.first_name} {student.last_name}
+                        </p>
+                        <p className="text-sm text-gray-500">
+                          Message {teacherName || 'the teacher'}
+                        </p>
+                      </div>
+                    </button>
+                  ))}
+                </div>
+              ) : (
+                // Single child or general message
                 <button
-                  key={student.id}
-                  onClick={() => handleStartConversation(student)}
+                  onClick={() => {
+                    const student = myLinkedStudents[0]
+                    handleStartConversationWithTeacher(
+                      student?.id,
+                      student ? `${student.first_name} ${student.last_name}` : undefined
+                    )
+                  }}
                   disabled={loading}
                   className={cn(
                     'w-full flex items-center gap-3 p-3 rounded-lg border border-gray-200',
@@ -276,20 +395,21 @@ function NewMessageModal({ onClose, students, classroomId, userId, userName }: N
                   )}
                 >
                   <Avatar
-                    initials={`${student.first_name[0]}${student.last_name[0]}`}
+                    initials={teacherName ? teacherName.split(' ').map(n => n[0]).join('').slice(0, 2) : 'T'}
                     size="md"
+                    className="bg-blue-100 text-blue-600"
                   />
                   <div className="flex-1">
                     <p className="font-medium text-gray-900">
-                      {student.first_name} {student.last_name}
+                      {teacherName || 'Teacher'}
                     </p>
                     <p className="text-sm text-gray-500">
-                      {student.parent_ids.length} parent{student.parent_ids.length !== 1 ? 's' : ''} connected
+                      {myLinkedStudents[0] ? `About ${myLinkedStudents[0].first_name}` : 'Classroom teacher'}
                     </p>
                   </div>
                 </button>
-              ))}
-            </div>
+              )}
+            </>
           )}
         </CardContent>
       </Card>
