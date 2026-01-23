@@ -365,6 +365,175 @@ struct StudentParentMessagingView: View {
     }
 }
 
+// MARK: - Parent New Message View
+struct ParentNewMessageView: View {
+    @EnvironmentObject var authViewModel: AuthViewModel
+    @EnvironmentObject var classroomViewModel: ClassroomViewModel
+    @EnvironmentObject var messageViewModel: MessageViewModel
+    @Environment(\.dismiss) private var dismiss
+
+    @State private var selectedConversation: Conversation?
+    @State private var showChat = false
+    @State private var isLoading = false
+    @State private var teacherName: String = "Teacher"
+
+    var body: some View {
+        NavigationStack {
+            VStack(spacing: 24) {
+                Spacer()
+
+                // Header
+                VStack(spacing: 12) {
+                    Image(systemName: "message.badge.filled.fill")
+                        .font(.system(size: 60))
+                        .foregroundColor(.blue)
+
+                    Text("Message Your Child's Teacher")
+                        .font(.title2.bold())
+
+                    Text("Send a message about your child's progress or any questions you have.")
+                        .font(.subheadline)
+                        .foregroundColor(.secondary)
+                        .multilineTextAlignment(.center)
+                        .padding(.horizontal, 32)
+                }
+
+                // Teacher Card
+                if let classroom = classroomViewModel.selectedClassroom {
+                    Button {
+                        startConversationWithTeacher()
+                    } label: {
+                        HStack(spacing: 16) {
+                            // Teacher Avatar
+                            Circle()
+                                .fill(Color.blue)
+                                .frame(width: 56, height: 56)
+                                .overlay(
+                                    Text(teacherName.prefix(1).uppercased())
+                                        .foregroundColor(.white)
+                                        .font(.title2.bold())
+                                )
+
+                            VStack(alignment: .leading, spacing: 4) {
+                                Text(teacherName)
+                                    .font(.headline)
+                                    .foregroundColor(.primary)
+
+                                Text(classroom.name)
+                                    .font(.subheadline)
+                                    .foregroundColor(.secondary)
+
+                                if let student = linkedStudent {
+                                    Text("About: \(student.fullName)")
+                                        .font(.caption)
+                                        .foregroundColor(.blue)
+                                }
+                            }
+
+                            Spacer()
+
+                            if isLoading {
+                                ProgressView()
+                            } else {
+                                Image(systemName: "chevron.right")
+                                    .foregroundColor(.secondary)
+                            }
+                        }
+                        .padding()
+                        .background(Color(.systemGray6))
+                        .cornerRadius(12)
+                    }
+                    .disabled(isLoading)
+                    .padding(.horizontal)
+                }
+
+                Spacer()
+                Spacer()
+            }
+            .navigationTitle("New Message")
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .navigationBarLeading) {
+                    Button("Cancel") {
+                        dismiss()
+                    }
+                }
+            }
+            .navigationDestination(isPresented: $showChat) {
+                if let conversation = selectedConversation {
+                    ChatView(conversation: conversation)
+                        .environmentObject(messageViewModel)
+                        .environmentObject(authViewModel)
+                }
+            }
+            .onAppear {
+                loadTeacherName()
+            }
+        }
+    }
+
+    private var linkedStudent: Student? {
+        // Get the first student linked to this parent in the current classroom
+        guard let userId = authViewModel.currentUser?.id else { return nil }
+        return classroomViewModel.students.first { student in
+            student.parentIds.contains(userId)
+        }
+    }
+
+    private func loadTeacherName() {
+        guard let teacherId = classroomViewModel.selectedClassroom?.teacherId else { return }
+
+        Task {
+            // Try to fetch teacher info from Supabase
+            do {
+                let user: AppUser = try await SupabaseConfig.client
+                    .from("users")
+                    .select()
+                    .eq("id", value: teacherId)
+                    .single()
+                    .execute()
+                    .value
+
+                await MainActor.run {
+                    teacherName = user.name
+                }
+            } catch {
+                print("Could not fetch teacher name: \(error)")
+            }
+        }
+    }
+
+    private func startConversationWithTeacher() {
+        guard let currentUser = authViewModel.currentUser,
+              let currentUserId = currentUser.id,
+              let classroom = classroomViewModel.selectedClassroom,
+              let classId = classroom.id else { return }
+
+        isLoading = true
+
+        Task {
+            let student = linkedStudent
+
+            let conversation = await messageViewModel.getOrCreateConversation(
+                participantIds: [currentUserId, classroom.teacherId],
+                participantNames: [
+                    currentUserId: currentUser.displayName ?? currentUser.name,
+                    classroom.teacherId: teacherName
+                ],
+                classId: classId,
+                studentId: student?.id,
+                studentName: student?.fullName
+            )
+
+            await MainActor.run {
+                isLoading = false
+                selectedConversation = conversation
+                showChat = true
+            }
+        }
+    }
+}
+
 #Preview {
     NewMessageView()
         .environmentObject(AuthViewModel())

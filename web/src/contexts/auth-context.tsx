@@ -1,19 +1,9 @@
 'use client'
 
-import { createContext, useContext, useEffect, useState, ReactNode, useRef } from 'react'
-import { useRouter } from 'next/navigation'
+import { createContext, useContext, useEffect, useState, ReactNode } from 'react'
 import { createClient } from '@/lib/supabase/client'
-import type { AuthChangeEvent, Session } from '@supabase/supabase-js'
 import type { AppUser } from '@/types'
 import { authService } from '@/services/auth'
-
-function isAbortError(err: unknown): boolean {
-  return (
-    (err instanceof Error && err.name === 'AbortError') ||
-    (err instanceof DOMException && err.name === 'AbortError') ||
-    (typeof err === 'object' && err !== null && 'message' in err && String((err as {message: unknown}).message).includes('aborted'))
-  )
-}
 
 interface AuthContextType {
   user: AppUser | null
@@ -26,88 +16,121 @@ interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined)
 
+// Module-level flag to prevent double initialization
+let authInitialized = false
+
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<AppUser | null>(null)
   const [loading, setLoading] = useState(true)
-  const router = useRouter()
-  const mountedRef = useRef(true)
 
   useEffect(() => {
-    mountedRef.current = true
-    const supabase = createClient()
-    let retryCount = 0
-    const maxRetries = 3
+    // Prevent double initialization
+    if (authInitialized) {
+      console.log('Auth already initialized, skipping')
+      return
+    }
+    authInitialized = true
 
-    // Get initial session with retry logic
-    const getInitialSession = async () => {
-      try {
-        const { data: { session } } = await supabase.auth.getSession()
-        if (!mountedRef.current) return
-        if (session?.user) {
-          const appUser = await authService.getUser(session.user.id)
-          if (mountedRef.current) setUser(appUser)
-        }
-        if (mountedRef.current) setLoading(false)
-      } catch (err) {
-        if (!mountedRef.current) return
-        if (isAbortError(err) && retryCount < maxRetries) {
-          retryCount++
-          setTimeout(getInitialSession, 100 * retryCount)
+    const supabase = createClient()
+    let mounted = true
+    let timeoutId: NodeJS.Timeout | null = null
+
+    console.log('Setting up auth listener')
+
+    // Set up auth state listener
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+      (event, session) => {
+        console.log('Auth event:', event, 'Has session:', !!session)
+
+        if (!mounted) {
+          console.log('Component unmounted, ignoring event')
           return
         }
-        console.error('Error getting session:', err)
-        if (mountedRef.current) setLoading(false)
-      }
-    }
 
-    getInitialSession()
+        // Clear timeout since we got an auth event
+        if (timeoutId) {
+          clearTimeout(timeoutId)
+          timeoutId = null
+        }
 
-    // Listen for auth changes
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event: AuthChangeEvent, session: Session | null) => {
-      if (!mountedRef.current) return
-      if (event === 'SIGNED_IN' && session?.user) {
-        const appUser = await authService.getUser(session.user.id)
-        if (mountedRef.current) setUser(appUser)
-      } else if (event === 'SIGNED_OUT') {
-        if (mountedRef.current) setUser(null)
+        if (session?.user) {
+          // Fetch user profile asynchronously
+          authService.getUser(session.user.id)
+            .then(appUser => {
+              if (mounted) {
+                console.log('Got user profile:', appUser?.name)
+                setUser(appUser)
+                setLoading(false)
+              }
+            })
+            .catch(err => {
+              console.error('Error fetching user profile:', err)
+              if (mounted) {
+                setUser(null)
+                setLoading(false)
+              }
+            })
+        } else {
+          console.log('No session, setting user to null')
+          setUser(null)
+          setLoading(false)
+        }
       }
-    })
+    )
+
+    // Fallback timeout
+    timeoutId = setTimeout(() => {
+      if (mounted && loading) {
+        console.log('Auth initialization timeout')
+        setLoading(false)
+      }
+    }, 3000)
 
     return () => {
-      mountedRef.current = false
+      console.log('Auth cleanup')
+      mounted = false
+      if (timeoutId) clearTimeout(timeoutId)
       subscription.unsubscribe()
+      // Reset on cleanup so it can re-initialize if remounted
+      authInitialized = false
     }
   }, [])
 
   const signIn = async (email: string, password: string) => {
-    const appUser = await authService.signIn(email, password)
-    setUser(appUser)
+    setLoading(true)
+    try {
+      const appUser = await authService.signIn(email, password)
+      setUser(appUser)
+    } finally {
+      setLoading(false)
+    }
   }
 
   const signUp = async (email: string, password: string, name: string, role: 'teacher' | 'parent') => {
-    const appUser = await authService.signUp(email, password, name, role)
-    setUser(appUser)
+    setLoading(true)
+    try {
+      const appUser = await authService.signUp(email, password, name, role)
+      setUser(appUser)
+    } finally {
+      setLoading(false)
+    }
   }
 
   const signOut = async () => {
-    // Call server-side signout to properly clear cookies
     try {
       const response = await fetch('/api/auth/signout', {
         method: 'POST',
         credentials: 'include'
       })
-      // Wait for cookies to be set from response
       await response.json()
     } catch (e) {
       console.error('Signout error:', e)
     }
     setUser(null)
-    // Clear any client-side storage
     if (typeof window !== 'undefined') {
       localStorage.clear()
       sessionStorage.clear()
     }
-    // Force a hard redirect to clear any cached state
     window.location.href = '/login'
   }
 

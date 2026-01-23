@@ -9,34 +9,41 @@ import SwiftUI
 
 struct AdminDashboardView: View {
     @EnvironmentObject var authService: AuthenticationService
+    @State private var selectedTab = 0
 
     var body: some View {
-        TabView {
+        TabView(selection: $selectedTab) {
             // Overview Tab
             AdminOverviewView()
                 .environmentObject(authService)
                 .tabItem {
-                    Label("Overview", systemImage: "chart.bar")
+                    Label("Overview", systemImage: "chart.bar.fill")
                 }
+                .tag(0)
 
             // Users Management Tab
             AdminUsersView()
                 .tabItem {
-                    Label("Users", systemImage: "person.3")
+                    Label("Users", systemImage: "person.3.fill")
                 }
+                .tag(1)
 
             // Classrooms Tab
             AdminClassroomsView()
                 .tabItem {
-                    Label("Classes", systemImage: "building.2")
+                    Label("Classes", systemImage: "building.2.fill")
                 }
+                .tag(2)
 
             // Settings Tab
             AdminSettingsView()
+                .environmentObject(authService)
                 .tabItem {
-                    Label("Settings", systemImage: "gear")
+                    Label("Settings", systemImage: "gearshape.fill")
                 }
+                .tag(3)
         }
+        .accentColor(.red)
     }
 }
 
@@ -249,6 +256,8 @@ struct AdminClassroomsView: View {
 // MARK: - Admin Settings View
 struct AdminSettingsView: View {
     @EnvironmentObject var authService: AuthenticationService
+    @State private var showingViewAs = false
+    @State private var selectedPreviewRole: PreviewRole?
 
     var body: some View {
         NavigationView {
@@ -268,6 +277,36 @@ struct AdminSettingsView: View {
                         }
                     }
                     .padding(.vertical, 8)
+                }
+
+                Section("View As (Preview Mode)") {
+                    Button {
+                        selectedPreviewRole = .districtAdmin
+                    } label: {
+                        Label("District Admin View", systemImage: "building.2.fill")
+                            .foregroundColor(.purple)
+                    }
+
+                    Button {
+                        selectedPreviewRole = .principal
+                    } label: {
+                        Label("Principal View", systemImage: "building.fill")
+                            .foregroundColor(.blue)
+                    }
+
+                    Button {
+                        selectedPreviewRole = .teacher
+                    } label: {
+                        Label("Teacher View", systemImage: "person.fill")
+                            .foregroundColor(.green)
+                    }
+
+                    Button {
+                        selectedPreviewRole = .parent
+                    } label: {
+                        Label("Parent View", systemImage: "figure.2.and.child.holdinghands")
+                            .foregroundColor(.orange)
+                    }
                 }
 
                 Section("System") {
@@ -294,7 +333,75 @@ struct AdminSettingsView: View {
                 }
             }
             .navigationTitle("Admin Settings")
+            .fullScreenCover(item: $selectedPreviewRole) { role in
+                AdminPreviewView(role: role)
+                    .environmentObject(authService)
+            }
         }
+    }
+}
+
+// MARK: - Preview Role
+enum PreviewRole: String, Identifiable {
+    case districtAdmin = "District Admin"
+    case principal = "Principal"
+    case teacher = "Teacher"
+    case parent = "Parent"
+
+    var id: String { rawValue }
+}
+
+// MARK: - Admin Preview View
+struct AdminPreviewView: View {
+    let role: PreviewRole
+    @Environment(\.dismiss) private var dismiss
+    @EnvironmentObject var authService: AuthenticationService
+
+    var body: some View {
+        NavigationStack {
+            Group {
+                switch role {
+                case .districtAdmin:
+                    DistrictAdminDashboardView()
+                        .environmentObject(authService)
+                case .principal:
+                    PrincipalDashboardView()
+                        .environmentObject(authService)
+                case .teacher:
+                    TeacherDashboardView()
+                        .environmentObject(authService)
+                case .parent:
+                    ParentDashboardView()
+                        .environmentObject(authService)
+                }
+            }
+            .overlay(alignment: .top) {
+                PreviewBanner(role: role, dismiss: dismiss)
+            }
+        }
+    }
+}
+
+struct PreviewBanner: View {
+    let role: PreviewRole
+    let dismiss: DismissAction
+
+    var body: some View {
+        HStack {
+            Image(systemName: "eye.fill")
+            Text("Previewing \(role.rawValue) View")
+                .font(.caption.bold())
+            Spacer()
+            Button("Exit Preview") {
+                dismiss()
+            }
+            .font(.caption.bold())
+            .foregroundColor(.white)
+        }
+        .padding(.horizontal)
+        .padding(.vertical, 8)
+        .background(Color.orange)
+        .foregroundColor(.white)
     }
 }
 
@@ -577,28 +684,544 @@ struct AddAdminUserView: View {
 }
 
 struct AdminSystemLogsView: View {
+    @StateObject private var viewModel = SystemLogsViewModel()
+    @State private var selectedFilter: LogFilter = .all
+
+    enum LogFilter: String, CaseIterable {
+        case all = "All"
+        case auth = "Auth"
+        case data = "Data"
+        case error = "Errors"
+    }
+
+    var filteredLogs: [SystemLog] {
+        switch selectedFilter {
+        case .all: return viewModel.logs
+        case .auth: return viewModel.logs.filter { $0.category == .auth }
+        case .data: return viewModel.logs.filter { $0.category == .data }
+        case .error: return viewModel.logs.filter { $0.category == .error }
+        }
+    }
+
     var body: some View {
         List {
-            Text("System logs will be displayed here")
-                .foregroundColor(.secondary)
+            Section {
+                Picker("Filter", selection: $selectedFilter) {
+                    ForEach(LogFilter.allCases, id: \.self) { filter in
+                        Text(filter.rawValue).tag(filter)
+                    }
+                }
+                .pickerStyle(SegmentedPickerStyle())
+            }
+
+            Section("Recent Activity") {
+                if viewModel.isLoading {
+                    ProgressView()
+                        .frame(maxWidth: .infinity)
+                } else if filteredLogs.isEmpty {
+                    Text("No logs to display")
+                        .foregroundColor(.secondary)
+                } else {
+                    ForEach(filteredLogs) { log in
+                        SystemLogRow(log: log)
+                    }
+                }
+            }
         }
         .navigationTitle("System Logs")
+        .onAppear {
+            Task {
+                await viewModel.loadLogs()
+            }
+        }
+        .refreshable {
+            await viewModel.loadLogs()
+        }
+    }
+}
+
+struct SystemLogRow: View {
+    let log: SystemLog
+
+    var body: some View {
+        HStack(alignment: .top, spacing: 12) {
+            Image(systemName: log.icon)
+                .foregroundColor(log.color)
+                .frame(width: 24)
+
+            VStack(alignment: .leading, spacing: 4) {
+                Text(log.title)
+                    .font(.subheadline.bold())
+
+                if let details = log.details {
+                    Text(details)
+                        .font(.caption)
+                        .foregroundColor(.secondary)
+                }
+
+                Text(log.timestamp, style: .relative)
+                    .font(.caption2)
+                    .foregroundColor(.secondary)
+            }
+
+            Spacer()
+        }
+        .padding(.vertical, 4)
+    }
+}
+
+// MARK: - System Log Model
+
+struct SystemLog: Identifiable {
+    let id = UUID()
+    let title: String
+    let details: String?
+    let category: LogCategory
+    let timestamp: Date
+
+    enum LogCategory {
+        case auth, data, error, system
+    }
+
+    var icon: String {
+        switch category {
+        case .auth: return "person.badge.key.fill"
+        case .data: return "cylinder.fill"
+        case .error: return "exclamationmark.triangle.fill"
+        case .system: return "gearshape.fill"
+        }
+    }
+
+    var color: Color {
+        switch category {
+        case .auth: return .blue
+        case .data: return .green
+        case .error: return .red
+        case .system: return .purple
+        }
+    }
+}
+
+// MARK: - System Logs ViewModel
+
+@MainActor
+class SystemLogsViewModel: ObservableObject {
+    @Published var logs: [SystemLog] = []
+    @Published var isLoading = false
+
+    func loadLogs() async {
+        isLoading = true
+        defer { isLoading = false }
+
+        // Generate logs from recent activity
+        // In a production app, you would query an activity_logs table
+        var generatedLogs: [SystemLog] = []
+
+        // Add recent user signups
+        do {
+            let recentUsers: [DatabaseUser] = try await SupabaseConfig.client
+                .from("users")
+                .select()
+                .order("created_at", ascending: false)
+                .limit(10)
+                .execute()
+                .value
+
+            for user in recentUsers {
+                if let createdAt = user.createdAt {
+                    generatedLogs.append(SystemLog(
+                        title: "New user registered",
+                        details: "\(user.name) (\(user.role))",
+                        category: .auth,
+                        timestamp: createdAt
+                    ))
+                }
+            }
+        } catch {
+            print("Error loading users: \(error)")
+        }
+
+        // Add recent classrooms
+        do {
+            let recentClassrooms: [Classroom] = try await SupabaseConfig.client
+                .from("classrooms")
+                .select()
+                .order("created_at", ascending: false)
+                .limit(10)
+                .execute()
+                .value
+
+            for classroom in recentClassrooms {
+                generatedLogs.append(SystemLog(
+                    title: "Classroom created",
+                    details: "\(classroom.name) by \(classroom.teacherName)",
+                    category: .data,
+                    timestamp: classroom.createdAt
+                ))
+            }
+        } catch {
+            print("Error loading classrooms: \(error)")
+        }
+
+        // Add system startup log
+        generatedLogs.append(SystemLog(
+            title: "System started",
+            details: "Admin dashboard initialized",
+            category: .system,
+            timestamp: Date()
+        ))
+
+        // Sort by timestamp descending
+        logs = generatedLogs.sorted { $0.timestamp > $1.timestamp }
     }
 }
 
 struct AdminDatabaseView: View {
+    @StateObject private var viewModel = DatabaseViewModel()
+
     var body: some View {
         List {
             Section("Tables") {
-                LabeledContent("users", value: "View")
-                LabeledContent("classrooms", value: "View")
-                LabeledContent("students", value: "View")
-                LabeledContent("hall_passes", value: "View")
-                LabeledContent("stories", value: "View")
-                LabeledContent("messages", value: "View")
+                if viewModel.isLoading {
+                    ProgressView()
+                        .frame(maxWidth: .infinity)
+                } else {
+                    ForEach(viewModel.tables) { table in
+                        NavigationLink {
+                            DatabaseTableView(tableName: table.name)
+                        } label: {
+                            HStack {
+                                Image(systemName: "cylinder.fill")
+                                    .foregroundColor(.blue)
+
+                                Text(table.name)
+                                    .font(.headline)
+
+                                Spacer()
+
+                                Text("\(table.count) records")
+                                    .font(.caption)
+                                    .foregroundColor(.secondary)
+                            }
+                        }
+                    }
+                }
+            }
+
+            Section("Database Info") {
+                LabeledContent("Total Records", value: "\(viewModel.totalRecords)")
+                LabeledContent("Last Refreshed", value: viewModel.lastRefreshed)
             }
         }
         .navigationTitle("Database")
+        .onAppear {
+            Task {
+                await viewModel.loadTableCounts()
+            }
+        }
+        .refreshable {
+            await viewModel.loadTableCounts()
+        }
+    }
+}
+
+struct DatabaseTableView: View {
+    let tableName: String
+    @StateObject private var viewModel = TableContentsViewModel()
+    @State private var searchText = ""
+
+    var body: some View {
+        List {
+            if viewModel.isLoading {
+                ProgressView()
+                    .frame(maxWidth: .infinity)
+            } else if viewModel.records.isEmpty {
+                Text("No records found")
+                    .foregroundColor(.secondary)
+            } else {
+                ForEach(viewModel.records, id: \.id) { record in
+                    VStack(alignment: .leading, spacing: 4) {
+                        Text(record.primaryValue)
+                            .font(.headline)
+
+                        if let secondary = record.secondaryValue {
+                            Text(secondary)
+                                .font(.caption)
+                                .foregroundColor(.secondary)
+                        }
+
+                        Text("ID: \(record.id)")
+                            .font(.caption2)
+                            .foregroundColor(.secondary)
+                    }
+                    .padding(.vertical, 4)
+                }
+            }
+        }
+        .searchable(text: $searchText, prompt: "Search \(tableName)...")
+        .navigationTitle(tableName)
+        .navigationBarTitleDisplayMode(.inline)
+        .onAppear {
+            Task {
+                await viewModel.loadRecords(for: tableName)
+            }
+        }
+    }
+}
+
+// MARK: - Database Models
+
+struct DatabaseTable: Identifiable {
+    let id = UUID()
+    let name: String
+    let count: Int
+}
+
+struct DatabaseRecord: Identifiable {
+    let id: String
+    let primaryValue: String
+    let secondaryValue: String?
+}
+
+// MARK: - Database ViewModel
+
+@MainActor
+class DatabaseViewModel: ObservableObject {
+    @Published var tables: [DatabaseTable] = []
+    @Published var totalRecords = 0
+    @Published var lastRefreshed = "Never"
+    @Published var isLoading = false
+
+    private let tableNames = [
+        "users",
+        "classrooms",
+        "students",
+        "stories",
+        "messages",
+        "point_records",
+        "student_points_summary",
+        "districts",
+        "schools"
+    ]
+
+    func loadTableCounts() async {
+        isLoading = true
+        defer { isLoading = false }
+
+        var loadedTables: [DatabaseTable] = []
+        var total = 0
+
+        for tableName in tableNames {
+            do {
+                // Use a simple count query
+                let response: [[String: Int]] = try await SupabaseConfig.client
+                    .from(tableName)
+                    .select("*", head: true, count: .exact)
+                    .execute()
+                    .value
+
+                // The count is in the response headers, but we can estimate from the select
+                // For now, let's fetch all and count (not ideal for large tables)
+                let count = try await getTableCount(tableName: tableName)
+                loadedTables.append(DatabaseTable(name: tableName, count: count))
+                total += count
+            } catch {
+                // Table might not exist or have permission issues
+                print("Error loading \(tableName): \(error)")
+                loadedTables.append(DatabaseTable(name: tableName, count: 0))
+            }
+        }
+
+        tables = loadedTables.sorted { $0.count > $1.count }
+        totalRecords = total
+
+        let formatter = DateFormatter()
+        formatter.timeStyle = .short
+        lastRefreshed = formatter.string(from: Date())
+    }
+
+    private func getTableCount(tableName: String) async throws -> Int {
+        // Generic count query - works for most tables
+        switch tableName {
+        case "users":
+            let records: [DatabaseUser] = try await SupabaseConfig.client
+                .from(tableName).select().execute().value
+            return records.count
+        case "classrooms":
+            let records: [Classroom] = try await SupabaseConfig.client
+                .from(tableName).select().execute().value
+            return records.count
+        case "students":
+            let records: [Student] = try await SupabaseConfig.client
+                .from(tableName).select().execute().value
+            return records.count
+        case "stories":
+            let records: [Story] = try await SupabaseConfig.client
+                .from(tableName).select().execute().value
+            return records.count
+        case "point_records":
+            let records: [PointRecord] = try await SupabaseConfig.client
+                .from(tableName).select().execute().value
+            return records.count
+        case "student_points_summary":
+            let records: [StudentPointsSummary] = try await SupabaseConfig.client
+                .from(tableName).select().execute().value
+            return records.count
+        case "districts":
+            let records: [District] = try await SupabaseConfig.client
+                .from(tableName).select().execute().value
+            return records.count
+        case "schools":
+            let records: [School] = try await SupabaseConfig.client
+                .from(tableName).select().execute().value
+            return records.count
+        default:
+            return 0
+        }
+    }
+}
+
+// MARK: - Table Contents ViewModel
+
+@MainActor
+class TableContentsViewModel: ObservableObject {
+    @Published var records: [DatabaseRecord] = []
+    @Published var isLoading = false
+
+    func loadRecords(for tableName: String) async {
+        isLoading = true
+        defer { isLoading = false }
+
+        switch tableName {
+        case "users":
+            do {
+                let users: [DatabaseUser] = try await SupabaseConfig.client
+                    .from(tableName)
+                    .select()
+                    .order("created_at", ascending: false)
+                    .limit(100)
+                    .execute()
+                    .value
+
+                records = users.map { user in
+                    DatabaseRecord(
+                        id: user.id,
+                        primaryValue: user.name,
+                        secondaryValue: "\(user.email) • \(user.role)"
+                    )
+                }
+            } catch {
+                print("Error: \(error)")
+            }
+
+        case "classrooms":
+            do {
+                let classrooms: [Classroom] = try await SupabaseConfig.client
+                    .from(tableName)
+                    .select()
+                    .order("created_at", ascending: false)
+                    .limit(100)
+                    .execute()
+                    .value
+
+                records = classrooms.map { classroom in
+                    DatabaseRecord(
+                        id: classroom.id ?? "",
+                        primaryValue: classroom.name,
+                        secondaryValue: "\(classroom.teacherName) • \(classroom.gradeLevel)"
+                    )
+                }
+            } catch {
+                print("Error: \(error)")
+            }
+
+        case "students":
+            do {
+                let students: [Student] = try await SupabaseConfig.client
+                    .from(tableName)
+                    .select()
+                    .order("last_name", ascending: true)
+                    .limit(100)
+                    .execute()
+                    .value
+
+                records = students.map { student in
+                    DatabaseRecord(
+                        id: student.id ?? "",
+                        primaryValue: student.fullName,
+                        secondaryValue: "Class: \(student.classId)"
+                    )
+                }
+            } catch {
+                print("Error: \(error)")
+            }
+
+        case "stories":
+            do {
+                let stories: [Story] = try await SupabaseConfig.client
+                    .from(tableName)
+                    .select()
+                    .order("created_at", ascending: false)
+                    .limit(100)
+                    .execute()
+                    .value
+
+                records = stories.map { story in
+                    DatabaseRecord(
+                        id: story.id ?? "",
+                        primaryValue: story.authorName,
+                        secondaryValue: story.content ?? "Photo/media post"
+                    )
+                }
+            } catch {
+                print("Error: \(error)")
+            }
+
+        case "districts":
+            do {
+                let districts: [District] = try await SupabaseConfig.client
+                    .from(tableName)
+                    .select()
+                    .order("name", ascending: true)
+                    .limit(100)
+                    .execute()
+                    .value
+
+                records = districts.map { district in
+                    DatabaseRecord(
+                        id: district.id,
+                        primaryValue: district.name,
+                        secondaryValue: "\(district.city), \(district.state ?? "")"
+                    )
+                }
+            } catch {
+                print("Error: \(error)")
+            }
+
+        case "schools":
+            do {
+                let schools: [School] = try await SupabaseConfig.client
+                    .from(tableName)
+                    .select()
+                    .order("name", ascending: true)
+                    .limit(100)
+                    .execute()
+                    .value
+
+                records = schools.map { school in
+                    DatabaseRecord(
+                        id: school.id,
+                        primaryValue: school.name,
+                        secondaryValue: "\(school.city), \(school.state ?? "")"
+                    )
+                }
+            } catch {
+                print("Error: \(error)")
+            }
+
+        default:
+            records = []
+        }
     }
 }
 

@@ -13,6 +13,15 @@ enum UserRole: String, Codable, CaseIterable {
     case student = "student"
 }
 
+// MARK: - AdminLevel Enum
+enum AdminLevel: String, Codable, CaseIterable {
+    case superAdmin = "super_admin"
+    case districtAdmin = "district_admin"
+    case principal = "principal"
+    case schoolAdmin = "school_admin"
+    case none = "none"
+}
+
 // MARK: - User Model
 struct User: Identifiable, Codable {
     var id: String?
@@ -20,6 +29,9 @@ struct User: Identifiable, Codable {
     var name: String
     var displayName: String?
     var role: UserRole
+    var adminLevel: AdminLevel?
+    var districtId: String?
+    var schoolId: String?
     var classroomId: String?
     var classIds: [String]
     var studentIds: [String]
@@ -43,6 +55,9 @@ struct User: Identifiable, Codable {
         case name
         case displayName = "display_name"
         case role
+        case adminLevel = "admin_level"
+        case districtId = "district_id"
+        case schoolId = "school_id"
         case classroomId = "classroom_id"
         case classIds = "class_ids"
         case studentIds = "student_ids"
@@ -57,6 +72,9 @@ struct User: Identifiable, Codable {
         name: String,
         displayName: String? = nil,
         role: UserRole,
+        adminLevel: AdminLevel? = nil,
+        districtId: String? = nil,
+        schoolId: String? = nil,
         classroomId: String? = nil,
         classIds: [String] = [],
         studentIds: [String] = [],
@@ -69,6 +87,9 @@ struct User: Identifiable, Codable {
         self.name = name
         self.displayName = displayName
         self.role = role
+        self.adminLevel = adminLevel
+        self.districtId = districtId
+        self.schoolId = schoolId
         self.classroomId = classroomId
         self.classIds = classIds
         self.studentIds = studentIds

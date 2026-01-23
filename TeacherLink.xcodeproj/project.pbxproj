@@ -34,6 +34,15 @@
 		029B /* TeacherDashboardView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 129B /* TeacherDashboardView.swift */; };
 		029C /* ParentDashboardView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 129C /* ParentDashboardView.swift */; };
 		029D /* AdminDashboardView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 129D /* AdminDashboardView.swift */; };
+		029G /* DistrictAdminDashboardView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 129G /* DistrictAdminDashboardView.swift */; };
+		029H /* PrincipalDashboardView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 129H /* PrincipalDashboardView.swift */; };
+		029I /* DistrictProfileView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 129I /* DistrictProfileView.swift */; };
+		029J /* SchoolProfileView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 129J /* SchoolProfileView.swift */; };
+		029K /* GradeLevelsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 129K /* GradeLevelsView.swift */; };
+		029L /* DistrictReportsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 129L /* DistrictReportsView.swift */; };
+		029M /* SchoolReportsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 129M /* SchoolReportsView.swift */; };
+		029N /* ExportDataView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 129N /* ExportDataView.swift */; };
+		02ES /* ExportService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 12ES /* ExportService.swift */; };
 		030 /* AuthViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 130 /* AuthViewModel.swift */; };
 		031 /* ClassroomViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 131 /* ClassroomViewModel.swift */; };
 		032 /* StoryViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 132 /* StoryViewModel.swift */; };
@@ -129,6 +138,15 @@
 		129B /* TeacherDashboardView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TeacherDashboardView.swift; sourceTree = "<group>"; };
 		129C /* ParentDashboardView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ParentDashboardView.swift; sourceTree = "<group>"; };
 		129D /* AdminDashboardView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AdminDashboardView.swift; sourceTree = "<group>"; };
+		129G /* DistrictAdminDashboardView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DistrictAdminDashboardView.swift; sourceTree = "<group>"; };
+		129H /* PrincipalDashboardView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PrincipalDashboardView.swift; sourceTree = "<group>"; };
+		129I /* DistrictProfileView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DistrictProfileView.swift; sourceTree = "<group>"; };
+		129J /* SchoolProfileView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SchoolProfileView.swift; sourceTree = "<group>"; };
+		129K /* GradeLevelsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GradeLevelsView.swift; sourceTree = "<group>"; };
+		129L /* DistrictReportsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DistrictReportsView.swift; sourceTree = "<group>"; };
+		129M /* SchoolReportsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SchoolReportsView.swift; sourceTree = "<group>"; };
+		129N /* ExportDataView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExportDataView.swift; sourceTree = "<group>"; };
+		12ES /* ExportService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExportService.swift; sourceTree = "<group>"; };
 		130 /* AuthViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AuthViewModel.swift; sourceTree = "<group>"; };
 		131 /* ClassroomViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ClassroomViewModel.swift; sourceTree = "<group>"; };
 		132 /* StoryViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StoryViewModel.swift; sourceTree = "<group>"; };
@@ -300,6 +318,7 @@
 				124 /* PointsService.swift */,
 				125 /* MockDataService.swift */,
 				126 /* SupabaseConfig.swift */,
+				12ES /* ExportService.swift */,
 				718009672F21856C000CB7F3 /* BUILD_VERIFIED.md */,
 				718009692F2185CB000CB7F3 /* FINAL_FIX.md */,
 				7180096B2F218698000CB7F3 /* SUCCESS_GUIDE.md */,
@@ -452,6 +471,14 @@
 			isa = PBXGroup;
 			children = (
 				129D /* AdminDashboardView.swift */,
+				129G /* DistrictAdminDashboardView.swift */,
+				129H /* PrincipalDashboardView.swift */,
+				129I /* DistrictProfileView.swift */,
+				129J /* SchoolProfileView.swift */,
+				129K /* GradeLevelsView.swift */,
+				129L /* DistrictReportsView.swift */,
+				129M /* SchoolReportsView.swift */,
+				129N /* ExportDataView.swift */,
 			);
 			path = Admin;
 			sourceTree = "<group>";
@@ -569,6 +596,15 @@
 				029B /* TeacherDashboardView.swift in Sources */,
 				029C /* ParentDashboardView.swift in Sources */,
 				029D /* AdminDashboardView.swift in Sources */,
+				029G /* DistrictAdminDashboardView.swift in Sources */,
+				029H /* PrincipalDashboardView.swift in Sources */,
+				029I /* DistrictProfileView.swift in Sources */,
+				029J /* SchoolProfileView.swift in Sources */,
+				029K /* GradeLevelsView.swift in Sources */,
+				029L /* DistrictReportsView.swift in Sources */,
+				029M /* SchoolReportsView.swift in Sources */,
+				029N /* ExportDataView.swift in Sources */,
+				02ES /* ExportService.swift in Sources */,
 				030 /* AuthViewModel.swift in Sources */,
 				037 /* AdminViewModel.swift in Sources */,
 				031 /* ClassroomViewModel.swift in Sources */,

@@ -45,6 +45,7 @@ struct MainTabView: View {
                 .tag(1)
 
             MessagesView()
+                .environmentObject(authViewModel)
                 .environmentObject(classroomViewModel)
                 .environmentObject(messageViewModel)
                 .tabItem {

@@ -1,15 +1,17 @@
 'use client'
 
 import { useEffect, useState } from 'react'
+import { useRouter } from 'next/navigation'
 import { useAuth } from '@/contexts/auth-context'
 import { useClassroom } from '@/contexts/classroom-context'
 import { Header } from '@/components/layout/header'
-import { Card, CardContent, CardHeader, CardTitle, Button } from '@/components/ui'
+import { Card, CardContent, CardHeader, CardTitle, Button, Input } from '@/components/ui'
 import { messageService } from '@/services/message'
 import { storyService } from '@/services/story'
 import { pointsService } from '@/services/points'
-import type { Conversation, Story, StudentPointsSummary } from '@/types'
-import { timeAgo } from '@/types'
+import { classroomService } from '@/services/classroom'
+import type { Conversation, Story, StudentPointsSummary, Student } from '@/types'
+import { timeAgo, getStudentFullName } from '@/types'
 import Link from 'next/link'
 import {
   Users,
@@ -19,15 +21,49 @@ import {
   Plus,
   ArrowRight,
   TrendingUp,
+  UserPlus,
+  Link as LinkIcon,
+  CheckCircle,
 } from 'lucide-react'
 
 export default function DashboardPage() {
-  const { user } = useAuth()
-  const { selectedClassroom, students, classrooms } = useClassroom()
+  const router = useRouter()
+  const { user, loading: authLoading, refreshUser } = useAuth()
+  const { selectedClassroom, students, classrooms, refreshClassrooms } = useClassroom()
   const [conversations, setConversations] = useState<Conversation[]>([])
   const [stories, setStories] = useState<Story[]>([])
   const [pointsSummaries, setPointsSummaries] = useState<StudentPointsSummary[]>([])
   const [loading, setLoading] = useState(true)
+
+  // Redirect to login if not authenticated
+  useEffect(() => {
+    if (!authLoading && !user) {
+      window.location.href = '/login'
+    }
+  }, [authLoading, user])
+
+  // Parent linking state
+  const [studentCode, setStudentCode] = useState('')
+  const [linkingStudent, setLinkingStudent] = useState(false)
+  const [linkError, setLinkError] = useState('')
+  const [linkSuccess, setLinkSuccess] = useState<Student | null>(null)
+  const [linkedStudents, setLinkedStudents] = useState<Student[]>([])
+
+  // Fetch linked students for parent
+  useEffect(() => {
+    if (!user || user.role !== 'parent' || !user.student_ids?.length) {
+      setLinkedStudents([])
+      return
+    }
+
+    const fetchLinkedStudents = async () => {
+      const studentPromises = user.student_ids.map(id => classroomService.getStudent(id))
+      const results = await Promise.all(studentPromises)
+      setLinkedStudents(results.filter((s): s is Student => s !== null))
+    }
+
+    fetchLinkedStudents()
+  }, [user])
 
   useEffect(() => {
     if (!user || !selectedClassroom) {
@@ -60,6 +96,56 @@ export default function DashboardPage() {
   const totalUnread = conversations.reduce((sum, c) => sum + (c.unread_counts[user?.id || ''] || 0), 0)
   const totalPoints = pointsSummaries.reduce((sum, s) => sum + s.total_points, 0)
 
+  const handleLinkStudent = async (e: React.FormEvent) => {
+    e.preventDefault()
+    if (!user || !studentCode.trim()) return
+
+    setLinkingStudent(true)
+    setLinkError('')
+    setLinkSuccess(null)
+
+    try {
+      const { student, classroom } = await classroomService.linkParentToStudentByCode(
+        studentCode.trim().toUpperCase(),
+        user.id
+      )
+      setLinkSuccess(student)
+      setStudentCode('')
+      // Refresh data
+      await Promise.all([refreshUser(), refreshClassrooms()])
+      // Update linked students list
+      setLinkedStudents(prev => [...prev, student])
+    } catch (err) {
+      setLinkError(err instanceof Error ? err.message : 'Failed to link to student')
+    } finally {
+      setLinkingStudent(false)
+    }
+  }
+
+  // Show loading while auth is checking
+  if (authLoading) {
+    return (
+      <>
+        <Header title="Dashboard" />
+        <main className="flex-1 p-6 flex items-center justify-center">
+          <div className="text-gray-500">Loading...</div>
+        </main>
+      </>
+    )
+  }
+
+  // Show loading while redirecting to login (no user)
+  if (!user) {
+    return (
+      <>
+        <Header title="Dashboard" />
+        <main className="flex-1 p-6 flex items-center justify-center">
+          <div className="text-gray-500">Redirecting to login...</div>
+        </main>
+      </>
+    )
+  }
+
   // Show onboarding for teachers without classrooms
   if (isTeacher && classrooms.length === 0 && !loading) {
     return (
@@ -90,29 +176,68 @@ export default function DashboardPage() {
     )
   }
 
-  // Show join classroom for parents without classrooms
-  if (!isTeacher && classrooms.length === 0 && !loading) {
+  // Show link to child for parents without linked students
+  if (!isTeacher && linkedStudents.length === 0 && !loading) {
     return (
       <>
         <Header title="Dashboard" />
         <main className="flex-1 p-6 flex items-center justify-center">
-          <Card className="max-w-md w-full text-center">
-            <CardContent className="py-12">
-              <div className="mx-auto h-16 w-16 rounded-full bg-green-100 flex items-center justify-center mb-6">
-                <Users className="h-8 w-8 text-green-600" />
+          <Card className="max-w-md w-full">
+            <CardContent className="py-8">
+              <div className="text-center mb-6">
+                <div className="mx-auto h-16 w-16 rounded-full bg-green-100 flex items-center justify-center mb-4">
+                  <LinkIcon className="h-8 w-8 text-green-600" />
+                </div>
+                <h2 className="text-xl font-semibold text-gray-900 mb-2">
+                  Link to Your Child
+                </h2>
+                <p className="text-gray-500">
+                  Enter the student code provided by your child&apos;s teacher to connect with your child&apos;s classroom.
+                </p>
               </div>
-              <h2 className="text-xl font-semibold text-gray-900 mb-2">
-                Join Your Child&apos;s Classroom
-              </h2>
-              <p className="text-gray-500 mb-6">
-                Enter the class code provided by your child&apos;s teacher to connect with their classroom.
-              </p>
-              <Link href="/settings">
-                <Button className="bg-green-600 hover:bg-green-700">
-                  <Plus className="h-4 w-4 mr-2" />
-                  Join Classroom
-                </Button>
-              </Link>
+
+              {linkSuccess ? (
+                <div className="text-center p-4 rounded-lg bg-green-50 border border-green-200">
+                  <CheckCircle className="h-8 w-8 text-green-500 mx-auto mb-2" />
+                  <p className="font-medium text-green-800">
+                    Successfully linked to {getStudentFullName(linkSuccess)}!
+                  </p>
+                  <p className="text-sm text-green-600 mt-1">
+                    You can now view your child&apos;s progress and communicate with their teacher.
+                  </p>
+                </div>
+              ) : (
+                <form onSubmit={handleLinkStudent} className="space-y-4">
+                  {linkError && (
+                    <div className="p-3 rounded-lg bg-red-50 text-red-600 text-sm">
+                      {linkError}
+                    </div>
+                  )}
+                  <Input
+                    label="Student Code"
+                    placeholder="e.g., EMMA-7K3X"
+                    value={studentCode}
+                    onChange={(e) => setStudentCode(e.target.value.toUpperCase())}
+                    className="text-center font-mono text-lg uppercase"
+                    required
+                  />
+                  <Button
+                    type="submit"
+                    className="w-full bg-green-600 hover:bg-green-700"
+                    loading={linkingStudent}
+                  >
+                    <UserPlus className="h-4 w-4 mr-2" />
+                    Link to My Child
+                  </Button>
+                </form>
+              )}
+
+              <div className="mt-6 pt-6 border-t border-gray-200 text-center">
+                <p className="text-sm text-gray-500 mb-2">Don&apos;t have a code?</p>
+                <p className="text-sm text-gray-600">
+                  Ask your child&apos;s teacher for the student invite code.
+                </p>
+              </div>
             </CardContent>
           </Card>
         </main>

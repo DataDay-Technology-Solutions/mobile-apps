@@ -17,62 +17,83 @@ struct TeacherDashboardView: View {
     @StateObject private var messageViewModel = MessageViewModel()
     @StateObject private var pointsViewModel = PointsViewModel()
 
+    @State private var selectedTab = 0
+
     var body: some View {
-        TabView {
+        TabView(selection: $selectedTab) {
             // Stories/Feed Tab
             StoriesView()
                 .tabItem {
-                    Label("Feed", systemImage: "newspaper")
+                    Label("Feed", systemImage: "house.fill")
                 }
+                .tag(0)
 
             // Students Tab
             StudentsView()
                 .tabItem {
-                    Label("Students", systemImage: "person.3")
+                    Label("Students", systemImage: "person.3.fill")
                 }
+                .tag(1)
 
             // Messages Tab
             MessagesView()
                 .tabItem {
-                    Label("Messages", systemImage: "message")
+                    Label("Messages", systemImage: "message.fill")
                 }
+                .badge(messageViewModel.totalUnreadCount > 0 ? messageViewModel.totalUnreadCount : 0)
+                .tag(2)
 
             // Points Tab
             PointsView()
                 .tabItem {
-                    Label("Points", systemImage: "star")
+                    Label("Points", systemImage: "star.fill")
                 }
+                .tag(3)
 
             // Settings Tab
             TeacherSettingsView()
                 .tabItem {
-                    Label("Settings", systemImage: "gear")
+                    Label("Settings", systemImage: "gearshape.fill")
                 }
+                .tag(4)
         }
+        .accentColor(.blue)
         .environmentObject(authViewModel)
         .environmentObject(classroomViewModel)
         .environmentObject(storyViewModel)
         .environmentObject(messageViewModel)
         .environmentObject(pointsViewModel)
         .onAppear {
-            // Sync auth state from AuthenticationService to AuthViewModel
-            if let appUser = authService.appUser {
-                let user = User(
-                    id: appUser.id,
-                    email: appUser.email,
-                    name: appUser.name,
-                    displayName: appUser.name,
-                    role: appUser.role
-                )
-                authViewModel.currentUser = user
-                authViewModel.isAuthenticated = true
+            setupTeacherData()
+        }
+    }
 
-                // Load classrooms for this teacher
-                Task {
-                    await classroomViewModel.loadClassrooms(for: user)
-                }
+    private func setupTeacherData() {
+        guard let appUser = authService.appUser else { return }
+
+        // Sync auth state from AuthenticationService to AuthViewModel
+        let user = User(
+            id: appUser.id,
+            email: appUser.email,
+            name: appUser.name,
+            displayName: appUser.name,
+            role: appUser.role
+        )
+        authViewModel.currentUser = user
+        authViewModel.isAuthenticated = true
+
+        // Load classrooms for this teacher (this also loads students)
+        Task {
+            await classroomViewModel.loadClassrooms(for: user)
+
+            // After classrooms load, load stories for the selected classroom
+            if let classId = classroomViewModel.selectedClassroom?.id {
+                storyViewModel.listenToStories(classId: classId)
             }
         }
+
+        // Load conversations for this teacher
+        messageViewModel.listenToConversations(userId: appUser.id, role: .teacher)
     }
 }
 
@@ -86,13 +107,19 @@ struct TeacherSettingsView: View {
     var body: some View {
         NavigationView {
             List {
+                // Profile Section
                 Section {
-                    HStack {
-                        Image(systemName: "person.circle.fill")
-                            .font(.largeTitle)
-                            .foregroundColor(.blue)
+                    HStack(spacing: 16) {
+                        Circle()
+                            .fill(Color.blue.gradient)
+                            .frame(width: 50, height: 50)
+                            .overlay(
+                                Text(authService.currentUserName.prefix(1).uppercased())
+                                    .font(.title2.bold())
+                                    .foregroundColor(.white)
+                            )
 
-                        VStack(alignment: .leading) {
+                        VStack(alignment: .leading, spacing: 2) {
                             Text(authService.currentUserName)
                                 .font(.headline)
                             Text(authService.appUser?.email ?? "")
@@ -103,6 +130,7 @@ struct TeacherSettingsView: View {
                     .padding(.vertical, 8)
                 }
 
+                // Classes Section
                 Section("My Classes") {
                     ForEach(classroomViewModel.classrooms, id: \.uniqueId) { classroom in
                         Button {
@@ -131,7 +159,7 @@ struct TeacherSettingsView: View {
 
                                 if classroom.id == classroomViewModel.selectedClassroom?.id {
                                     Image(systemName: "checkmark.circle.fill")
-                                        .foregroundColor(.blue)
+                                        .foregroundColor(.green)
                                 }
                             }
                         }
@@ -140,7 +168,7 @@ struct TeacherSettingsView: View {
                     Button {
                         showCreateClass = true
                     } label: {
-                        Label("Create New Class", systemImage: "plus.circle")
+                        Label("Create New Class", systemImage: "plus.circle.fill")
                     }
                 }
 
@@ -150,7 +178,13 @@ struct TeacherSettingsView: View {
                         NavigationLink {
                             ClassInviteView(classroom: classroom)
                         } label: {
-                            Label("Class Code: \(classroom.classCode)", systemImage: "qrcode")
+                            HStack {
+                                Label("Class Code", systemImage: "qrcode")
+                                Spacer()
+                                Text(classroom.classCode)
+                                    .font(.system(.body, design: .monospaced))
+                                    .foregroundColor(.blue)
+                            }
                         }
 
                         Button {
@@ -161,12 +195,12 @@ struct TeacherSettingsView: View {
                     }
                 }
 
+                // Sign Out
                 Section {
-                    Button(action: {
+                    Button(role: .destructive) {
                         authService.signOut()
-                    }) {
+                    } label: {
                         Label("Sign Out", systemImage: "rectangle.portrait.and.arrow.right")
-                            .foregroundColor(.red)
                     }
                 }
             }

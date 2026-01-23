@@ -12,6 +12,8 @@ struct Classroom: Identifiable, Codable {
     var teacherId: String
     var teacherName: String
     var classCode: String
+    var schoolId: String?
+    var districtId: String?
     var studentIds: [String]
     var parentIds: [String]
     var createdAt: Date
@@ -37,6 +39,8 @@ struct Classroom: Identifiable, Codable {
         case teacherId = "teacher_id"
         case teacherName = "teacher_name"
         case classCode = "class_code"
+        case schoolId = "school_id"
+        case districtId = "district_id"
         case studentIds = "student_ids"
         case parentIds = "parent_ids"
         case createdAt = "created_at"
@@ -49,6 +53,8 @@ struct Classroom: Identifiable, Codable {
         teacherId: String,
         teacherName: String,
         classCode: String = "",
+        schoolId: String? = nil,
+        districtId: String? = nil,
         studentIds: [String] = [],
         parentIds: [String] = [],
         createdAt: Date = Date()
@@ -59,6 +65,8 @@ struct Classroom: Identifiable, Codable {
         self.teacherId = teacherId
         self.teacherName = teacherName
         self.classCode = classCode.isEmpty ? Classroom.generateClassCode() : classCode
+        self.schoolId = schoolId
+        self.districtId = districtId
         self.studentIds = studentIds
         self.parentIds = parentIds
         self.createdAt = createdAt

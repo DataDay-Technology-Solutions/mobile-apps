@@ -270,6 +270,41 @@ class ClassroomService {
         print("🟩 [ClassroomService] Parent linked successfully")
     }
 
+    // MARK: - Student Invite Code Methods
+
+    func findStudentByInviteCode(_ code: String) async throws -> Student {
+        print("🟦 [ClassroomService] Finding student by invite code: \(code)")
+
+        let response: [Student] = try await supabase
+            .from("students")
+            .select()
+            .eq("invite_code", value: code.uppercased())
+            .limit(1)
+            .execute()
+            .value
+
+        guard let student = response.first else {
+            print("🔴 [ClassroomService] No student found with invite code: \(code)")
+            throw NSError(domain: "ClassroomService", code: 404, userInfo: [NSLocalizedDescriptionKey: "No student found with that code. Please check the code and try again."])
+        }
+
+        print("🟩 [ClassroomService] Found student: \(student.fullName)")
+        return student
+    }
+
+    func generateStudentInviteCode(for studentId: String) async throws -> String {
+        let code = Student.generateInviteCode()
+
+        try await supabase
+            .from("students")
+            .update(["invite_code": code])
+            .eq("id", value: studentId)
+            .execute()
+
+        print("🟩 [ClassroomService] Generated invite code \(code) for student \(studentId)")
+        return code
+    }
+
     // MARK: - Real-time Listeners
 
     private var classroomChannel: RealtimeChannelV2?

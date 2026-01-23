@@ -154,6 +154,37 @@ class ClassroomViewModel: ObservableObject {
         isLoading = false
     }
 
+    func linkParentToStudentWithCode(_ code: String, parentId: String) async throws -> Student {
+        isLoading = true
+        errorMessage = nil
+        defer { isLoading = false }
+
+        if USE_MOCK_DATA {
+            try? await Task.sleep(nanoseconds: 500_000_000)
+            throw NSError(domain: "", code: -1, userInfo: [NSLocalizedDescriptionKey: "Student linking not available in mock mode"])
+        } else {
+            // Find student by invite code
+            let student = try await ClassroomService.shared.findStudentByInviteCode(code)
+
+            // Link parent to student
+            try await ClassroomService.shared.linkParentToStudent(studentId: student.id!, parentId: parentId)
+
+            // Also join the classroom if not already joined
+            if !classrooms.contains(where: { $0.id == student.classId }) {
+                let classroom = try await ClassroomService.shared.joinClassWithCode(code: student.classId, parentId: parentId)
+                classrooms.append(classroom)
+            }
+
+            // Reload students
+            if let classId = student.classId.isEmpty ? nil : student.classId {
+                students = try await ClassroomService.shared.getStudentsForClass(classId: classId)
+            }
+
+            successMessage = "\(student.fullName) linked to your account!"
+            return student
+        }
+    }
+
     func addStudent(firstName: String, lastName: String) async {
         guard let classId = selectedClassroom?.id else {
             print("🔴 [ClassroomViewModel] ERROR: No classroom selected or classroom has no ID")

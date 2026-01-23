@@ -14,6 +14,7 @@ struct Student: Identifiable, Codable, Hashable {
     var classroomId: String?  // Legacy field
     var parentIds: [String]
     var parentId: String?  // Legacy field - first parent
+    var inviteCode: String?  // Unique code for parents to link to this student
     var createdAt: Date
 
     var fullName: String {
@@ -34,7 +35,22 @@ struct Student: Identifiable, Codable, Hashable {
         case classroomId = "classroom_id"
         case parentIds = "parent_ids"
         case parentId = "parent_id"
+        case inviteCode = "invite_code"
         case createdAt = "created_at"
+    }
+
+    // Generate a unique invite code for a student
+    static func generateInviteCode() -> String {
+        let letters = "ABCDEFGHJKLMNPQRSTUVWXYZ"
+        let numbers = "23456789"
+        var code = "S"  // Prefix with S for Student
+        for _ in 0..<3 {
+            code += String(letters.randomElement()!)
+        }
+        for _ in 0..<2 {
+            code += String(numbers.randomElement()!)
+        }
+        return code
     }
 
     init(
@@ -43,6 +59,7 @@ struct Student: Identifiable, Codable, Hashable {
         lastName: String,
         classId: String,
         parentIds: [String] = [],
+        inviteCode: String? = nil,
         createdAt: Date = Date()
     ) {
         self.id = id
@@ -53,6 +70,7 @@ struct Student: Identifiable, Codable, Hashable {
         self.classroomId = classId  // Copy to legacy field
         self.parentIds = parentIds
         self.parentId = parentIds.first  // Copy first parent to legacy field
+        self.inviteCode = inviteCode ?? Student.generateInviteCode()
         self.createdAt = createdAt
     }
 }

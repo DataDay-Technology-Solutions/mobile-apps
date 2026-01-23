@@ -18,11 +18,8 @@ struct ContentView: View {
                 EmailConfirmationView()
                     .environmentObject(authService)
             } else if authService.isAuthenticated, let appUser = authService.appUser {
-                // User is logged in - route based on role
+                // User is logged in - route based on role first, then admin level
                 switch appUser.role {
-                case .admin:
-                    AdminDashboardView()
-                        .environmentObject(authService)
                 case .teacher:
                     TeacherDashboardView()
                         .environmentObject(authService)
@@ -30,9 +27,30 @@ struct ContentView: View {
                     ParentDashboardView()
                         .environmentObject(authService)
                 case .student:
-                    // Students use parent view for now
                     ParentDashboardView()
                         .environmentObject(authService)
+                case .admin:
+                    // Route admins based on their admin level
+                    if let adminLevel = appUser.adminLevel {
+                        switch adminLevel {
+                        case .superAdmin:
+                            AdminDashboardView()
+                                .environmentObject(authService)
+                        case .districtAdmin:
+                            DistrictAdminDashboardView()
+                                .environmentObject(authService)
+                        case .principal, .schoolAdmin:
+                            PrincipalDashboardView()
+                                .environmentObject(authService)
+                        case .none:
+                            AdminDashboardView()
+                                .environmentObject(authService)
+                        }
+                    } else {
+                        // Admin role but no admin level set - use super admin view
+                        AdminDashboardView()
+                            .environmentObject(authService)
+                    }
                 }
             } else if authService.isAuthenticated {
                 // Authenticated but no user profile yet - show setup screen

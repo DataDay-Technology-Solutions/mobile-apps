@@ -83,6 +83,7 @@ export interface Student {
   last_name: string
   class_id: string
   parent_ids: string[]
+  invite_code: string  // Unique code for parents to link to this student
   created_at: string
 }
 
@@ -96,6 +97,17 @@ export function getStudentInitials(student: Student): string {
   const firstInitial = student.first_name.charAt(0).toUpperCase()
   const lastInitial = student.last_name.charAt(0).toUpperCase()
   return `${firstInitial}${lastInitial}`
+}
+
+// Generate a student invite code (format: FIRST-XXXX)
+export function generateStudentInviteCode(firstName: string): string {
+  const prefix = firstName.substring(0, 4).toUpperCase().replace(/[^A-Z]/g, 'X')
+  const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'
+  let suffix = ''
+  for (let i = 0; i < 4; i++) {
+    suffix += chars.charAt(Math.floor(Math.random() * chars.length))
+  }
+  return `${prefix}-${suffix}`
 }
 
 // Message types matching iOS Message.swift
