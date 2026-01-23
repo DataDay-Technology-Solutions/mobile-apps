@@ -208,14 +208,15 @@ class StoryService {
         storiesChannel = supabase.realtimeV2.channel("stories_\(classId)")
 
         Task {
-            try? await storiesChannel?.subscribeWithError()
-
+            // IMPORTANT: Set up postgresChange BEFORE subscribing
             let changes = storiesChannel?.postgresChange(
                 AnyAction.self,
                 schema: "public",
                 table: "stories",
                 filter: .eq("class_id", value: "\(classId)")
             )
+
+            try? await storiesChannel?.subscribe()
 
             if let changes = changes {
                 for await _ in changes {
@@ -241,14 +242,15 @@ class StoryService {
         commentsChannel = supabase.realtimeV2.channel("comments_\(storyId)")
 
         Task {
-            try? await commentsChannel?.subscribeWithError()
-
+            // IMPORTANT: Set up postgresChange BEFORE subscribing
             let changes = commentsChannel?.postgresChange(
                 AnyAction.self,
                 schema: "public",
                 table: "story_comments",
                 filter: .eq("story_id", value: "\(storyId)")
             )
+
+            try? await commentsChannel?.subscribe()
 
             if let changes = changes {
                 for await _ in changes {

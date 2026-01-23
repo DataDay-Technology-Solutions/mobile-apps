@@ -17,20 +17,23 @@ struct TeacherLinkApp: App {
 
     var body: some Scene {
         WindowGroup {
-            if USE_MOCK_DATA {
-                // Use original Hall Pass app with mock data
-                if authViewModel.isAuthenticated {
-                    MainTabView()
-                        .environmentObject(authViewModel)
+            Group {
+                if USE_MOCK_DATA {
+                    // Use original Hall Pass app with mock data
+                    if authViewModel.isAuthenticated {
+                        MainTabView()
+                            .environmentObject(authViewModel)
+                    } else {
+                        WelcomeView()
+                            .environmentObject(authViewModel)
+                    }
                 } else {
-                    WelcomeView()
-                        .environmentObject(authViewModel)
+                    // Use Supabase-based flow
+                    ContentView()
+                        .environmentObject(AuthenticationService())
                 }
-            } else {
-                // Use Supabase-based flow
-                ContentView()
-                    .environmentObject(AuthenticationService())
             }
+            .preferredColorScheme(.light)  // Force light mode for bright, cheerful look
         }
     }
 }

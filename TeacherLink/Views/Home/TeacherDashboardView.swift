@@ -103,18 +103,60 @@ struct TeacherSettingsView: View {
                     .padding(.vertical, 8)
                 }
 
-                Section("Classroom") {
+                Section("My Classes") {
+                    ForEach(classroomViewModel.classrooms, id: \.uniqueId) { classroom in
+                        Button {
+                            classroomViewModel.selectClassroom(classroom)
+                        } label: {
+                            HStack {
+                                Circle()
+                                    .fill(Color.blue)
+                                    .frame(width: 36, height: 36)
+                                    .overlay(
+                                        Text(classroom.name.prefix(1))
+                                            .font(.headline)
+                                            .foregroundColor(.white)
+                                    )
+
+                                VStack(alignment: .leading, spacing: 2) {
+                                    Text(classroom.name)
+                                        .font(.headline)
+                                        .foregroundColor(.primary)
+                                    Text("\(classroom.gradeLevel) • \(classroom.studentCount) students")
+                                        .font(.caption)
+                                        .foregroundColor(.secondary)
+                                }
+
+                                Spacer()
+
+                                if classroom.id == classroomViewModel.selectedClassroom?.id {
+                                    Image(systemName: "checkmark.circle.fill")
+                                        .foregroundColor(.blue)
+                                }
+                            }
+                        }
+                    }
+
                     Button {
                         showCreateClass = true
                     } label: {
-                        Label("Create Class", systemImage: "plus.circle")
+                        Label("Create New Class", systemImage: "plus.circle")
                     }
+                }
 
-                    if let classroom = classroomViewModel.selectedClassroom {
+                // Class Code Section for selected classroom
+                if let classroom = classroomViewModel.selectedClassroom {
+                    Section("Invite Parents") {
                         NavigationLink {
                             ClassInviteView(classroom: classroom)
                         } label: {
                             Label("Class Code: \(classroom.classCode)", systemImage: "qrcode")
+                        }
+
+                        Button {
+                            UIPasteboard.general.string = classroom.classCode
+                        } label: {
+                            Label("Copy Code", systemImage: "doc.on.doc")
                         }
                     }
                 }

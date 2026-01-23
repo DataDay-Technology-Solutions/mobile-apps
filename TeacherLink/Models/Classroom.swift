@@ -24,6 +24,11 @@ struct Classroom: Identifiable, Codable {
         parentIds.count
     }
 
+    /// A guaranteed unique identifier for SwiftUI ForEach (handles optional id)
+    var uniqueId: String {
+        id ?? classCode
+    }
+
     // CodingKeys for proper Supabase snake_case mapping
     enum CodingKeys: String, CodingKey {
         case id

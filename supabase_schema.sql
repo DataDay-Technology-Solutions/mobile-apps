@@ -350,3 +350,88 @@ ALTER PUBLICATION supabase_realtime ADD TABLE messages;
 GRANT ALL ON ALL TABLES IN SCHEMA public TO authenticated;
 GRANT USAGE ON ALL SEQUENCES IN SCHEMA public TO authenticated;
 GRANT EXECUTE ON ALL FUNCTIONS IN SCHEMA public TO authenticated;
+
+-- ============================================
+-- ADMIN HIERARCHY TABLES
+-- ============================================
+
+-- Districts table (top-level organization)
+CREATE TABLE IF NOT EXISTS districts (
+    id TEXT PRIMARY KEY DEFAULT uuid_generate_v4()::TEXT,
+    name TEXT NOT NULL,
+    code TEXT UNIQUE NOT NULL,
+    address TEXT,
+    city TEXT,
+    state TEXT,
+    zip TEXT,
+    phone TEXT,
+    website TEXT,
+    logo_url TEXT,
+    admin_ids TEXT[] DEFAULT '{}',
+    settings JSONB DEFAULT '{}',
+    created_at TIMESTAMPTZ DEFAULT NOW(),
+    updated_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- Schools table (belongs to a district)
+CREATE TABLE IF NOT EXISTS schools (
+    id TEXT PRIMARY KEY DEFAULT uuid_generate_v4()::TEXT,
+    district_id TEXT NOT NULL REFERENCES districts(id) ON DELETE CASCADE,
+    name TEXT NOT NULL,
+    code TEXT NOT NULL,
+    address TEXT,
+    city TEXT,
+    state TEXT,
+    zip TEXT,
+    phone TEXT,
+    website TEXT,
+    logo_url TEXT,
+    principal_id TEXT,
+    admin_ids TEXT[] DEFAULT '{}',
+    grade_levels TEXT[] DEFAULT '{}',
+    settings JSONB DEFAULT '{}',
+    created_at TIMESTAMPTZ DEFAULT NOW(),
+    updated_at TIMESTAMPTZ DEFAULT NOW(),
+    UNIQUE(district_id, code)
+);
+
+-- Add school_id to classrooms
+ALTER TABLE classrooms
+ADD COLUMN IF NOT EXISTS school_id TEXT REFERENCES schools(id) ON DELETE SET NULL;
+
+-- Add admin fields to users
+ALTER TABLE users
+ADD COLUMN IF NOT EXISTS admin_level TEXT CHECK (admin_level IN ('super_admin', 'district_admin', 'principal', 'school_admin', 'none')) DEFAULT 'none';
+
+ALTER TABLE users
+ADD COLUMN IF NOT EXISTS district_id TEXT REFERENCES districts(id) ON DELETE SET NULL;
+
+ALTER TABLE users
+ADD COLUMN IF NOT EXISTS school_id TEXT REFERENCES schools(id) ON DELETE SET NULL;
+
+-- Indexes for admin tables
+CREATE INDEX IF NOT EXISTS idx_districts_code ON districts(code);
+CREATE INDEX IF NOT EXISTS idx_schools_district ON schools(district_id);
+CREATE INDEX IF NOT EXISTS idx_schools_principal ON schools(principal_id);
+CREATE INDEX IF NOT EXISTS idx_classrooms_school ON classrooms(school_id);
+CREATE INDEX IF NOT EXISTS idx_users_admin_level ON users(admin_level);
+
+-- Enable RLS on admin tables
+ALTER TABLE districts ENABLE ROW LEVEL SECURITY;
+ALTER TABLE schools ENABLE ROW LEVEL SECURITY;
+
+-- Districts policies
+CREATE POLICY "Authenticated can read districts" ON districts FOR SELECT USING (auth.role() = 'authenticated');
+CREATE POLICY "Admins can manage districts" ON districts FOR ALL USING (auth.role() = 'authenticated');
+
+-- Schools policies
+CREATE POLICY "Authenticated can read schools" ON schools FOR SELECT USING (auth.role() = 'authenticated');
+CREATE POLICY "Admins can manage schools" ON schools FOR ALL USING (auth.role() = 'authenticated');
+
+-- Realtime for admin tables
+ALTER PUBLICATION supabase_realtime ADD TABLE districts;
+ALTER PUBLICATION supabase_realtime ADD TABLE schools;
+
+-- Grant permissions on admin tables
+GRANT ALL ON districts TO authenticated;
+GRANT ALL ON schools TO authenticated;

@@ -11,6 +11,8 @@ struct StudentsView: View {
 
     @State private var showAddStudent = false
     @State private var searchText = ""
+    @State private var showError = false
+    @State private var showSuccess = false
 
     var filteredStudents: [Student] {
         if searchText.isEmpty {
@@ -23,23 +25,56 @@ struct StudentsView: View {
 
     var body: some View {
         NavigationStack {
-            Group {
-                if classroomViewModel.students.isEmpty {
-                    EmptyStudentsView()
-                } else {
-                    List {
-                        ForEach(filteredStudents) { student in
-                            NavigationLink {
-                                StudentDetailView(student: student)
-                                    .environmentObject(classroomViewModel)
-                            } label: {
-                                StudentRow(student: student)
-                            }
+            VStack(spacing: 0) {
+                // Show selected classroom indicator
+                if let classroom = classroomViewModel.selectedClassroom {
+                    HStack {
+                        Image(systemName: "building.2.fill")
+                            .foregroundColor(.blue)
+                        Text(classroom.name)
+                            .fontWeight(.medium)
+                        if !classroom.gradeLevel.isEmpty {
+                            Text("(\(classroom.gradeLevel))")
+                                .foregroundColor(.secondary)
                         }
-                        .onDelete(perform: deleteStudents)
+                        Spacer()
+                        Text("Code: \(classroom.classCode)")
+                            .font(.caption)
+                            .foregroundColor(.secondary)
                     }
-                    .listStyle(.plain)
-                    .searchable(text: $searchText, prompt: "Search students")
+                    .padding(.horizontal)
+                    .padding(.vertical, 8)
+                    .background(Color.blue.opacity(0.1))
+                }
+
+                Group {
+                    if classroomViewModel.selectedClassroom == nil {
+                        VStack(spacing: 16) {
+                            Image(systemName: "building.2")
+                                .font(.system(size: 60))
+                                .foregroundColor(.gray)
+                            Text("No Class Selected")
+                                .font(.title2.bold())
+                            Text("Select or create a classroom first")
+                                .foregroundColor(.secondary)
+                        }
+                    } else if classroomViewModel.students.isEmpty {
+                        EmptyStudentsView()
+                    } else {
+                        List {
+                            ForEach(filteredStudents) { student in
+                                NavigationLink {
+                                    StudentDetailView(student: student)
+                                        .environmentObject(classroomViewModel)
+                                } label: {
+                                    StudentRow(student: student)
+                                }
+                            }
+                            .onDelete(perform: deleteStudents)
+                        }
+                        .listStyle(.plain)
+                        .searchable(text: $searchText, prompt: "Search students")
+                    }
                 }
             }
             .navigationTitle("Students")
@@ -50,6 +85,7 @@ struct StudentsView: View {
                     } label: {
                         Image(systemName: "plus")
                     }
+                    .disabled(classroomViewModel.selectedClassroom == nil)
                 }
 
                 ToolbarItem(placement: .navigationBarLeading) {
@@ -61,6 +97,26 @@ struct StudentsView: View {
             .sheet(isPresented: $showAddStudent) {
                 AddStudentView()
                     .environmentObject(classroomViewModel)
+            }
+            .alert("Error", isPresented: $showError) {
+                Button("OK") {
+                    classroomViewModel.errorMessage = nil
+                }
+            } message: {
+                Text(classroomViewModel.errorMessage ?? "An error occurred")
+            }
+            .alert("Success", isPresented: $showSuccess) {
+                Button("OK") {
+                    classroomViewModel.successMessage = nil
+                }
+            } message: {
+                Text(classroomViewModel.successMessage ?? "")
+            }
+            .onChange(of: classroomViewModel.errorMessage) { _, newValue in
+                showError = newValue != nil
+            }
+            .onChange(of: classroomViewModel.successMessage) { _, newValue in
+                showSuccess = newValue != nil
             }
         }
     }

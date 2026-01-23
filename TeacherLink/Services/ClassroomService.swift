@@ -288,14 +288,15 @@ class ClassroomService {
         classroomChannel = supabase.realtimeV2.channel("classroom_\(id)")
 
         Task {
-            try? await classroomChannel?.subscribeWithError()
-
+            // IMPORTANT: Set up postgresChange BEFORE subscribing
             let changes = classroomChannel?.postgresChange(
                 AnyAction.self,
                 schema: "public",
                 table: "classrooms",
                 filter: .eq("id", value: "\(id)")
             )
+
+            try? await classroomChannel?.subscribe()
 
             if let changes = changes {
                 for await _ in changes {
@@ -321,14 +322,15 @@ class ClassroomService {
         studentsChannel = supabase.realtimeV2.channel("students_\(classId)")
 
         Task {
-            try? await studentsChannel?.subscribeWithError()
-
+            // IMPORTANT: Set up postgresChange BEFORE subscribing
             let changes = studentsChannel?.postgresChange(
                 AnyAction.self,
                 schema: "public",
                 table: "students",
                 filter: .eq("class_id", value: "\(classId)")
             )
+
+            try? await studentsChannel?.subscribe()
 
             if let changes = changes {
                 for await _ in changes {

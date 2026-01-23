@@ -5,13 +5,28 @@
 
 import SwiftUI
 
-// App theme colors
+// App theme colors - Bright and cheerful for education
 struct AppTheme {
-    static let primary = Color(red: 0.4, green: 0.3, blue: 0.9) // Indigo
-    static let secondary = Color(red: 0.2, green: 0.8, blue: 0.7) // Teal
-    static let accent = Color(red: 1.0, green: 0.6, blue: 0.2) // Orange
+    // Primary: Friendly sky blue
+    static let primary = Color(red: 0.25, green: 0.56, blue: 0.97) // Bright Blue
+    // Secondary: Soft mint green
+    static let secondary = Color(red: 0.35, green: 0.85, blue: 0.75) // Mint
+    // Accent: Warm sunshine yellow-orange
+    static let accent = Color(red: 1.0, green: 0.7, blue: 0.25) // Warm Yellow
+    // Success: Fresh green
+    static let success = Color(red: 0.35, green: 0.78, blue: 0.45) // Green
+    // Background: Very light blue-gray
+    static let background = Color(red: 0.96, green: 0.97, blue: 0.99) // Light
+
     static let gradient = LinearGradient(
         colors: [primary, secondary],
+        startPoint: .topLeading,
+        endPoint: .bottomTrailing
+    )
+
+    // Softer gradient for backgrounds
+    static let softGradient = LinearGradient(
+        colors: [primary.opacity(0.15), secondary.opacity(0.1), Color.white],
         startPoint: .topLeading,
         endPoint: .bottomTrailing
     )
@@ -26,12 +41,12 @@ struct WelcomeView: View {
     var body: some View {
         NavigationStack {
             ZStack {
-                // Background gradient
+                // Background gradient - Bright and welcoming
                 LinearGradient(
                     colors: [
-                        AppTheme.primary.opacity(0.1),
-                        AppTheme.secondary.opacity(0.05),
-                        Color(.systemBackground)
+                        AppTheme.primary.opacity(0.12),
+                        AppTheme.secondary.opacity(0.08),
+                        Color.white
                     ],
                     startPoint: .topLeading,
                     endPoint: .bottomTrailing

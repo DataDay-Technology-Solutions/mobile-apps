@@ -50,6 +50,11 @@ class ClassroomViewModel: ObservableObject {
                     classrooms = try await ClassroomService.shared.getClassroomsForParent(parentId: userId)
                 }
 
+                print("🟪 [ClassroomViewModel] Loaded \(classrooms.count) classrooms:")
+                for (index, classroom) in classrooms.enumerated() {
+                    print("🟪 [ClassroomViewModel]   [\(index)] id=\(classroom.id ?? "nil"), name=\(classroom.name), code=\(classroom.classCode)")
+                }
+
                 // Select the first classroom if available
                 if let first = classrooms.first {
                     selectedClassroom = first
@@ -150,8 +155,13 @@ class ClassroomViewModel: ObservableObject {
     }
 
     func addStudent(firstName: String, lastName: String) async {
-        guard let classId = selectedClassroom?.id else { return }
+        guard let classId = selectedClassroom?.id else {
+            print("🔴 [ClassroomViewModel] ERROR: No classroom selected or classroom has no ID")
+            errorMessage = "No classroom selected. Please select a class first."
+            return
+        }
 
+        print("🟦 [ClassroomViewModel] Adding student: \(firstName) \(lastName) to class: \(classId)")
         isLoading = true
         errorMessage = nil
 
@@ -166,6 +176,7 @@ class ClassroomViewModel: ObservableObject {
             )
             students.append(student)
             students.sort { $0.lastName < $1.lastName }
+            print("🟩 [ClassroomViewModel] Mock student added successfully")
         } else {
             // Real Supabase implementation
             do {
@@ -173,14 +184,20 @@ class ClassroomViewModel: ObservableObject {
                     id: nil,
                     firstName: firstName,
                     lastName: lastName,
-                    classId: classId
+                    classId: classId,
+                    parentIds: []
                 )
+                print("🟦 [ClassroomViewModel] Calling ClassroomService.addStudent...")
                 let created = try await ClassroomService.shared.addStudent(student)
+                print("🟩 [ClassroomViewModel] Student created with ID: \(created.id ?? "nil")")
                 students.append(created)
                 students.sort { $0.lastName < $1.lastName }
                 successMessage = "\(firstName) \(lastName) added to class!"
+                print("🟩 [ClassroomViewModel] Student added to local array. Total students: \(students.count)")
             } catch {
-                errorMessage = error.localizedDescription
+                print("🔴 [ClassroomViewModel] ERROR adding student: \(error)")
+                print("🔴 [ClassroomViewModel] Error details: \(error.localizedDescription)")
+                errorMessage = "Failed to add student: \(error.localizedDescription)"
             }
         }
 

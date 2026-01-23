@@ -233,13 +233,14 @@ class MessageService {
         conversationsChannel = supabase.realtimeV2.channel("conversations_\(userId)")
 
         Task {
-            try? await conversationsChannel?.subscribeWithError()
-
+            // IMPORTANT: Set up postgresChange BEFORE subscribing
             let changes = conversationsChannel?.postgresChange(
                 AnyAction.self,
                 schema: "public",
                 table: "conversations"
             )
+
+            try? await conversationsChannel?.subscribe()
 
             if let changes = changes {
                 for await _ in changes {
@@ -265,14 +266,15 @@ class MessageService {
         messagesChannel = supabase.realtimeV2.channel("messages_\(conversationId)")
 
         Task {
-            try? await messagesChannel?.subscribeWithError()
-
+            // IMPORTANT: Set up postgresChange BEFORE subscribing
             let changes = messagesChannel?.postgresChange(
                 AnyAction.self,
                 schema: "public",
                 table: "messages",
                 filter: .eq("conversation_id", value: "\(conversationId)")
             )
+
+            try? await messagesChannel?.subscribe()
 
             if let changes = changes {
                 for await _ in changes {

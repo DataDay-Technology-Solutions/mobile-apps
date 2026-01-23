@@ -54,12 +54,24 @@ struct SettingsView: View {
 
                 // Classes Section
                 Section {
-                    ForEach(classroomViewModel.classrooms) { classroom in
-                        ClassroomRow(
-                            classroom: classroom,
-                            isSelected: classroom.id == classroomViewModel.selectedClassroom?.id
-                        ) {
-                            classroomViewModel.selectClassroom(classroom)
+                    // Debug: Show classroom count
+                    Text("DEBUG: \(classroomViewModel.classrooms.count) classrooms loaded")
+                        .font(.caption)
+                        .foregroundColor(.orange)
+
+                    ForEach(0..<classroomViewModel.classrooms.count, id: \.self) { index in
+                        let classroom = classroomViewModel.classrooms[index]
+                        VStack(alignment: .leading, spacing: 4) {
+                            Text("Row \(index): \(classroom.name) - id: \(classroom.id ?? "nil")")
+                                .font(.caption2)
+                                .foregroundColor(.orange)
+
+                            ClassroomRow(
+                                classroom: classroom,
+                                isSelected: classroom.id == classroomViewModel.selectedClassroom?.id
+                            ) {
+                                classroomViewModel.selectClassroom(classroom)
+                            }
                         }
                     }
 

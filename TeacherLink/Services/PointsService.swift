@@ -287,13 +287,14 @@ class PointsService {
         summaryChannel = supabase.realtimeV2.channel("student_summary_\(studentId)_\(classId)")
 
         Task {
-            try? await summaryChannel?.subscribeWithError()
-
+            // IMPORTANT: Set up postgresChange BEFORE subscribing
             let changes = summaryChannel?.postgresChange(
                 AnyAction.self,
                 schema: "public",
                 table: "student_points_summaries"
             )
+
+            try? await summaryChannel?.subscribe()
 
             if let changes = changes {
                 for await _ in changes {
@@ -319,14 +320,15 @@ class PointsService {
         summaryChannel = supabase.realtimeV2.channel("class_summaries_\(classId)")
 
         Task {
-            try? await summaryChannel?.subscribeWithError()
-
+            // IMPORTANT: Set up postgresChange BEFORE subscribing
             let changes = summaryChannel?.postgresChange(
                 AnyAction.self,
                 schema: "public",
                 table: "student_points_summaries",
                 filter: .eq("class_id", value: "\(classId)")
             )
+
+            try? await summaryChannel?.subscribe()
 
             if let changes = changes {
                 for await _ in changes {
@@ -352,14 +354,15 @@ class PointsService {
         recordsChannel = supabase.realtimeV2.channel("recent_points_\(classId)")
 
         Task {
-            try? await recordsChannel?.subscribeWithError()
-
+            // IMPORTANT: Set up postgresChange BEFORE subscribing
             let changes = recordsChannel?.postgresChange(
                 AnyAction.self,
                 schema: "public",
                 table: "point_records",
                 filter: .eq("class_id", value: "\(classId)")
             )
+
+            try? await recordsChannel?.subscribe()
 
             if let changes = changes {
                 for await _ in changes {
