@@ -1,6 +1,6 @@
 import { createClient } from '@/lib/supabase/client'
 import type { Classroom, Student, AppUser } from '@/types'
-import { generateClassCode } from '@/types'
+import { generateClassCode, generateStudentInviteCode } from '@/types'
 
 export class ClassroomError extends Error {
   constructor(message: string) {
@@ -159,12 +159,13 @@ export const classroomService = {
 
   // Student CRUD operations
 
-  async addStudent(student: Omit<Student, 'id' | 'created_at'>): Promise<Student> {
+  async addStudent(student: Omit<Student, 'id' | 'created_at' | 'invite_code'>): Promise<Student> {
     const supabase = createClient()
 
     const newStudent = {
       ...student,
       name: `${student.first_name} ${student.last_name}`.trim(),
+      invite_code: generateStudentInviteCode(student.first_name),
       parent_ids: student.parent_ids || [],
       created_at: new Date().toISOString(),
     }
@@ -304,6 +305,131 @@ export const classroomService = {
     }
 
     return data as Student
+  },
+
+  // Get student by invite code (case-insensitive)
+  async getStudentByInviteCode(code: string): Promise<Student | null> {
+    const supabase = createClient()
+
+    // Use ilike for case-insensitive matching
+    const { data, error } = await supabase
+      .from('students')
+      .select()
+      .ilike('invite_code', code.trim())
+      .single()
+
+    if (error) return null
+    return data as Student
+  },
+
+  // Link parent to student using invite code
+  async linkParentToStudentByCode(code: string, parentId: string): Promise<{ student: Student; classroom: Classroom }> {
+    const supabase = createClient()
+
+    // Find student by invite code
+    const student = await this.getStudentByInviteCode(code)
+    if (!student) throw new ClassroomError('Invalid student code. Please check the code and try again.')
+
+    // Check if already linked
+    if (student.parent_ids.includes(parentId)) {
+      const classroom = await this.getClassroom(student.class_id)
+      if (!classroom) throw new ClassroomError('Classroom not found')
+      return { student, classroom }
+    }
+
+    // Link parent to student
+    const updatedParentIds = [...student.parent_ids, parentId]
+    const { data: updatedStudent, error: studentError } = await supabase
+      .from('students')
+      .update({ parent_ids: updatedParentIds })
+      .eq('id', student.id)
+      .select()
+      .single()
+
+    if (studentError) throw new ClassroomError(studentError.message)
+
+    // Get the classroom
+    const classroom = await this.getClassroom(student.class_id)
+    if (!classroom) throw new ClassroomError('Classroom not found')
+
+    // Add parent to classroom if not already
+    if (!classroom.parent_ids.includes(parentId)) {
+      const updatedClassroomParentIds = [...classroom.parent_ids, parentId]
+      await supabase
+        .from('classrooms')
+        .update({ parent_ids: updatedClassroomParentIds })
+        .eq('id', classroom.id)
+    }
+
+    // Update parent's student_ids and class_ids
+    const { data: parentData } = await supabase
+      .from('users')
+      .select('student_ids, class_ids')
+      .eq('id', parentId)
+      .single()
+
+    const currentStudentIds = parentData?.student_ids || []
+    const currentClassIds = parentData?.class_ids || []
+    const updates: Record<string, string[]> = {}
+
+    if (!currentStudentIds.includes(student.id)) {
+      updates.student_ids = [...currentStudentIds, student.id]
+    }
+    if (!currentClassIds.includes(classroom.id)) {
+      updates.class_ids = [...currentClassIds, classroom.id]
+    }
+
+    if (Object.keys(updates).length > 0) {
+      await supabase
+        .from('users')
+        .update(updates)
+        .eq('id', parentId)
+    }
+
+    return { student: updatedStudent as Student, classroom }
+  },
+
+  // Get parents in a classroom
+  async getParentsInClassroom(classroomId: string): Promise<AppUser[]> {
+    const supabase = createClient()
+
+    const classroom = await this.getClassroom(classroomId)
+    if (!classroom || classroom.parent_ids.length === 0) return []
+
+    const { data, error } = await supabase
+      .from('users')
+      .select()
+      .in('id', classroom.parent_ids)
+      .order('name', { ascending: true })
+
+    if (error) throw new ClassroomError(error.message)
+    return data as AppUser[]
+  },
+
+  // Get parents who haven't been linked to any student in the classroom
+  async getUnassignedParentsInClassroom(classroomId: string): Promise<AppUser[]> {
+    const parents = await this.getParentsInClassroom(classroomId)
+    const students = await this.getStudentsForClass(classroomId)
+
+    // Get all parent IDs that are linked to at least one student
+    const assignedParentIds = new Set<string>()
+    students.forEach(student => {
+      student.parent_ids.forEach(pid => assignedParentIds.add(pid))
+    })
+
+    // Return parents who are not assigned to any student
+    return parents.filter(parent => !assignedParentIds.has(parent.id))
+  },
+
+  // Get parents with their linked students for a classroom
+  async getParentsWithStudents(classroomId: string): Promise<Array<{ parent: AppUser; students: Student[] }>> {
+    const parents = await this.getParentsInClassroom(classroomId)
+    const students = await this.getStudentsForClass(classroomId)
+
+    return parents.map(parent => ({
+      parent,
+      students: students.filter(s => s.parent_ids.includes(parent.id))
+    }))
   },
 
   // Real-time subscriptions
