@@ -15,11 +15,13 @@ import {
   Plus,
   ChevronRight,
   Activity,
-  BarChart3
+  BarChart3,
+  X
 } from 'lucide-react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
-import { getSuperAdminStats } from '@/services/admin'
+import { Input } from '@/components/ui/input'
+import { getSuperAdminStats, createDistrict, createSchool } from '@/services/admin'
 import type { District, Story, PointRecord } from '@/types'
 import { timeAgo } from '@/types'
 
@@ -38,6 +40,24 @@ export default function SuperAdminDashboard() {
   const [stats, setStats] = useState<SuperAdminStats | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+
+  // Modal states
+  const [showAddDistrict, setShowAddDistrict] = useState(false)
+  const [showAddSchool, setShowAddSchool] = useState(false)
+  const [showReports, setShowReports] = useState(false)
+
+  // Form states
+  const [districtName, setDistrictName] = useState('')
+  const [districtCode, setDistrictCode] = useState('')
+  const [districtCity, setDistrictCity] = useState('')
+  const [districtState, setDistrictState] = useState('')
+  const [schoolName, setSchoolName] = useState('')
+  const [schoolCode, setSchoolCode] = useState('')
+  const [schoolCity, setSchoolCity] = useState('')
+  const [schoolState, setSchoolState] = useState('')
+  const [selectedDistrictId, setSelectedDistrictId] = useState('')
+  const [formLoading, setFormLoading] = useState(false)
+  const [formError, setFormError] = useState('')
 
   useEffect(() => {
     let cancelled = false
@@ -127,6 +147,63 @@ export default function SuperAdminDashboard() {
     }
   }
 
+  async function handleCreateDistrict(e: React.FormEvent) {
+    e.preventDefault()
+    setFormLoading(true)
+    setFormError('')
+    try {
+      await createDistrict({
+        name: districtName,
+        code: districtCode.toUpperCase(),
+        city: districtCity,
+        state: districtState,
+        admin_ids: [],
+      })
+      setShowAddDistrict(false)
+      setDistrictName('')
+      setDistrictCode('')
+      setDistrictCity('')
+      setDistrictState('')
+      loadStats()
+    } catch (err) {
+      setFormError(err instanceof Error ? err.message : 'Failed to create district')
+    } finally {
+      setFormLoading(false)
+    }
+  }
+
+  async function handleCreateSchool(e: React.FormEvent) {
+    e.preventDefault()
+    if (!selectedDistrictId) {
+      setFormError('Please select a district')
+      return
+    }
+    setFormLoading(true)
+    setFormError('')
+    try {
+      await createSchool({
+        name: schoolName,
+        code: schoolCode.toUpperCase(),
+        city: schoolCity,
+        state: schoolState,
+        district_id: selectedDistrictId,
+        admin_ids: [],
+        grade_levels: [],
+      })
+      setShowAddSchool(false)
+      setSchoolName('')
+      setSchoolCode('')
+      setSchoolCity('')
+      setSchoolState('')
+      setSelectedDistrictId('')
+      loadStats()
+    } catch (err) {
+      setFormError(err instanceof Error ? err.message : 'Failed to create school')
+    } finally {
+      setFormLoading(false)
+    }
+  }
+
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-[400px]">
@@ -153,11 +230,11 @@ export default function SuperAdminDashboard() {
           <p className="text-gray-600 mt-1">Overview of all districts, schools, and activity</p>
         </div>
         <div className="flex gap-3">
-          <Button variant="outline" onClick={() => alert('Reports feature coming soon!')}>
+          <Button variant="outline" onClick={() => setShowReports(true)}>
             <BarChart3 className="w-4 h-4 mr-2" />
             Reports
           </Button>
-          <Button onClick={() => alert('Add District feature coming soon!')}>
+          <Button onClick={() => setShowAddDistrict(true)}>
             <Plus className="w-4 h-4 mr-2" />
             Add District
           </Button>
@@ -211,7 +288,7 @@ export default function SuperAdminDashboard() {
             <Building2 className="w-5 h-5 text-purple-600" />
             Districts
           </CardTitle>
-          <Button size="sm" variant="outline" onClick={() => alert('Add District feature coming soon!')}>
+          <Button size="sm" variant="outline" onClick={() => setShowAddDistrict(true)}>
             <Plus className="w-4 h-4 mr-1" />
             New District
           </Button>
@@ -244,7 +321,7 @@ export default function SuperAdminDashboard() {
             <div className="text-center py-8">
               <Building2 className="w-12 h-12 text-gray-300 mx-auto mb-3" />
               <p className="text-gray-500 mb-4">No districts yet</p>
-              <Button onClick={() => alert('Add District feature coming soon!')}>
+              <Button onClick={() => setShowAddDistrict(true)}>
                 <Plus className="w-4 h-4 mr-2" />
                 Create First District
               </Button>
@@ -346,29 +423,230 @@ export default function SuperAdminDashboard() {
               icon={Building2}
               label="Add District"
               color="bg-purple-100 text-purple-600"
-              onClick={() => alert('Add District feature coming soon!')}
+              onClick={() => setShowAddDistrict(true)}
             />
             <QuickActionButton
               icon={School}
               label="Add School"
               color="bg-blue-100 text-blue-600"
-              onClick={() => alert('Add School feature coming soon!')}
+              onClick={() => setShowAddSchool(true)}
             />
             <QuickActionButton
               icon={GraduationCap}
               label="Manage Teachers"
               color="bg-orange-100 text-orange-600"
-              onClick={() => alert('Manage Teachers feature coming soon!')}
+              href="/classroom"
             />
             <QuickActionButton
               icon={BarChart3}
               label="View Reports"
               color="bg-green-100 text-green-600"
-              onClick={() => alert('View Reports feature coming soon!')}
+              onClick={() => setShowReports(true)}
             />
           </div>
         </CardContent>
       </Card>
+
+      {/* Add District Modal */}
+      {showAddDistrict && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-xl p-6 w-full max-w-md mx-4">
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-xl font-bold text-gray-900">Add New District</h2>
+              <button onClick={() => setShowAddDistrict(false)} className="text-gray-400 hover:text-gray-600">
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+            <form onSubmit={handleCreateDistrict} className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">District Name *</label>
+                <Input
+                  value={districtName}
+                  onChange={(e) => setDistrictName(e.target.value)}
+                  placeholder="e.g., Springfield Unified School District"
+                  required
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">District Code *</label>
+                <Input
+                  value={districtCode}
+                  onChange={(e) => setDistrictCode(e.target.value)}
+                  placeholder="e.g., SPRINGFIELD-USD"
+                  required
+                />
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">City</label>
+                  <Input
+                    value={districtCity}
+                    onChange={(e) => setDistrictCity(e.target.value)}
+                    placeholder="e.g., Springfield"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">State</label>
+                  <Input
+                    value={districtState}
+                    onChange={(e) => setDistrictState(e.target.value)}
+                    placeholder="e.g., IL"
+                    maxLength={2}
+                  />
+                </div>
+              </div>
+              {formError && <p className="text-red-600 text-sm">{formError}</p>}
+              <div className="flex gap-3 pt-2">
+                <Button type="button" variant="outline" className="flex-1" onClick={() => setShowAddDistrict(false)}>
+                  Cancel
+                </Button>
+                <Button type="submit" className="flex-1" disabled={formLoading}>
+                  {formLoading ? 'Creating...' : 'Create District'}
+                </Button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Add School Modal */}
+      {showAddSchool && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-xl p-6 w-full max-w-md mx-4">
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-xl font-bold text-gray-900">Add New School</h2>
+              <button onClick={() => setShowAddSchool(false)} className="text-gray-400 hover:text-gray-600">
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+            <form onSubmit={handleCreateSchool} className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">District *</label>
+                <select
+                  value={selectedDistrictId}
+                  onChange={(e) => setSelectedDistrictId(e.target.value)}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  required
+                >
+                  <option value="">Select a district...</option>
+                  {stats?.districts.map((district) => (
+                    <option key={district.id} value={district.id}>{district.name}</option>
+                  ))}
+                </select>
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">School Name *</label>
+                <Input
+                  value={schoolName}
+                  onChange={(e) => setSchoolName(e.target.value)}
+                  placeholder="e.g., Springfield Elementary"
+                  required
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">School Code *</label>
+                <Input
+                  value={schoolCode}
+                  onChange={(e) => setSchoolCode(e.target.value)}
+                  placeholder="e.g., ELEM-01"
+                  required
+                />
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">City</label>
+                  <Input
+                    value={schoolCity}
+                    onChange={(e) => setSchoolCity(e.target.value)}
+                    placeholder="e.g., Springfield"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">State</label>
+                  <Input
+                    value={schoolState}
+                    onChange={(e) => setSchoolState(e.target.value)}
+                    placeholder="e.g., IL"
+                    maxLength={2}
+                  />
+                </div>
+              </div>
+              {formError && <p className="text-red-600 text-sm">{formError}</p>}
+              <div className="flex gap-3 pt-2">
+                <Button type="button" variant="outline" className="flex-1" onClick={() => setShowAddSchool(false)}>
+                  Cancel
+                </Button>
+                <Button type="submit" className="flex-1" disabled={formLoading}>
+                  {formLoading ? 'Creating...' : 'Create School'}
+                </Button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Reports Modal */}
+      {showReports && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-xl p-6 w-full max-w-2xl mx-4 max-h-[80vh] overflow-y-auto">
+            <div className="flex items-center justify-between mb-6">
+              <h2 className="text-xl font-bold text-gray-900">System Reports</h2>
+              <button onClick={() => setShowReports(false)} className="text-gray-400 hover:text-gray-600">
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+            <div className="space-y-6">
+              <div className="grid grid-cols-2 gap-4">
+                <div className="p-4 bg-purple-50 rounded-lg">
+                  <p className="text-2xl font-bold text-purple-700">{stats?.districts.length || 0}</p>
+                  <p className="text-sm text-purple-600">Total Districts</p>
+                </div>
+                <div className="p-4 bg-blue-50 rounded-lg">
+                  <p className="text-2xl font-bold text-blue-700">{stats?.totalSchools || 0}</p>
+                  <p className="text-sm text-blue-600">Total Schools</p>
+                </div>
+                <div className="p-4 bg-green-50 rounded-lg">
+                  <p className="text-2xl font-bold text-green-700">{stats?.totalClassrooms || 0}</p>
+                  <p className="text-sm text-green-600">Total Classrooms</p>
+                </div>
+                <div className="p-4 bg-orange-50 rounded-lg">
+                  <p className="text-2xl font-bold text-orange-700">{stats?.totalTeachers || 0}</p>
+                  <p className="text-sm text-orange-600">Total Teachers</p>
+                </div>
+                <div className="p-4 bg-pink-50 rounded-lg">
+                  <p className="text-2xl font-bold text-pink-700">{stats?.totalStudents || 0}</p>
+                  <p className="text-sm text-pink-600">Total Students</p>
+                </div>
+                <div className="p-4 bg-teal-50 rounded-lg">
+                  <p className="text-2xl font-bold text-teal-700">{stats?.totalParents || 0}</p>
+                  <p className="text-sm text-teal-600">Total Parents</p>
+                </div>
+              </div>
+              <div>
+                <h3 className="font-semibold text-gray-900 mb-3">Districts Overview</h3>
+                <div className="space-y-2">
+                  {stats?.districts.map((district) => (
+                    <div key={district.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                      <div>
+                        <p className="font-medium text-gray-900">{district.name}</p>
+                        <p className="text-sm text-gray-500">{district.city}, {district.state}</p>
+                      </div>
+                      <Link href={`/admin/district/${district.id}`}>
+                        <Button variant="outline" size="sm">View Details</Button>
+                      </Link>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+            <div className="mt-6 pt-4 border-t">
+              <Button variant="outline" className="w-full" onClick={() => setShowReports(false)}>
+                Close
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }
@@ -405,22 +683,41 @@ function QuickActionButton({
   icon: Icon,
   label,
   color,
-  onClick
+  onClick,
+  href
 }: {
   icon: React.ElementType
   label: string
   color: string
   onClick?: () => void
+  href?: string
 }) {
+  const content = (
+    <>
+      <div className={`w-12 h-12 rounded-full ${color} flex items-center justify-center`}>
+        <Icon className="w-6 h-6" />
+      </div>
+      <span className="text-sm font-medium text-gray-700">{label}</span>
+    </>
+  )
+
+  if (href) {
+    return (
+      <Link
+        href={href}
+        className="flex flex-col items-center gap-2 p-4 rounded-lg border border-gray-200 hover:bg-gray-50 transition-colors"
+      >
+        {content}
+      </Link>
+    )
+  }
+
   return (
     <button
       onClick={onClick}
       className="flex flex-col items-center gap-2 p-4 rounded-lg border border-gray-200 hover:bg-gray-50 transition-colors"
     >
-      <div className={`w-12 h-12 rounded-full ${color} flex items-center justify-center`}>
-        <Icon className="w-6 h-6" />
-      </div>
-      <span className="text-sm font-medium text-gray-700">{label}</span>
+      {content}
     </button>
   )
 }
