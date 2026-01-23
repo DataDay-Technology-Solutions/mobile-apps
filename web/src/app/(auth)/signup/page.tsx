@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { useAuth } from '@/contexts/auth-context'
@@ -9,6 +9,14 @@ import { UserPlus, User, Users, Mail, Lock, ArrowRight, Sparkles, Heart } from '
 import { cn } from '@/lib/utils'
 
 type Role = 'teacher' | 'parent'
+
+function isAbortError(err: unknown): boolean {
+  return (
+    (err instanceof Error && err.name === 'AbortError') ||
+    (err instanceof DOMException && err.name === 'AbortError') ||
+    (typeof err === 'object' && err !== null && 'message' in err && String((err as {message: unknown}).message).includes('aborted'))
+  )
+}
 
 export default function SignupPage() {
   const [step, setStep] = useState<1 | 2>(1)
@@ -21,6 +29,8 @@ export default function SignupPage() {
   const [loading, setLoading] = useState(false)
   const { signUp } = useAuth()
   const router = useRouter()
+  const retryCountRef = useRef(0)
+  const maxRetries = 5
 
   const handleRoleSelect = (selectedRole: Role) => {
     setRole(selectedRole)
@@ -47,15 +57,30 @@ export default function SignupPage() {
     }
 
     setLoading(true)
+    retryCountRef.current = 0
 
-    try {
-      await signUp(email, password, name, role)
-      router.push('/dashboard')
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to create account')
-    } finally {
-      setLoading(false)
+    const attemptSignUp = async (): Promise<void> => {
+      try {
+        await signUp(email, password, name, role)
+        router.push('/dashboard')
+      } catch (err) {
+        if (isAbortError(err) && retryCountRef.current < maxRetries) {
+          retryCountRef.current++
+          console.log(`Sign up aborted, retrying... (attempt ${retryCountRef.current}/${maxRetries})`)
+          await new Promise(resolve => setTimeout(resolve, 200 * retryCountRef.current))
+          return attemptSignUp()
+        }
+        if (isAbortError(err)) {
+          setError('Connection interrupted. Please try again.')
+        } else {
+          setError(err instanceof Error ? err.message : 'Failed to create account')
+        }
+      } finally {
+        setLoading(false)
+      }
     }
+
+    await attemptSignUp()
   }
 
   return (

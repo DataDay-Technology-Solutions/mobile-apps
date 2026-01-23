@@ -1,11 +1,19 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { useAuth } from '@/contexts/auth-context'
 import { Button, Input, Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from '@/components/ui'
 import { LogIn, Mail, Lock, ArrowRight } from 'lucide-react'
+
+function isAbortError(err: unknown): boolean {
+  return (
+    (err instanceof Error && err.name === 'AbortError') ||
+    (err instanceof DOMException && err.name === 'AbortError') ||
+    (typeof err === 'object' && err !== null && 'message' in err && String((err as {message: unknown}).message).includes('aborted'))
+  )
+}
 
 export default function LoginPage() {
   const [email, setEmail] = useState('')
@@ -14,20 +22,38 @@ export default function LoginPage() {
   const [loading, setLoading] = useState(false)
   const { signIn } = useAuth()
   const router = useRouter()
+  const retryCountRef = useRef(0)
+  const maxRetries = 5
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setError('')
     setLoading(true)
+    retryCountRef.current = 0
 
-    try {
-      await signIn(email, password)
-      router.push('/dashboard')
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to sign in')
-    } finally {
-      setLoading(false)
+    const attemptSignIn = async (): Promise<void> => {
+      try {
+        await signIn(email, password)
+        router.push('/dashboard')
+      } catch (err) {
+        if (isAbortError(err) && retryCountRef.current < maxRetries) {
+          retryCountRef.current++
+          console.log(`Sign in aborted, retrying... (attempt ${retryCountRef.current}/${maxRetries})`)
+          await new Promise(resolve => setTimeout(resolve, 200 * retryCountRef.current))
+          return attemptSignIn()
+        }
+        // Don't show "aborted" errors to user - just show generic message
+        if (isAbortError(err)) {
+          setError('Connection interrupted. Please try again.')
+        } else {
+          setError(err instanceof Error ? err.message : 'Failed to sign in')
+        }
+      } finally {
+        setLoading(false)
+      }
     }
+
+    await attemptSignIn()
   }
 
   return (
